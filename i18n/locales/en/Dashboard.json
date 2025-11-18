@@ -26,7 +26,8 @@
     "Sales": "Sales",
     "Inventory": "Inventory",
     "Other": "Other",
-    "Portfolio": "Portfolio"
+      "Portfolio": "Portfolio",
+      "Transit": "Transit"
   },
   "Routes": {
     "Dashboard": "Dashboard",
@@ -63,11 +64,19 @@
     "CreateSupplierRefund": "Create Supplier Refund",
     "UpdateSupplierRefund": "Update Supplier Refund",
     "StickerPrints": "Sticker Prints",
-    "Projects": "Projects",
-    "Skills": "Skills",
-    "Experiences": "Experiences",
-    "Educations": "Educations",
-    "Portfolios": "Portfolios"
+      "Projects": "Projects",
+      "Skills": "Skills",
+      "Experiences": "Experiences",
+      "Educations": "Educations",
+      "Portfolios": "Portfolios",
+      "TransportServices": "Transport Services",
+      "MapIcons": "Map Icons",
+      "BusLanes": "Bus Lanes",
+      "BusRoutes": "Bus Routes",
+      "BusSchedules": "Bus Schedules",
+      "BusStops": "Bus Stops",
+      "MapEditor": "Map Editor",
+      "Zones": "Zones"
   },
   "QuickAccess": {
     "Title": "Quick Access",

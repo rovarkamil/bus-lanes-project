@@ -26,7 +26,8 @@
     "Sales": "المبيعات",
     "Inventory": "المخزون",
     "Other": "أخرى",
-    "Portfolio": "المحفظة"
+      "Portfolio": "المحفظة",
+      "Transit": "النقل"
   },
   "Routes": {
     "Dashboard": "لوحة التحكم",
@@ -63,11 +64,19 @@
     "CreateSupplierRefund": "إنشاء استرداد شركة",
     "UpdateSupplierRefund": "تحديث استرداد شركة",
     "StickerPrints": "طباعة الملصقات",
-    "Projects": "المشاريع",
-    "Skills": "المهارات",
-    "Experiences": "الخبرات",
-    "Educations": "التعليم",
-    "Portfolios": "المحافظ"
+      "Projects": "المشاريع",
+      "Skills": "المهارات",
+      "Experiences": "الخبرات",
+      "Educations": "التعليم",
+      "Portfolios": "المحافظ",
+      "TransportServices": "خدمات النقل",
+      "MapIcons": "أيقونات الخريطة",
+      "BusLanes": "مسارات الحافلات",
+      "BusRoutes": "خطوط الحافلات",
+      "BusSchedules": "جداول الحافلات",
+      "BusStops": "محطات الحافلات",
+      "MapEditor": "محرر الخريطة",
+      "Zones": "المناطق"
   },
   "QuickAccess": {
     "Title": "الوصول السريع",

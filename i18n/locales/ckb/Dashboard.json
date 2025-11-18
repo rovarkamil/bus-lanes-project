@@ -26,7 +26,8 @@
     "Sales": "فرۆشتن",
     "Inventory": "کۆگا",
     "Other": "هیتر",
-    "Portfolio": "پۆرتفۆلیۆ"
+      "Portfolio": "پۆرتفۆلیۆ",
+      "Transit": "گواستنەوە"
   },
   "Routes": {
     "Dashboard": "داشبۆرد",
@@ -63,11 +64,19 @@
     "CreateSupplierRefund": "دروستکردنی گەڕاندنەوەی پارەی کۆمپانیا",
     "UpdateSupplierRefund": "نوێکردنەوەی گەڕاندنەوەی پارەی کۆمپانیا",
     "StickerPrints": "چاپکردنی ستیکەر",
-    "Projects": "پڕۆژەکان",
-    "Skills": "لێهاتووییەکان",
-    "Experiences": "ئەزموونەکان",
-    "Educations": "خوێندن",
-    "Portfolios": "پۆرتفۆلیۆکان"
+      "Projects": "پڕۆژەکان",
+      "Skills": "لێهاتووییەکان",
+      "Experiences": "ئەزموونەکان",
+      "Educations": "خوێندن",
+      "Portfolios": "پۆرتفۆلیۆکان",
+      "TransportServices": "خزمەتگوزارییەکانی گواستنەوە",
+      "MapIcons": "وێنۆچکەکانی نەخشە",
+      "BusLanes": "ڕێدەرەکانی بۆس",
+      "BusRoutes": "ڕێگاکانی بۆس",
+      "BusSchedules": "کاڵەنداڕی بۆس",
+      "BusStops": "وەستانەکانی بۆس",
+      "MapEditor": "دەستکاریکەری نەخشە",
+      "Zones": "ناوچەکان"
   },
   "QuickAccess": {
     "Title": "دەستگەیشتنی خێرا",
