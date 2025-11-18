@@ -92,5 +92,3 @@ export const { GET, POST, PUT, DELETE } = createEmployeeModelRoutes({
     },
   },
 });
-
-
