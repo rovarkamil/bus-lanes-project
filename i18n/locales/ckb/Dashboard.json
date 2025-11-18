@@ -101,7 +101,13 @@
     "ExperiencesDesc": "بەدواداچوونی ئەزموونی کارکردنت",
     "EducationsDesc": "بەڕێوەبردنی پاشبنەمای خوێندنت",
     "ContactsDesc": "بینین و وەڵامدانەوەی پەیامەکانی پەیوەندی",
-    "SocialMediaDesc": "بەڕێوەبردنی لینکەکانی تۆڕە کۆمەڵایەتییەکان"
+    "SocialMediaDesc": "بەڕێوەبردنی لینکەکانی تۆڕە کۆمەڵایەتییەکان",
+    "TransportServicesDesc": "بەڕێوەبردنی هەموو خزمەتگوزارییە گواستنەوەکان",
+    "BusRoutesDesc": "پلاندانان و ڕێکخستنی ڕێگاکانی بۆس",
+    "BusStopsDesc": "پشکنین و نوێکردنەوەی وەستانەکانی بۆس",
+    "BusLanesDesc": "پاراستنی نەخشەی ڕێدەرەکان",
+    "MapIconsDesc": "بارکردن و ڕێکخستنی وێنۆچکەکانی نەخشە",
+    "MapEditorDesc": "کردنەوەی دەستکاریکەری نەخشەی هاوبەش"
   },
   "Common": {
     "Open": "کردنەوە",
@@ -157,7 +163,15 @@
     "Experiences": "ئەزموونەکان",
     "ExperiencesDesc": "مێژووی ئەزموونی کارکردن",
     "Educations": "خوێندن",
-    "EducationsDesc": "پاشبنەمای خوێندن"
+    "EducationsDesc": "پاشبنەمای خوێندن",
+    "TransportServices": "خزمەتگوزارییەکانی گواستنەوە",
+    "TransportServicesDesc": "خزمەتگوزارییە چالاکەکان لە تۆڕەکەدا",
+    "BusRoutes": "ڕێگاکانی بۆس",
+    "BusRoutesDesc": "ڕێگاکانی بڵاوکراوە بۆ گەشتیاران",
+    "BusStops": "وەستانەکانی بۆس",
+    "BusStopsDesc": "وەستانە بەردەستەکان بۆ گەشتیاران",
+    "BusLanes": "ڕێدەرەکانی بۆس",
+    "BusLanesDesc": "ڕێدەرە نەخشەکراوەکان"
   },
   "Charts": {
     "Title": "شیکاری",
@@ -262,6 +276,35 @@
     "Updated": "ڕێکخستنەکان بەسەرکەوتوویی نوێکرانەوە",
     "Saving": "پاشەکەوتکردن...",
     "Save": "پاشەکەوت"
+  },
+  "Transit": {
+    "Overview": "پێشبینی گواستنەوە",
+    "Distributions": "دابەشکردنەکانی تۆڕ",
+    "ServiceTypeDistribution": "دابەشکردنی جورە خزمەتگوزارییەکان",
+    "ServiceTypeDistributionDesc": "خزمەتگوزارییە چالاکەکان بە جۆر",
+    "ZoneStopDistribution": "وەستانەکان بەپێی ناوچە",
+    "ZoneStopDistributionDesc": "چۆن وەستانەکان لە ناوچەکان دادەنرێن",
+    "LaneServiceDistribution": "ڕێدەر بەپێی خزمەتگوزاری",
+    "LaneServiceDistributionDesc": "دابەشکردنی ڕێدەرەکان لەسەر خزمەتگوزارییەکان",
+    "RecentActivity": "چالاکییە دوایین لە گواستنەوە",
+    "RecentActivityDesc": "دوایین زیادکردنەکان لە خزمەتگوزاری، ڕێگا، ڕێدەر و وەستانەکان",
+    "NoActivity": "هیچ چالاکییەکی نوێ نەدۆزرایەوە",
+    "NoData": "داتای پێویست بۆ پیشاندان بوونی نییە",
+    "UnassignedZone": "ناوچەی بێ ناو",
+    "UnassignedService": "خزمەتگوزاری دیاری نەکراو",
+    "Activity": {
+      "transportService": "خزمەتگوزاری گواستنەوە",
+      "busRoute": "ڕێگای بۆس",
+      "busLane": "ڕێدەری بۆس",
+      "busStop": "وەستانەی بۆس"
+    }
+  },
+  "ServiceTypes": {
+    "BUS": "بۆس",
+    "MINIBUS": "مینیبوس",
+    "TAXI": "تاکسی",
+    "SHARED_TAXI": "تاکسی هاوبەش",
+    "OTHER": "هیتر"
   },
   "EnableAutoHover": "چالاککردنی هۆڤەری ئۆتۆماتیک",
   "DisableAutoHover": "ناچالاککردنی هۆڤەری ئۆتۆماتیک",

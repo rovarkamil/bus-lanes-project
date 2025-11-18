@@ -101,7 +101,13 @@
     "ExperiencesDesc": "تتبع خبرتك العملية",
     "EducationsDesc": "إدارة خلفيتك التعليمية",
     "ContactsDesc": "عرض والرد على رسائل الاتصال",
-    "SocialMediaDesc": "إدارة روابط وسائل التواصل الاجتماعي"
+    "SocialMediaDesc": "إدارة روابط وسائل التواصل الاجتماعي",
+    "TransportServicesDesc": "إدارة جميع خدمات النقل",
+    "BusRoutesDesc": "تخطيط وتنظيم خطوط الحافلات",
+    "BusStopsDesc": "مراجعة وتحديث محطات الحافلات",
+    "BusLanesDesc": "صيانة مخططات مسارات الحافلات",
+    "MapIconsDesc": "رفع وتكوين أيقونات الخريطة",
+    "MapEditorDesc": "فتح محرر الخريطة التفاعلي"
   },
   "Common": {
     "Open": "فتح",
@@ -157,7 +163,15 @@
     "Experiences": "الخبرات",
     "ExperiencesDesc": "تاريخ الخبرة العملية",
     "Educations": "التعليم",
-    "EducationsDesc": "الخلفية التعليمية"
+    "EducationsDesc": "الخلفية التعليمية",
+    "TransportServices": "خدمات النقل",
+    "TransportServicesDesc": "الخدمات النشطة في الشبكة",
+    "BusRoutes": "خطوط الحافلات",
+    "BusRoutesDesc": "الخطوط المنشورة للركاب",
+    "BusStops": "محطات الحافلات",
+    "BusStopsDesc": "المحطات المتاحة للركاب",
+    "BusLanes": "مسارات الحافلات",
+    "BusLanesDesc": "المسارات المرسومة على الخريطة"
   },
   "Charts": {
     "Title": "التحليلات",
@@ -262,6 +276,35 @@
     "Updated": "تم تحديث الإعدادات بنجاح",
     "Saving": "جاري الحفظ...",
     "Save": "حفظ"
+  },
+  "Transit": {
+    "Overview": "نظرة عامة على النقل",
+    "Distributions": "توزيعات الشبكة",
+    "ServiceTypeDistribution": "توزيع أنواع الخدمات",
+    "ServiceTypeDistributionDesc": "الخدمات النشطة حسب النوع",
+    "ZoneStopDistribution": "المحطات حسب المنطقة",
+    "ZoneStopDistributionDesc": "كيفية توزيع المحطات عبر المناطق",
+    "LaneServiceDistribution": "المسارات لكل خدمة",
+    "LaneServiceDistributionDesc": "توزيع المسارات على الخدمات",
+    "RecentActivity": "آخر الأنشطة في النقل",
+    "RecentActivityDesc": "أحدث الإضافات على الخدمات والخطوط والمسارات والمحطات",
+    "NoActivity": "لا توجد نشاطات حديثة",
+    "NoData": "لا توجد بيانات كافية للعرض",
+    "UnassignedZone": "منطقة غير محددة",
+    "UnassignedService": "خدمة غير محددة",
+    "Activity": {
+      "transportService": "خدمة نقل",
+      "busRoute": "خط حافلة",
+      "busLane": "مسار حافلة",
+      "busStop": "محطة حافلات"
+    }
+  },
+  "ServiceTypes": {
+    "BUS": "حافلة",
+    "MINIBUS": "حافلة صغيرة",
+    "TAXI": "سيارة أجرة",
+    "SHARED_TAXI": "تاكسي مشترك",
+    "OTHER": "أخرى"
   },
   "EnableAutoHover": "تفعيل التمرير التلقائي",
   "DisableAutoHover": "إلغاء التمرير التلقائي",

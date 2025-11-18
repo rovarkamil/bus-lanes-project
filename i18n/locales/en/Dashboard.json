@@ -101,7 +101,13 @@
     "ExperiencesDesc": "Track your work experience",
     "EducationsDesc": "Manage your educational background",
     "ContactsDesc": "View and respond to contact messages",
-    "SocialMediaDesc": "Manage your social media links"
+    "SocialMediaDesc": "Manage your social media links",
+    "TransportServicesDesc": "Manage all transport services",
+    "BusRoutesDesc": "Plan and organize bus routes",
+    "BusStopsDesc": "Review and update bus stops",
+    "BusLanesDesc": "Maintain bus lane geometry",
+    "MapIconsDesc": "Upload and configure map icons",
+    "MapEditorDesc": "Open the interactive map editor"
   },
   "Common": {
     "Open": "Open",
@@ -157,7 +163,15 @@
     "Experiences": "Experiences",
     "ExperiencesDesc": "Work experience history",
     "Educations": "Educations",
-    "EducationsDesc": "Educational background"
+    "EducationsDesc": "Educational background",
+    "TransportServices": "Transport Services",
+    "TransportServicesDesc": "Active services in the network",
+    "BusRoutes": "Bus Routes",
+    "BusRoutesDesc": "Published passenger routes",
+    "BusStops": "Bus Stops",
+    "BusStopsDesc": "Stops available to riders",
+    "BusLanes": "Bus Lanes",
+    "BusLanesDesc": "Mapped dedicated lanes"
   },
   "Charts": {
     "Title": "Analytics",
@@ -262,6 +276,35 @@
     "Updated": "Settings updated successfully",
     "Saving": "Saving...",
     "Save": "Save"
+  },
+  "Transit": {
+    "Overview": "Transit Overview",
+    "Distributions": "Network Distributions",
+    "ServiceTypeDistribution": "Service Type Distribution",
+    "ServiceTypeDistributionDesc": "Active services grouped by type",
+    "ZoneStopDistribution": "Stops per Zone",
+    "ZoneStopDistributionDesc": "How stops are distributed across zones",
+    "LaneServiceDistribution": "Lanes per Service",
+    "LaneServiceDistributionDesc": "Lane assignments across services",
+    "RecentActivity": "Recent Transit Activity",
+    "RecentActivityDesc": "Latest additions across services, routes, lanes, and stops",
+    "NoActivity": "No recent activity found",
+    "NoData": "Not enough data to display",
+    "UnassignedZone": "Unassigned zone",
+    "UnassignedService": "Unassigned service",
+    "Activity": {
+      "transportService": "Transport Service",
+      "busRoute": "Bus Route",
+      "busLane": "Bus Lane",
+      "busStop": "Bus Stop"
+    }
+  },
+  "ServiceTypes": {
+    "BUS": "Bus",
+    "MINIBUS": "Minibus",
+    "TAXI": "Taxi",
+    "SHARED_TAXI": "Shared Taxi",
+    "OTHER": "Other"
   },
   "EnableAutoHover": "Enable Auto Hover",
   "DisableAutoHover": "Disable Auto Hover",

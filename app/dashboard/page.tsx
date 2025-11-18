@@ -12,158 +12,173 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import {
-  ShoppingBag,
-  Package,
-  DollarSign,
   Activity,
-  Truck,
-  Users,
-  FileBox,
-  BarChart as BarChartIcon,
+  BusFront,
+  Layers,
+  Map as MapIcon,
+  MapPin,
+  MapPinned,
+  Route as RouteIcon,
 } from "lucide-react";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { Bar, BarChart, Line, LineChart, XAxis, YAxis, Legend } from "recharts";
-import { Currency } from "@prisma/client";
+import { Bar, BarChart, Cell, XAxis, YAxis } from "recharts";
 import { useFetchDashboard } from "@/hooks/employee-hooks/use-dashboard";
-import { subMonths, format } from "date-fns";
+import { subMonths, format, formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-// import { Loader } from "@/components/loader";
-import { useState } from "react";
+
+type DistributionDatum = {
+  label: string;
+  count: number;
+  color?: string | null;
+};
 
 export default function DashboardPage() {
   const { t, i18n } = useTranslation("Dashboard");
   const isRTL = i18n.language !== "en";
   const router = useRouter();
-  const [timePeriod, setTimePeriod] = useState<"daily" | "monthly">("daily");
 
-  // Calculate date range - last 3 months
   const endDate = new Date();
   const startDate = subMonths(endDate, 3);
 
-  const { data: dashboardData, isLoading } = useFetchDashboard({
+  const { data: dashboardResponse, isLoading } = useFetchDashboard({
     startDate: format(startDate, "yyyy-MM-dd"),
     endDate: format(endDate, "yyyy-MM-dd"),
   });
-  const data = dashboardData?.data;
+  const data = dashboardResponse?.data;
 
-  // Quick access routes based on available routes
   const quickAccessRoutes = [
     {
-      title: t("Routes.Orders"),
-      description: t("QuickAccess.OrdersDesc"),
-      icon: <ShoppingBag className="h-6 w-6 text-primary" />,
-      path: "/dashboard/orders",
+      title: t("Routes.TransportServices"),
+      description: t("QuickAccess.TransportServicesDesc"),
+      icon: <BusFront className="h-6 w-6 text-primary" />,
+      path: "/dashboard/transport-services",
       color: "bg-primary/10",
     },
     {
-      title: t("Routes.Items"),
-      description: t("QuickAccess.ItemsDesc"),
-      icon: <Package className="h-6 w-6 text-primary" />,
-      path: "/dashboard/items",
+      title: t("Routes.BusRoutes"),
+      description: t("QuickAccess.BusRoutesDesc"),
+      icon: <RouteIcon className="h-6 w-6 text-primary" />,
+      path: "/dashboard/bus-routes",
       color: "bg-primary/10",
     },
     {
-      title: t("Routes.Suppliers"),
-      description: t("QuickAccess.SuppliersDesc"),
-      icon: <Truck className="h-6 w-6 text-primary" />,
-      path: "/dashboard/suppliers",
+      title: t("Routes.BusStops"),
+      description: t("QuickAccess.BusStopsDesc"),
+      icon: <MapPin className="h-6 w-6 text-primary" />,
+      path: "/dashboard/bus-stops",
       color: "bg-primary/10",
     },
     {
-      title: t("Routes.SupplierOrders"),
-      description: t("QuickAccess.SupplierOrdersDesc"),
-      icon: <FileBox className="h-6 w-6 text-primary" />,
-      path: "/dashboard/supplier-orders",
+      title: t("Routes.BusLanes"),
+      description: t("QuickAccess.BusLanesDesc"),
+      icon: <MapPinned className="h-6 w-6 text-primary" />,
+      path: "/dashboard/bus-lanes",
       color: "bg-primary/10",
     },
     {
-      title: t("Routes.Reports"),
-      description: t("QuickAccess.ReportsDesc"),
-      icon: <BarChartIcon className="h-6 w-6 text-primary" />,
-      path: "/dashboard/reports",
+      title: t("Routes.MapIcons"),
+      description: t("QuickAccess.MapIconsDesc"),
+      icon: <MapIcon className="h-6 w-6 text-primary" />,
+      path: "/dashboard/map-icons",
       color: "bg-primary/10",
     },
     {
-      title: t("Routes.Users"),
-      description: t("QuickAccess.UsersDesc"),
-      icon: <Users className="h-6 w-6 text-primary" />,
-      path: "/dashboard/users",
+      title: t("Routes.MapEditor"),
+      description: t("QuickAccess.MapEditorDesc"),
+      icon: <Layers className="h-6 w-6 text-primary" />,
+      path: "/dashboard/map-editor",
       color: "bg-primary/10",
     },
   ];
 
-  // Stats cards data
   const statsCards = [
     {
-      title: t("Stats.Revenue"),
-      value:
-        data?.revenue.total.toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }) || "0.00",
-      description: t("Stats.RevenueDesc"),
-      trend: data?.revenue.trend || "0%",
-      icon: <DollarSign className="h-4 w-4 text-primary" />,
+      key: "transportServices",
+      title: t("Stats.TransportServices"),
+      description: t("Stats.TransportServicesDesc"),
+      value: data?.totals.transportServices ?? 0,
+      trend: data?.trends.transportServices ?? 0,
+      icon: <BusFront className="h-4 w-4 text-primary" />,
     },
     {
-      title: t("Stats.Orders"),
-      value: data?.orders.total.toLocaleString() || "0",
-      description: t("Stats.OrdersDesc"),
-      trend: data?.orders.trend || "0%",
-      icon: <ShoppingBag className="h-4 w-4 text-primary" />,
+      key: "busRoutes",
+      title: t("Stats.BusRoutes"),
+      description: t("Stats.BusRoutesDesc"),
+      value: data?.totals.busRoutes ?? 0,
+      trend: data?.trends.busRoutes ?? 0,
+      icon: <RouteIcon className="h-4 w-4 text-primary" />,
     },
     {
-      title: t("Stats.Items"),
-      value: data?.items.total.toLocaleString() || "0",
-      description: t("Stats.ItemsDesc"),
-      trend: data?.items.trend || "N/A",
-      icon: <Package className="h-4 w-4 text-primary" />,
+      key: "busStops",
+      title: t("Stats.BusStops"),
+      description: t("Stats.BusStopsDesc"),
+      value: data?.totals.busStops ?? 0,
+      trend: data?.trends.busStops ?? 0,
+      icon: <MapPin className="h-4 w-4 text-primary" />,
     },
     {
-      title: t("Stats.Suppliers"),
-      value: data?.suppliers.total.toLocaleString() || "0",
-      description: t("Stats.SuppliersDesc"),
-      trend: data?.suppliers.trend || "N/A",
-      icon: <Truck className="h-4 w-4 text-primary" />,
+      key: "busLanes",
+      title: t("Stats.BusLanes"),
+      description: t("Stats.BusLanesDesc"),
+      value: data?.totals.busLanes ?? 0,
+      trend: data?.trends.busLanes ?? 0,
+      icon: <MapPinned className="h-4 w-4 text-primary" />,
     },
   ];
+
+  const serviceTypeChartData: DistributionDatum[] =
+    data?.serviceTypeDistribution.map((item) => ({
+      label: t(`ServiceTypes.${item.type}`),
+      count: item.count,
+    })) ?? [];
+
+  const zoneStopChartData: DistributionDatum[] =
+    data?.zoneStopDistribution.map((item) => ({
+      label: item.zoneName ?? t("Transit.UnassignedZone"),
+      count: item.count,
+      color: item.color,
+    })) ?? [];
+
+  const laneServiceChartData: DistributionDatum[] =
+    data?.laneServiceDistribution.map((item) => ({
+      label: item.serviceType
+        ? t(`ServiceTypes.${item.serviceType}`)
+        : t("Transit.UnassignedService"),
+      count: item.count,
+      color: item.color,
+    })) ?? [];
+
+  const recentActivity = data?.recentActivity ?? [];
 
   if (isLoading) {
     return (
       <div className="space-y-8" dir={isRTL ? "rtl" : "ltr"}>
-        {/* <div className="flex items-center justify-center h-20">
-          <Loader />
-        </div> */}
-
-        {/* Loading skeletons for stats cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((_, i) => (
-            <Card key={i} className="overflow-hidden">
+          {[1, 2, 3, 4].map((key) => (
+            <Card key={key} className="overflow-hidden">
               <CardHeader className="pb-2">
                 <Skeleton className="h-4 w-24" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="mb-2 h-8 w-16" />
                 <Skeleton className="h-3 w-32" />
               </CardContent>
             </Card>
           ))}
         </div>
-
-        {/* Loading skeletons for charts */}
-        <div className="grid gap-6 md:grid-cols-2">
-          {[1, 2].map((_, i) => (
-            <Card key={i} className="overflow-hidden">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((key) => (
+            <Card key={key}>
               <CardHeader>
-                <Skeleton className="h-5 w-32 mb-1" />
-                <Skeleton className="h-3 w-48" />
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-3 w-20" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-[300px] w-full" />
+                <Skeleton className="h-[220px] w-full" />
               </CardContent>
             </Card>
           ))}
@@ -172,24 +187,35 @@ export default function DashboardPage() {
     );
   }
 
+  const formatNumber = (value: number) =>
+    value.toLocaleString(i18n.language, {
+      maximumFractionDigits: 0,
+    });
+
+  const formatTrend = (value?: number) => {
+    if (value === undefined || Number.isNaN(value)) return "0%";
+    return `${value > 0 ? "+" : ""}${value.toFixed(1)}%`;
+  };
+
+  const trendClass = (value?: number) => {
+    if (!value) return "text-muted-foreground";
+    return value >= 0 ? "text-emerald-600" : "text-rose-600";
+  };
+
   return (
     <div className="space-y-8" dir={isRTL ? "rtl" : "ltr"}>
-      {/* Welcome Section */}
-      <section className="flex w-full justify-between">
-        <section className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight text-primary">
-            {t("Welcome.Title")}
-          </h1>
-          <p className="text-muted-foreground">{t("Welcome.Subtitle")}</p>
-          <p className="text-sm text-muted-foreground">
-            {t("Stats.DateRange")}: {format(startDate, "MMMM d, yyyy")} -{" "}
-            {format(endDate, "MMMM d, yyyy")}
-          </p>
-        </section>
+      <section className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight text-primary">
+          {t("Welcome.Title")}
+        </h1>
+        <p className="text-muted-foreground">{t("Welcome.Subtitle")}</p>
+        <p className="text-sm text-muted-foreground">
+          {t("Stats.DateRange")}: {format(startDate, "MMMM d, yyyy")} -{" "}
+          {format(endDate, "MMMM d, yyyy")}
+        </p>
       </section>
 
-      {/* Quick Access Section */}
-      <section className="space-y-6">
+      <section className="space-y-4">
         <h2 className="text-xl font-semibold tracking-tight text-primary">
           {t("QuickAccess.Title")}
         </h2>
@@ -204,7 +230,7 @@ export default function DashboardPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="hover:bg-primary/10 text-primary"
+                    className="text-primary hover:bg-primary/10"
                     onClick={() => router.push(item.path)}
                   >
                     {t("Common.Open")} {isRTL ? "←" : "→"}
@@ -218,15 +244,14 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="space-y-6" dir={isRTL ? "rtl" : "ltr"}>
+      <section className="space-y-4">
         <h2 className="text-xl font-semibold tracking-tight text-primary">
-          {t("Stats.Title")}
+          {t("Transit.Overview")}
         </h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {statsCards.map((stat, index) => (
-            <Card key={index}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          {statsCards.map((stat) => (
+            <Card key={stat.key}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">
                   {stat.title}
                 </CardTitle>
@@ -234,14 +259,18 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {stat.value} {stat.title === t("Stats.Revenue") ? "IQD" : ""}
+                  {formatNumber(stat.value)}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {stat.description}
                 </p>
-                <div className="mt-2 flex items-center gap-1 text-xs text-primary">
+                <div
+                  className={`mt-2 flex items-center gap-1 text-xs ${trendClass(
+                    stat.trend
+                  )}`}
+                >
                   <Activity className="h-3 w-3" />
-                  {stat.trend}
+                  {formatTrend(stat.trend)}
                 </div>
               </CardContent>
             </Card>
@@ -249,287 +278,122 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Charts Section */}
-      <section className="space-y-6" dir={isRTL ? "rtl" : "ltr"}>
+      <section className="space-y-4">
         <h2 className="text-xl font-semibold tracking-tight text-primary">
-          {t("Charts.Title")}
+          {t("Transit.Distributions")}
         </h2>
-
-        {/* Mobile message */}
-        <div
-          className="flex items-center justify-center p-6 md:hidden"
-          dir={isRTL ? "rtl" : "ltr"}
-        >
-          <p className="text-center text-sm text-muted-foreground">
-            {t("Charts.MobileMessage")}
-          </p>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <DistributionCard
+            title={t("Transit.ServiceTypeDistribution")}
+            description={t("Transit.ServiceTypeDistributionDesc")}
+            data={serviceTypeChartData}
+            noDataLabel={t("Transit.NoData")}
+          />
+          <DistributionCard
+            title={t("Transit.ZoneStopDistribution")}
+            description={t("Transit.ZoneStopDistributionDesc")}
+            data={zoneStopChartData}
+            noDataLabel={t("Transit.NoData")}
+          />
+          <DistributionCard
+            title={t("Transit.LaneServiceDistribution")}
+            description={t("Transit.LaneServiceDistributionDesc")}
+            data={laneServiceChartData}
+            noDataLabel={t("Transit.NoData")}
+          />
         </div>
+      </section>
 
-        {/* Charts grid - hidden on mobile */}
-        <div
-          className="hidden md:grid gap-6 2xl:grid-cols-2"
-          dir={isRTL ? "rtl" : "ltr"}
-        >
-          {/* Revenue Analysis */}
-          <Card dir={isRTL ? "rtl" : "ltr"}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>{t("Charts.RevenueAnalysis")}</CardTitle>
-                  <CardDescription>
-                    {t("Charts.RevenueAnalysisDesc")}
-                  </CardDescription>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant={timePeriod === "daily" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setTimePeriod("daily")}
-                  >
-                    {t("Charts.Daily")}
-                  </Button>
-                  <Button
-                    variant={timePeriod === "monthly" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setTimePeriod("monthly")}
-                  >
-                    {t("Charts.Monthly")}
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent dir={"ltr"}>
-              <ChartContainer className="h-[300px]" config={{}} dir={"ltr"}>
-                <LineChart
-                  data={
-                    data?.salesData?.[timePeriod as "daily" | "monthly"] || []
-                  }
-                >
-                  <XAxis dataKey="date" />
-                  <YAxis yAxisId="revenue" orientation="left" />
-                  <YAxis yAxisId="orders" orientation="right" />
-                  <Legend />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line
-                    type="monotone"
-                    dataKey="revenue"
-                    name={t("Stats.Revenue")}
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={2}
-                    yAxisId="revenue"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="orders"
-                    name={t("Stats.Orders")}
-                    stroke="hsl(var(--destructive))"
-                    strokeWidth={2}
-                    yAxisId="orders"
-                  />
-                </LineChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
-          {/* Inventory Status Distribution */}
-          <Card dir={isRTL ? "rtl" : "ltr"}>
-            <CardHeader>
-              <CardTitle>{t("Charts.InventoryStatus")}</CardTitle>
-              <CardDescription>
-                {t("Charts.InventoryStatusDesc")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent dir={"ltr"}>
-              <ChartContainer className="h-[300px]" config={{}}>
-                <BarChart data={data?.inventoryStatus || []}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="value" fill="hsl(var(--primary))" />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
-          {/* Top Selling Items */}
-          <Card dir={isRTL ? "rtl" : "ltr"}>
-            <CardHeader>
-              <CardTitle>{t("Charts.TopSellingItems")}</CardTitle>
-              <CardDescription>
-                {t("Charts.TopSellingItemsDesc")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent dir={"ltr"}>
-              <ChartContainer className="h-[300px]" config={{}}>
-                <BarChart data={data?.topSellingItems || []} layout="vertical">
-                  <XAxis type="number" />
-                  <YAxis dataKey="name" type="category" width={100} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="quantity" fill="hsl(var(--primary))" />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
-          {/* Top Revenue Items */}
-          <Card dir={isRTL ? "rtl" : "ltr"}>
-            <CardHeader>
-              <CardTitle>{t("Charts.TopRevenueItems")}</CardTitle>
-              <CardDescription>
-                {t("Charts.TopRevenueItemsDesc")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent dir={"ltr"}>
-              <ChartContainer className="h-[300px]" config={{}}>
-                <BarChart data={data?.topRevenueItems || []} layout="vertical">
-                  <XAxis type="number" />
-                  <YAxis dataKey="name" type="category" width={100} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="revenue" fill="hsl(var(--primary))" />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
-          {/* Recent Orders */}
-          <Card dir={isRTL ? "rtl" : "ltr"}>
-            <CardHeader>
-              <CardTitle>{t("Charts.RecentOrders")}</CardTitle>
-              <CardDescription>{t("Charts.RecentOrdersDesc")}</CardDescription>
-            </CardHeader>
-            <CardContent dir={isRTL ? "rtl" : "ltr"}>
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold tracking-tight text-primary">
+          {t("Transit.RecentActivity")}
+        </h2>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("Transit.RecentActivity")}</CardTitle>
+            <CardDescription>{t("Transit.RecentActivityDesc")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {recentActivity.length ? (
               <div className="space-y-4">
-                {data?.recentOrders?.length ? (
-                  data.recentOrders.map((order) => (
-                    <div
-                      key={order.id}
-                      className="flex items-center justify-between border-b pb-2 last:border-0"
-                    >
-                      <div className="flex items-center gap-2">
-                        <ShoppingBag className="h-4 w-4 text-primary" />
-                        <div>
-                          <p className="text-sm font-medium">
-                            {order.orderNumber}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Intl.NumberFormat(i18n.language, {
-                              style: "currency",
-                              currency:
-                                order.currency === Currency.USD ? "USD" : "IQD",
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            }).format(order.totalAmount)}
-                          </p>
-                        </div>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(order.createdAt).toLocaleDateString()}
+                {recentActivity.map((item) => (
+                  <div
+                    key={`${item.entity}-${item.id}`}
+                    className="flex flex-col gap-1 border-b pb-3 last:border-b-0 last:pb-0"
+                  >
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span className="font-semibold uppercase tracking-wide">
+                        {t(`Transit.Activity.${item.entity}`)}
+                      </span>
+                      <span>
+                        {formatDistanceToNow(new Date(item.createdAt), {
+                          addSuffix: true,
+                        })}
                       </span>
                     </div>
-                  ))
-                ) : (
-                  <p className="text-center text-muted-foreground">
-                    {t("Charts.NoRecentOrders")}
-                  </p>
-                )}
+                    <p className="text-sm font-medium">{item.name}</p>
+                    {item.detail && (
+                      <p className="text-xs text-muted-foreground">
+                        {item.detail}
+                      </p>
+                    )}
+                  </div>
+                ))}
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Category Distribution */}
-          <Card dir={isRTL ? "rtl" : "ltr"}>
-            <CardHeader>
-              <CardTitle>{t("Charts.CategoryDistribution")}</CardTitle>
-              <CardDescription>
-                {t("Charts.CategoryDistributionDesc")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent dir={"ltr"}>
-              <ChartContainer className="h-[300px]" config={{}}>
-                <BarChart data={data?.categoryStats || []}>
-                  <XAxis dataKey="name" />
-                  <YAxis yAxisId="items" orientation="left" />
-                  <YAxis yAxisId="stock" orientation="right" />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar
-                    dataKey="itemCount"
-                    name={t("Charts.ItemCount")}
-                    fill="hsl(var(--primary))"
-                    yAxisId="items"
-                  />
-                  <Bar
-                    dataKey="stockCount"
-                    name={t("Charts.StockCount")}
-                    fill="hsl(var(--destructive))"
-                    yAxisId="stock"
-                  />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
-          {/* Payment Type Distribution */}
-          <Card dir={isRTL ? "rtl" : "ltr"}>
-            <CardHeader>
-              <CardTitle>{t("Charts.PaymentDistribution")}</CardTitle>
-              <CardDescription>
-                {t("Charts.PaymentDistributionDesc")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent dir={"ltr"}>
-              <ChartContainer className="h-[300px]" config={{}}>
-                <BarChart data={data?.paymentStats || []}>
-                  <XAxis dataKey="type" />
-                  <YAxis yAxisId="count" orientation="left" />
-                  <YAxis yAxisId="amount" orientation="right" />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar
-                    dataKey="count"
-                    name={t("Charts.OrderCount")}
-                    fill="hsl(var(--primary))"
-                    yAxisId="count"
-                  />
-                  <Bar
-                    dataKey="amount"
-                    name={t("Charts.TotalAmount")}
-                    fill="hsl(var(--destructive))"
-                    yAxisId="amount"
-                  />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
-          {/* Supplier Balances */}
-          <Card dir={isRTL ? "rtl" : "ltr"}>
-            <CardHeader>
-              <CardTitle>{t("Charts.SupplierBalances")}</CardTitle>
-              <CardDescription>
-                {t("Charts.SupplierBalancesDesc")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent dir={"ltr"}>
-              <ChartContainer className="h-[300px]" config={{}}>
-                <BarChart data={data?.supplierBalances || []} layout="vertical">
-                  <XAxis type="number" />
-                  <YAxis dataKey="name" type="category" width={100} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar
-                    dataKey="iqdBalance"
-                    name="IQD Balance"
-                    fill="hsl(var(--primary))"
-                  />
-                  <Bar
-                    dataKey="usdBalance"
-                    name="USD Balance"
-                    fill="hsl(var(--destructive))"
-                  />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {t("Transit.NoActivity")}
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </section>
     </div>
   );
 }
+
+const DistributionCard = ({
+  title,
+  description,
+  data,
+  noDataLabel,
+}: {
+  title: string;
+  description: string;
+  data: DistributionDatum[];
+  noDataLabel: string;
+}) => (
+  <Card>
+    <CardHeader>
+      <CardTitle>{title}</CardTitle>
+      <CardDescription>{description}</CardDescription>
+    </CardHeader>
+    <CardContent>
+      {data.length ? (
+        <ChartContainer className="h-[260px]" config={{}}>
+          <BarChart data={data}>
+            <XAxis
+              dataKey="label"
+              tick={{ fontSize: 12 }}
+              interval={0}
+              height={60}
+              angle={-10}
+            />
+            <YAxis />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <Bar dataKey="count">
+              {data.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={entry.color ?? "hsl(var(--primary))"}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ChartContainer>
+      ) : (
+        <p className="text-sm text-muted-foreground">{noDataLabel}</p>
+      )}
+    </CardContent>
+  </Card>
+);
