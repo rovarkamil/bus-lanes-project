@@ -729,7 +729,14 @@ export type Namespace =
   | "SupplierRefunds"
   | "SupplierPayments"
   | "BarcodePrints"
-  | "CashierSessionTransfers";
+  | "CashierSessionTransfers"
+  | "TransportServices"
+  | "BusStops"
+  | "BusLanes"
+  | "BusRoutes"
+  | "BusSchedules"
+  | "Zones"
+  | "MapIcons";
 
 export type TranslationFunctions = {
   [K in Namespace]?: (key: string, options?: Record<string, string>) => string;
