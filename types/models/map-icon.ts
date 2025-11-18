@@ -59,7 +59,7 @@ const baseAnchorSchema = positiveIntSchema.max(512);
 const baseMapIconSchema = z.object({
   nameFields: languageFieldsSchema,
   descriptionFields: descriptionFieldsSchema.optional(),
-  fileId: uuidSchema,
+  file: z.any(),
   iconSize: positiveIntSchema.min(16).max(128).default(32),
   iconAnchorX: baseAnchorSchema.default(16),
   iconAnchorY: baseAnchorSchema.default(32),
@@ -108,7 +108,7 @@ export type MapIconFormProps<T extends CreateMapIconData | UpdateMapIconData> =
 export const MAP_ICON_FORM_PATHS = {
   nameFields: "nameFields",
   descriptionFields: "descriptionFields",
-  fileId: "fileId",
+  file: "file",
   iconSize: "iconSize",
   iconAnchorX: "iconAnchorX",
   iconAnchorY: "iconAnchorY",
@@ -179,7 +179,7 @@ export const MAP_ICON_FORM_FIELDS: FormFieldDefinition[] = [
     isOptional: true,
   },
   {
-    key: "fileId",
+    key: "file",
     label: "File",
     icon: ImageIcon,
     type: "file",
@@ -226,7 +226,7 @@ export const MAP_ICON_FORM_SECTIONS: FormSectionDefinition[] = [
   {
     title: "BasicInformation",
     fields: MAP_ICON_FORM_FIELDS.filter((field) =>
-      ["nameFields", "descriptionFields", "fileId"].includes(field.key)
+      ["nameFields", "descriptionFields", "file"].includes(field.key)
     ),
   },
   {

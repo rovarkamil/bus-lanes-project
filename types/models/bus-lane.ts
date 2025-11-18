@@ -68,7 +68,7 @@ const baseBusLaneSchema = z.object({
   color: hexColorSchema.default("#0066CC"),
   weight: positiveIntSchema.min(1).max(20).default(5),
   opacity: percentageSchema.default(0.8),
-  imageIds: z.array(uuidSchema).optional(),
+  images: z.array(z.any()).optional(),
   stopIds: z.array(uuidSchema).optional(),
   routeIds: z.array(uuidSchema).optional(),
   serviceId: uuidSchema.nullable().optional(),
@@ -117,7 +117,7 @@ export const BUS_LANE_FORM_PATHS = {
   color: "color",
   weight: "weight",
   opacity: "opacity",
-  imageIds: "imageIds",
+  images: "images",
   stopIds: "stopIds",
   routeIds: "routeIds",
   serviceId: "serviceId",
@@ -210,7 +210,7 @@ export const BUS_LANE_FORM_FIELDS: FormFieldDefinition[] = [
     type: "number",
   },
   {
-    key: "imageIds",
+    key: "images",
     label: "Images",
     icon: ImageIcon,
     type: "file",
@@ -255,7 +255,7 @@ export const BUS_LANE_FORM_SECTIONS: FormSectionDefinition[] = [
   {
     title: "Display",
     fields: BUS_LANE_FORM_FIELDS.filter((field) =>
-      ["weight", "opacity", "imageIds", "isActive"].includes(field.key)
+      ["weight", "opacity", "images", "isActive"].includes(field.key)
     ),
   },
   {

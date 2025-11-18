@@ -85,7 +85,7 @@ const baseBusStopSchema = z.object({
     .min(-90, "Latitude|Validation.Errors.Min")
     .max(90, "Latitude|Validation.Errors.Max"),
   longitude: coordinateSchema,
-  imageIds: z.array(uuidSchema).optional(),
+  images: z.array(z.any()).optional(),
   laneIds: z.array(uuidSchema).optional(),
   routeIds: z.array(uuidSchema).optional(),
   iconId: uuidSchema.nullable().optional(),
@@ -153,7 +153,7 @@ export const BUS_STOP_FORM_PATHS = {
   descriptionFields: "descriptionFields",
   latitude: "latitude",
   longitude: "longitude",
-  imageIds: "imageIds",
+  images: "images",
   iconId: "iconId",
   zoneId: "zoneId",
   hasShelter: "hasShelter",
@@ -239,7 +239,7 @@ export const BUS_STOP_FORM_FIELDS: FormFieldDefinition[] = [
     type: "number",
   },
   {
-    key: "imageIds",
+    key: "images",
     label: "Images",
     icon: ImageIcon,
     type: "file",
@@ -316,7 +316,7 @@ export const BUS_STOP_FORM_SECTIONS: FormSectionDefinition[] = [
   {
     title: "MediaAndRelations",
     fields: BUS_STOP_FORM_FIELDS.filter((field) =>
-      ["imageIds", "iconId", "zoneId"].includes(field.key)
+      ["images", "iconId", "zoneId"].includes(field.key)
     ),
   },
   {
