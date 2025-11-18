@@ -1,0 +1,20 @@
+{
+  "Fields": {
+    "name": "ناو",
+    "username": "ناوی بەکارهێنەر",
+    "password": "وشەی نهێنی",
+    "email": "ناونیشانی ئیمەیل",
+    "phone": "ژمارەی تەلەفۆن",
+    "roleId": "ڕۆڵ",
+    "userType": "جۆری بەکارهێنەر",
+    "balance": "باڵانس",
+    "isVerified": "دۆخی پشتڕاستکراوە",
+    "isBanned": "دۆخی قەدەغەکردن",
+    "createdAt": "دروستکراوە لە",
+    "updatedAt": "نوێکراوەتەوە لە",
+    "deletedAt": "سڕاوەتەوە لە"
+  },
+  "Validation": {
+    "AlreadyExists": "ئەم {{field}} پێشتر بەکارهێنراوە"
+  }
+}

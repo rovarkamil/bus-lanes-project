@@ -1,0 +1,100 @@
+{
+  "SettingsTitle": "الإعدادات",
+  "ManageSystemSettings": "إدارة إعدادات وتكوينات النظام",
+  "CreateSettings": "إنشاء إعدادات",
+  "LoadingSettings": "جاري تحميل الإعدادات...",
+  "NoSettingsFound": "لم يتم العثور على إعدادات",
+  "AreYouSure": "هل أنت متأكد؟",
+  "AreYouSureYouWantToDeleteThisSetting": "هل أنت متأكد أنك تريد حذف هذا الإعداد؟",
+  "Cancel": "إلغاء",
+  "Submit": "إرسال",
+  "Submitting": "جاري الإرسال...",
+  "Deleting": "جاري الحذف...",
+  "Delete": "حذف",
+  "Key": "المفتاح",
+  "Value": "القيمة",
+  "Type": "النوع",
+  "IsLocked": "مقفل",
+  "Created": "تم الإنشاء",
+  "Updated": "تم التحديث",
+  "Actions": "الإجراءات",
+  "Yes": "نعم",
+  "No": "لا",
+  "TotalItems": "إجمالي العناصر",
+  "Rows": "الصفوف",
+  "DisplayLimit": "الحد المعروض",
+  "CreatedAt": "تم الإنشاء في",
+  "UpdatedAt": "تم التحديث في",
+  "DeletedAt": "تم الحذف في",
+  "Types": {
+    "STRING": "نص",
+    "NUMBER": "رقم",
+    "BOOLEAN": "منطقي",
+    "DATE": "تاريخ",
+    "JSON": "JSON"
+  },
+  "ViewDetails": "عرض التفاصيل",
+  "UpdateSetting": "تحديث الإعداد",
+  "ViewDialog": {
+    "Description": "عرض تفاصيل الإعداد",
+    "Deleted": "محذوف",
+    "Active": "نشط",
+    "Details": "التفاصيل",
+    "BasicInformation": "المعلومات الأساسية",
+    "ActivityInformation": "معلومات النشاط"
+  },
+  "CreateDialog": {
+    "Title": "إنشاء إعداد",
+    "Description": "إنشاء إعداد نظام جديد",
+    "Key": "المفتاح",
+    "KeyPlaceholder": "أدخل مفتاح الإعداد",
+    "Value": "القيمة",
+    "ValuePlaceholder": "أدخل قيمة الإعداد",
+    "Type": "النوع",
+    "TypePlaceholder": "اختر نوع الإعداد"
+  },
+  "UpdateDialog": {
+    "Title": "تحديث الإعداد",
+    "Description": "تحديث إعداد النظام الحالي",
+    "Key": "المفتاح",
+    "KeyPlaceholder": "أدخل مفتاح الإعداد",
+    "Value": "القيمة",
+    "ValuePlaceholder": "أدخل قيمة الإعداد",
+    "Type": "النوع",
+    "TypePlaceholder": "اختر نوع الإعداد"
+  },
+  "FilterDialog": {
+    "Title": "تصفية الإعدادات",
+    "Description": "تصفية الإعدادات حسب معايير مختلفة",
+    "ApplyFilters": "تطبيق التصفية",
+    "BasicFilters": "التصفية الأساسية",
+    "DateFilters": "تصفية التاريخ",
+    "Key": "المفتاح",
+    "KeyPlaceholder": "تصفية حسب المفتاح",
+    "Type": "النوع",
+    "TypePlaceholder": "تصفية حسب النوع",
+    "CreatedAt": "تم الإنشاء في",
+    "UpdatedAt": "تم التحديث في",
+    "DeletedAt": "تم الحذف في",
+    "PickADate": "اختر تاريخًا",
+    "SettingTypes": {
+      "STRING": "نص",
+      "NUMBER": "رقم",
+      "BOOLEAN": "منطقي",
+      "DATE": "تاريخ",
+      "JSON": "JSON"
+    }
+  },
+  "Success": {
+    "Created": "تم إنشاء الإعداد بنجاح",
+    "Updated": "تم تحديث الإعداد بنجاح",
+    "Deleted": "تم حذف الإعداد بنجاح"
+  },
+  "Validation": {
+    "Errors": {
+      "TooShort": "المفتاح قصير جدًا",
+      "TooLong": "المفتاح طويل جدًا",
+      "InvalidUuid": "تنسيق المعرف غير صالح"
+    }
+  }
+}

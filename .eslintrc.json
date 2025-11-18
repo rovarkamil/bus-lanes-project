@@ -1,0 +1,69 @@
+{
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "plugins": ["@zohodesk/no-hardcoding"],
+
+  "rules": {
+    // "@zohodesk/no-hardcoding/no-hardcoding": [
+    //   "error",
+    //   {
+    //     "props": [
+    //       "className",
+    //       "dataId",
+    //       "id",
+    //       "type",
+    //       "name",
+    //       "style",
+    //       "href",
+    //       "src",
+    //       "alt",
+    //       "title",
+    //       "side",
+    //       "orientation",
+    //       "variant",
+    //       "placeholder",
+    //       "align",
+    //       "dir",
+    //       "role",
+    //       "icon",
+    //       "size",
+    //       "cn",
+    //       "defaultValue",
+    //       "value",
+    //       "mode",
+    //       "aria-label",
+    //       "aria-labelledby",
+    //       "aria-describedby",
+    //       "position"
+    //     ],
+    //     "objectKeys": ["className", "dataId", "iconSize", "boxSize"],
+    //     "methods": [
+    //       "findIndex",
+    //       "includes",
+    //       "addEventListener",
+    //       "getElementById",
+    //       "querySelector"
+    //     ],
+    //     "allowedTags": ["svg", "path", "g", "rect"],
+    //     "keys": ["use client", "\"use client\"", "'use client'"],
+    //     "commentsToIgnoreHardcodingCheck": ["no i18n"],
+    //     "stringsAllowedAsBlockCommentStart": ["ignore i18n start"],
+    //     "stringsAllowedAsBlockCommentEnd": ["ignore i18n end"],
+    //     "dateFormatPatterns": [
+    //       "DD MMM YYYY hh:mm A",
+    //       "YYYY-MM-DD",
+    //       "MM/DD/YYYY"
+    //     ],
+    //     "ignorePatterns": ["\"use client\"", "'use client'", "use client"]
+    //   }
+    // ],
+    "@zohodesk/no-hardcoding/no-hardcoding": "off",
+    "@zohodesk/no-hardcoding/use-getI18NValue-method-appropriately": [
+      "error",
+      {
+        "i18nKeys": [],
+        "commentsToIgnoreCheck": ["no i18n"]
+      }
+    ]
+  },
+  "ignorePatterns": ["components/ui/**/*"]
+}

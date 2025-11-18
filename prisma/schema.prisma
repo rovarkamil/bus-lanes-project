@@ -1,0 +1,514 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Permission {
+  VIEW_AUDIT_LOGS
+  VIEW_DASHBOARD
+  VIEW_REPORTS
+  UPDATE_SETTINGS
+  CHANGE_USD_PRICE
+
+  VIEW_USERS
+  CREATE_USER
+  UPDATE_USER
+  DELETE_USER
+
+  VIEW_ROLES
+  CREATE_ROLE
+  UPDATE_ROLE
+  DELETE_ROLE
+
+  VIEW_TRANSPORT_SERVICES
+  CREATE_TRANSPORT_SERVICE
+  UPDATE_TRANSPORT_SERVICE
+  DELETE_TRANSPORT_SERVICE
+
+  VIEW_BUS_STOPS
+  CREATE_BUS_STOP
+  UPDATE_BUS_STOP
+  DELETE_BUS_STOP
+
+  VIEW_BUS_LANES
+  CREATE_BUS_LANE
+  UPDATE_BUS_LANE
+  DELETE_BUS_LANE
+
+  VIEW_BUS_ROUTES
+  CREATE_BUS_ROUTE
+  UPDATE_BUS_ROUTE
+  DELETE_BUS_ROUTE
+
+  VIEW_MAP_ICONS
+  CREATE_MAP_ICON
+  UPDATE_MAP_ICON
+  DELETE_MAP_ICON
+
+  VIEW_ZONES
+  CREATE_ZONE
+  UPDATE_ZONE
+  DELETE_ZONE
+
+  VIEW_BUS_SCHEDULES
+  CREATE_BUS_SCHEDULE
+  UPDATE_BUS_SCHEDULE
+  DELETE_BUS_SCHEDULE
+
+  VIEW_MAP_EDITOR
+  EDIT_MAP
+}
+
+enum UserType {
+  SUPER_ADMIN
+  ADMIN
+  EMPLOYEE
+  CLIENT
+}
+
+enum RequestMethod {
+  GET
+  POST
+  PUT
+  DELETE
+  UNKNOWN
+}
+
+enum SettingType {
+  STRING
+  NUMBER
+  BOOLEAN
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+  OTHER
+  JSON
+  DATE
+}
+
+enum Currency {
+  USD
+  IQD
+}
+
+enum PaymentType {
+  PAID
+  NOT_PAID
+}
+
+enum TransportServiceType {
+  BUS
+  MINIBUS
+  TAXI
+  SHARED_TAXI
+  OTHER
+}
+
+enum RouteDirection {
+  OUTBOUND
+  INBOUND
+  CIRCULAR
+  BIDIRECTIONAL
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model Language {
+  id String @id @default(uuid())
+
+  en  String
+  ar  String?
+  ckb String?
+
+  // Transport Service relations
+  transportServiceNames        TransportService[] @relation("TransportServiceName")
+  transportServiceDescriptions TransportService[] @relation("TransportServiceDescription")
+
+  // Bus Stop relations
+  busStopNames        BusStop[] @relation("BusStopName")
+  busStopDescriptions BusStop[] @relation("BusStopDescription")
+
+  // Bus Lane relations
+  busLaneNames        BusLane[] @relation("BusLaneName")
+  busLaneDescriptions BusLane[] @relation("BusLaneDescription")
+
+  // Bus Route relations
+  busRouteNames        BusRoute[] @relation("BusRouteName")
+  busRouteDescriptions BusRoute[] @relation("BusRouteDescription")
+
+  // Map Icon relations
+  mapIconNames        MapIcon[] @relation("MapIconName")
+  mapIconDescriptions MapIcon[] @relation("MapIconDescription")
+
+  // Zone relations
+  zoneNames        Zone[] @relation("ZoneName")
+  zoneDescriptions Zone[] @relation("ZoneDescription")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model File {
+  id String @id @default(uuid())
+
+  url  String
+  type String?
+  name String?
+  size Float?
+
+  uploadedBy User? @relation(fields: [uploadedById], references: [id])
+
+  uploadedById String?
+
+  // Bus mapping relations
+  busStops BusStop[]
+  busLanes BusLane[]
+
+  // Icon relations
+  mapIcons MapIcon[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model Role {
+  id String @id @default(uuid())
+
+  name        String
+  kurdishName String?
+  arabicName  String?
+
+  permissions Permission[]
+  users       User[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@index([updatedAt])
+}
+
+model User {
+  id String @id @default(uuid())
+
+  name                 String
+  username             String    @unique
+  password             String
+  userType             UserType  @default(EMPLOYEE)
+  lastLoginDateAndTime DateTime?
+  lastLoginIp          String?
+  ipAddresses          String[]
+  balance              Float     @default(0)
+  bypassOTP            Boolean   @default(true)
+  token                String?
+
+  auditLogs AuditLog[]
+  files     File[]
+  role      Role?      @relation(fields: [roleId], references: [id])
+  roleId    String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@index([updatedAt])
+}
+
+model AuditLog {
+  id String @id @default(uuid())
+
+  action        String
+  entityType    String
+  entityId      String
+  details       Json?
+  path          String?
+  method        RequestMethod @default(UNKNOWN)
+  status        Int?
+  ipAddress     String?
+  userAgent     String?
+  duration      Int?
+  requestId     String?
+  correlationId String?
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@index([updatedAt])
+}
+
+model Setting {
+  id  String @id @default(uuid())
+  key String @unique
+
+  value    String
+  type     SettingType @default(STRING)
+  isLocked Boolean     @default(true)
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@index([updatedAt])
+}
+
+model MapIcon {
+  id String @id @default(uuid())
+
+  name          Language? @relation("MapIconName", fields: [nameId], references: [id])
+  nameId        String?
+  description   Language? @relation("MapIconDescription", fields: [descriptionId], references: [id])
+  descriptionId String?
+
+  file   File   @relation(fields: [fileId], references: [id])
+  fileId String
+
+  // Icon size for map display (in pixels)
+  iconSize     Int? @default(32)
+  iconAnchorX  Int? @default(16) // X anchor point
+  iconAnchorY  Int? @default(32) // Y anchor point
+  popupAnchorX Int? @default(0) // Popup anchor X
+  popupAnchorY Int? @default(-32) // Popup anchor Y
+
+  isActive Boolean @default(true)
+
+  transportServices TransportService[]
+  busStops          BusStop[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([fileId])
+}
+
+model Zone {
+  id String @id @default(uuid())
+
+  name          Language? @relation("ZoneName", fields: [nameId], references: [id])
+  nameId        String?
+  description   Language? @relation("ZoneDescription", fields: [descriptionId], references: [id])
+  descriptionId String?
+
+  color    String? @default("#FF6B6B")
+  isActive Boolean @default(true)
+
+  stops BusStop[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@index([updatedAt])
+}
+
+model TransportService {
+  id   String               @id @default(uuid())
+  type TransportServiceType @default(BUS)
+
+  name          Language? @relation("TransportServiceName", fields: [nameId], references: [id])
+  nameId        String?
+  description   Language? @relation("TransportServiceDescription", fields: [descriptionId], references: [id])
+  descriptionId String?
+
+  color  String?  @default("#0066CC")
+  icon   MapIcon? @relation(fields: [iconId], references: [id])
+  iconId String?
+
+  // Service details
+  capacity      Int? // Vehicle capacity
+  operatingFrom String? // Operating hours start (e.g., "06:00")
+  operatingTo   String? // Operating hours end (e.g., "22:00")
+  isActive      Boolean @default(true)
+
+  routes BusRoute[]
+  lanes  BusLane[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([type])
+  @@index([iconId])
+}
+
+model BusStop {
+  id String @id @default(uuid())
+
+  latitude  Float
+  longitude Float
+
+  name          Language? @relation("BusStopName", fields: [nameId], references: [id])
+  nameId        String?
+  description   Language? @relation("BusStopDescription", fields: [descriptionId], references: [id])
+  descriptionId String?
+
+  images    File[]
+  lanes     BusLane[]
+  routes    BusRoute[]
+  icon      MapIcon?      @relation(fields: [iconId], references: [id])
+  iconId    String?
+  zone      Zone?         @relation(fields: [zoneId], references: [id])
+  zoneId    String?
+  schedules BusSchedule[]
+
+  // Stop features
+  hasShelter      Boolean @default(false)
+  hasBench        Boolean @default(false)
+  hasLighting     Boolean @default(false)
+  isAccessible    Boolean @default(false) // Wheelchair accessible
+  hasRealTimeInfo Boolean @default(false)
+
+  order Int? // Order in route sequence
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([latitude, longitude])
+  @@index([iconId])
+  @@index([zoneId])
+}
+
+model BusLane {
+  id String @id @default(uuid())
+
+  // Path coordinates as JSON array: [[lat, lng], [lat, lng], ...]
+  path Json // Array of [latitude, longitude] pairs
+
+  name          Language? @relation("BusLaneName", fields: [nameId], references: [id])
+  nameId        String?
+  description   Language? @relation("BusLaneDescription", fields: [descriptionId], references: [id])
+  descriptionId String?
+
+  color    String  @default("#0066CC")
+  weight   Int     @default(5) // Line width
+  opacity  Float   @default(0.8)
+  isActive Boolean @default(true)
+
+  images    File[]
+  stops     BusStop[]
+  routes    BusRoute[]
+  service   TransportService? @relation(fields: [serviceId], references: [id])
+  serviceId String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([serviceId])
+}
+
+model BusRoute {
+  id String @id @default(uuid())
+
+  name          Language? @relation("BusRouteName", fields: [nameId], references: [id])
+  nameId        String?
+  description   Language? @relation("BusRouteDescription", fields: [descriptionId], references: [id])
+  descriptionId String?
+
+  service   TransportService? @relation(fields: [serviceId], references: [id])
+  serviceId String?
+
+  // Route details
+  routeNumber String? // e.g., "Route 101"
+  direction   RouteDirection @default(BIDIRECTIONAL)
+  fare        Float? // Fare price
+  currency    Currency       @default(IQD)
+  frequency   Int? // Minutes between buses
+  duration    Int? // Total route duration in minutes
+
+  lanes     BusLane[]
+  stops     BusStop[]
+  schedules BusSchedule[]
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([serviceId])
+  @@index([routeNumber])
+  @@index([direction])
+}
+
+model BusSchedule {
+  id String @id @default(uuid())
+
+  route   BusRoute @relation(fields: [routeId], references: [id])
+  routeId String
+
+  stop   BusStop @relation(fields: [stopId], references: [id])
+  stopId String
+
+  // Schedule time (24-hour format, e.g., "08:30")
+  departureTime String
+
+  // Day of week
+  dayOfWeek DayOfWeek
+
+  // Optional: specific date override (for holidays, special schedules)
+  specificDate DateTime?
+
+  // Notes about this schedule entry
+  notes String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([routeId])
+  @@index([stopId])
+  @@index([dayOfWeek])
+  @@index([departureTime])
+  @@index([specificDate])
+}

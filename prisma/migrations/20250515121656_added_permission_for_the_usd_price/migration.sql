@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "Permission" ADD VALUE 'CHANGE_USD_PRICE';

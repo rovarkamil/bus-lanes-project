@@ -1,0 +1,20 @@
+{
+  "Fields": {
+    "name": "Name",
+    "username": "Username",
+    "password": "Password",
+    "email": "Email address",
+    "phone": "Phone number",
+    "roleId": "Role",
+    "userType": "User type",
+    "balance": "Balance",
+    "isVerified": "Verified status",
+    "isBanned": "Ban status",
+    "createdAt": "Created at",
+    "updatedAt": "Updated at",
+    "deletedAt": "Deleted at"
+  },
+  "Validation": {
+    "AlreadyExists": "This {{field}} is already in use"
+  }
+}

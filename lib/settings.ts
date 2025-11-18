@@ -1,0 +1,26 @@
+import { useSettingsStore } from "./stores/settings-store";
+
+export const settingsMap = {
+  MARKET_NAME: "MARKET_NAME",
+  MARKET_ADDRESS: "MARKET_ADDRESS",
+  MARKET_PHONE: "MARKET_PHONE",
+  DEVELOPER_MESSAGE: "DEVELOPER_MESSAGE",
+  USD_PRICE: "USD_PRICE",
+  MIN_BARCODE_LENGTH: "MIN_BARCODE_LENGTH",
+  CUSTOM_BARCODE_PREFIX: "CUSTOM_BARCODE_PREFIX",
+  SHOW_WARNING_ON_SET_STOCK: "SHOW_WARNING_ON_SET_STOCK",
+  LOGO_URL: "LOGO_URL",
+  // Theme Settings
+  THEME_PRIMARY_COLOR: "THEME_PRIMARY_COLOR",
+  THEME_SECONDARY_COLOR: "THEME_SECONDARY_COLOR",
+  THEME_BACKGROUND_COLOR: "THEME_BACKGROUND_COLOR",
+  THEME_FOREGROUND_COLOR: "THEME_FOREGROUND_COLOR",
+  THEME_MUTED_COLOR: "THEME_MUTED_COLOR",
+  THEME_ACCENT_COLOR: "THEME_ACCENT_COLOR",
+  THEME_DESTRUCTIVE_COLOR: "THEME_DESTRUCTIVE_COLOR",
+};
+
+export const getSetting = (key: string): string => {
+  const settings = useSettingsStore.getState().settings;
+  return settings?.items?.find((setting) => setting.key === key)?.value || "";
+};

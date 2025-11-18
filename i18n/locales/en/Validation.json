@@ -1,0 +1,26 @@
+{
+  "Validation": "Validation",
+  "Errors": {
+    "Required": "{{field}} is required",
+    "TooShort": "{{field}} is too short",
+    "TooLong": "{{field}} is too long",
+    "InvalidEmail": "Please enter a valid email address",
+    "InvalidUuid": "Invalid {{field}} format",
+    "AlreadyExists": "{{field}} is already in use",
+    "Pattern": "Invalid {{field}} format",
+    "Format": "Invalid {{field}} format",
+    "Custom": "Invalid {{field}}",
+    "Invalid": "Invalid {{field}}",
+    "PasswordUppercase": "Password must contain at least one uppercase letter",
+    "PasswordLowercase": "Password must contain at least one lowercase letter",
+    "PasswordNumber": "Password must contain at least one number",
+    "PasswordSpecial": "Password must contain at least one special character",
+    "UnexpectedError": "An unexpected error occurred",
+    "RecordNotFound": "Record not found",
+    "InvalidReference": "Invalid reference",
+    "DatabaseError": "A database error occurred",
+    "ValidationError": "Invalid data format",
+    "Unauthorized": "You are not authorized to perform this action",
+    "InsufficientPermissions": "You do not have sufficient permissions"
+  }
+}

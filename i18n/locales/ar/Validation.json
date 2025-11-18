@@ -1,0 +1,26 @@
+{
+  "Validation": "پشکنینی زانیاری",
+  "Errors": {
+    "Required": "{{field}} پێویستە",
+    "TooShort": "{{field}} کەمە",
+    "TooLong": "{{field}} زۆرە",
+    "InvalidEmail": "تکایە ناونیشانی ئیمەیلێکی دروست بنووسە",
+    "InvalidUuid": "فۆرماتی {{field}} نادروستە",
+    "AlreadyExists": "{{field}} پێشتر بەکاربردووە",
+    "Pattern": "فۆرماتی {{field}} نادروستە",
+    "Format": "فۆرماتی {{field}} نادروستە",
+    "Custom": "{{field}} نادروستە",
+    "Invalid": "{{field}} نادروستە",
+    "PasswordUppercase": "تێپەڕەوشە پێویستە کەمترین یەک پیتی بەرز بێت",
+    "PasswordLowercase": "تێپەڕەوشە پێویستە کەمترین یەک پیتی نزم بێت",
+    "PasswordNumber": "تێپەڕەوشە پێویستە کەمترین یەک ژمارە بێت",
+    "PasswordSpecial": "تێپەڕەوشە پێویستە کەمترین یەک پیتە تایبەتی بێت",
+    "UnexpectedError": "هەڵەیەکی نەخوازراو ڕوودەدات",
+    "RecordNotFound": "تۆمار نەدۆزرابوو",
+    "InvalidReference": "پەیوەندیدانی نادروستە",
+    "DatabaseError": "هەڵەیەکی داتابەیس ڕوودەدات",
+    "ValidationError": "فۆرماتی زانیاری نادروستە",
+    "Unauthorized": "تۆ ناتوانی ئەم کارە بیکەیت",
+    "InsufficientPermissions": "تۆ ناتوانی مافەکانت بەرز بکەیت"
+  }
+}

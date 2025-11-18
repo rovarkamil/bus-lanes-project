@@ -1,0 +1,14 @@
+{
+  "System": "System",
+  "Validation": {
+    "AlreadyExists": "{{field}} '{{value}}' is already in use"
+  },
+  "Errors": {
+    "ServerError": "An unexpected error occurred",
+    "ServerError2": "Something went wrong",
+    "Unauthorized": "You are not authorized to perform this action",
+    "NotFound": "Resource not found",
+    "AlreadyDeleted": "Resource has already been deleted",
+    "AlreadyExists": "This record already exists"
+  }
+}

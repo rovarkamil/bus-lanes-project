@@ -1,0 +1,14 @@
+{
+  "System": "سیستم",
+  "Validation": {
+    "AlreadyExists": "{{field}} '{{value}}' پێشتر بەکاربردووە"
+  },
+  "Errors": {
+    "ServerError": "هەڵەیەکی بێبەش ڕوودەدات",
+    "ServerError2": "چیزیەکی هەڵە ڕوودەدات",
+    "Unauthorized": "تۆ ناتوانی ئەم کارە بیکەیت",
+    "NotFound": "سەرچاوە دۆزرابوو",
+    "AlreadyDeleted": "سەرچاوە پێشتر سڕاوە",
+    "AlreadyExists": "ئەم تۆمارە پێشتر هەیە"
+  }
+}

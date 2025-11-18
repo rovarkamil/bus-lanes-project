@@ -1,0 +1,100 @@
+{
+  "SettingsTitle": "Settings",
+  "ManageSystemSettings": "Manage system settings and configurations",
+  "CreateSettings": "Create Settings",
+  "LoadingSettings": "Loading settings...",
+  "NoSettingsFound": "No settings found",
+  "AreYouSure": "Are you sure?",
+  "AreYouSureYouWantToDeleteThisSetting": "Are you sure you want to delete this setting?",
+  "Cancel": "Cancel",
+  "Submit": "Submit",
+  "Submitting": "Submitting...",
+  "Deleting": "Deleting...",
+  "Delete": "Delete",
+  "Key": "Key",
+  "Value": "Value",
+  "Type": "Type",
+  "IsLocked": "Is Locked",
+  "Created": "Created",
+  "Updated": "Updated",
+  "Actions": "Actions",
+  "Yes": "Yes",
+  "No": "No",
+  "TotalItems": "Total Items",
+  "Rows": "Rows",
+  "DisplayLimit": "Display Limit",
+  "CreatedAt": "Created At",
+  "UpdatedAt": "Updated At",
+  "DeletedAt": "Deleted At",
+  "Types": {
+    "STRING": "String",
+    "NUMBER": "Number",
+    "BOOLEAN": "Boolean",
+    "DATE": "Date",
+    "JSON": "JSON"
+  },
+  "ViewDetails": "View Details",
+  "UpdateSetting": "Update Setting",
+  "ViewDialog": {
+    "Description": "View setting details",
+    "Deleted": "Deleted",
+    "Active": "Active",
+    "Details": "Details",
+    "BasicInformation": "Basic Information",
+    "ActivityInformation": "Activity Information"
+  },
+  "CreateDialog": {
+    "Title": "Create Setting",
+    "Description": "Create a new system setting",
+    "Key": "Key",
+    "KeyPlaceholder": "Enter setting key",
+    "Value": "Value",
+    "ValuePlaceholder": "Enter setting value",
+    "Type": "Type",
+    "TypePlaceholder": "Select setting type"
+  },
+  "UpdateDialog": {
+    "Title": "Update Setting",
+    "Description": "Update existing system setting",
+    "Key": "Key",
+    "KeyPlaceholder": "Enter setting key",
+    "Value": "Value",
+    "ValuePlaceholder": "Enter setting value",
+    "Type": "Type",
+    "TypePlaceholder": "Select setting type"
+  },
+  "FilterDialog": {
+    "Title": "Filter Settings",
+    "Description": "Filter settings by various criteria",
+    "ApplyFilters": "Apply Filters",
+    "BasicFilters": "Basic Filters",
+    "DateFilters": "Date Filters",
+    "Key": "Key",
+    "KeyPlaceholder": "Filter by key",
+    "Type": "Type",
+    "TypePlaceholder": "Filter by type",
+    "CreatedAt": "Created At",
+    "UpdatedAt": "Updated At",
+    "DeletedAt": "Deleted At",
+    "PickADate": "Pick a date",
+    "SettingTypes": {
+      "STRING": "String",
+      "NUMBER": "Number",
+      "BOOLEAN": "Boolean",
+      "DATE": "Date",
+      "JSON": "JSON"
+    }
+  },
+  "Success": {
+    "Created": "Setting created successfully",
+    "Updated": "Setting updated successfully",
+    "Deleted": "Setting deleted successfully"
+  },
+  "Validation": {
+    "Errors": {
+      "TooShort": "Key is too short",
+      "TooLong": "Key is too long",
+      "InvalidUuid": "Invalid ID format"
+    }
+  }
+}

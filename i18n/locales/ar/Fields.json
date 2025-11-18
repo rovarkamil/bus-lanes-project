@@ -1,0 +1,20 @@
+{
+  "Fields": {
+    "name": "الاسم",
+    "username": "اسم المستخدم",
+    "password": "كلمة المرور",
+    "email": "البريد الإلكتروني",
+    "phone": "رقم الهاتف",
+    "roleId": "الدور",
+    "userType": "نوع المستخدم",
+    "balance": "الرصيد",
+    "isVerified": "حالة التحقق",
+    "isBanned": "حالة الحظر",
+    "createdAt": "تم الإنشاء في",
+    "updatedAt": "تم التحديث في",
+    "deletedAt": "تم الحذف في"
+  },
+  "Validation": {
+    "AlreadyExists": "هذا {{field}} مستخدم بالفعل"
+  }
+}

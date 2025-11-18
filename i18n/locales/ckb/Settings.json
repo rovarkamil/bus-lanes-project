@@ -1,0 +1,100 @@
+{
+  "SettingsTitle": "ڕێکخستنەکان",
+  "ManageSystemSettings": "بەڕێوەبردنی ڕێکخستنەکان و شێوازەکانی سیستەم",
+  "CreateSettings": "دروستکردنی ڕێکخستنەکان",
+  "LoadingSettings": "بارکردنی ڕێکخستنەکان...",
+  "NoSettingsFound": "هیچ ڕێکخستنێک نەدۆزرایەوە",
+  "AreYouSure": "دڵنیایت؟",
+  "AreYouSureYouWantToDeleteThisSetting": "دڵنیایت دەتەوێت ئەم ڕێکخستنە بسڕیتەوە؟",
+  "Cancel": "هەڵوەشاندنەوە",
+  "Submit": "ناردن",
+  "Submitting": "دەنێردرێت...",
+  "Deleting": "دەسڕدرێتەوە...",
+  "Delete": "سڕینەوە",
+  "Key": "کلیل",
+  "Value": "بەها",
+  "Type": "جۆر",
+  "IsLocked": "داخراوە",
+  "Created": "دروستکراوە",
+  "Updated": "نوێکراوەتەوە",
+  "Actions": "کردارەکان",
+  "Yes": "بەڵە",
+  "No": "ئەی",
+  "TotalItems": "کۆی ڕێکخستنەکان",
+  "Rows": "ڕێکخستنەکان",
+  "DisplayLimit": "ڕێکخستنەکانی دانەوە",
+  "CreatedAt": "دروستکراوە لە",
+  "UpdatedAt": "نوێکراوەتەوە لە",
+  "DeletedAt": "سڕاوەتەوە لە",
+  "Types": {
+    "STRING": "دەق",
+    "NUMBER": "ژمارە",
+    "BOOLEAN": "بوڵی",
+    "DATE": "بەروار",
+    "JSON": "JSON"
+  },
+  "ViewDetails": "بینینی وردەکاریەکان",
+  "UpdateSetting": "نوێکردنەوەی ڕێکخستن",
+  "ViewDialog": {
+    "Description": "بینینی وردەکاریەکانی ڕێکخستن",
+    "Deleted": "سڕاوەتەوە",
+    "Active": "چالاک",
+    "Details": "وردەکاریەکان",
+    "BasicInformation": "زانیاریە سەرەتاییەکان",
+    "ActivityInformation": "زانیاری چالاکی"
+  },
+  "CreateDialog": {
+    "Title": "دروستکردنی ڕێکخستن",
+    "Description": "دروستکردنی ڕێکخستنێکی نوێی سیستەم",
+    "Key": "کلیل",
+    "KeyPlaceholder": "کلیلی ڕێکخستن بنووسە",
+    "Value": "بەها",
+    "ValuePlaceholder": "بەهای ڕێکخستن بنووسە",
+    "Type": "جۆر",
+    "TypePlaceholder": "جۆری ڕێکخستن هەڵبژێرە"
+  },
+  "UpdateDialog": {
+    "Title": "نوێکردنەوەی ڕێکخستن",
+    "Description": "نوێکردنەوەی ڕێکخستنی سیستەمی بەردەست",
+    "Key": "کلیل",
+    "KeyPlaceholder": "کلیلی ڕێکخستن بنووسە",
+    "Value": "بەها",
+    "ValuePlaceholder": "بەهای ڕێکخستن بنووسە",
+    "Type": "جۆر",
+    "TypePlaceholder": "جۆری ڕێکخستن هەڵبژێرە"
+  },
+  "FilterDialog": {
+    "Title": "فلتەرکردنی ڕێکخستنەکان",
+    "Description": "فلتەرکردنی ڕێکخستنەکان بەپێی چەندین پێوەر",
+    "ApplyFilters": "جێبەجێکردنی فلتەرەکان",
+    "BasicFilters": "فلتەرە سەرەتاییەکان",
+    "DateFilters": "فلتەرەکانی بەروار",
+    "Key": "کلیل",
+    "KeyPlaceholder": "فلتەر بەپێی کلیل",
+    "Type": "جۆر",
+    "TypePlaceholder": "فلتەر بەپێی جۆر",
+    "CreatedAt": "دروستکراوە لە",
+    "UpdatedAt": "نوێکراوەتەوە لە",
+    "DeletedAt": "سڕاوەتەوە لە",
+    "PickADate": "بەروارێک هەڵبژێرە",
+    "SettingTypes": {
+      "STRING": "دەق",
+      "NUMBER": "ژمارە",
+      "BOOLEAN": "بوڵی",
+      "DATE": "بەروار",
+      "JSON": "JSON"
+    }
+  },
+  "Success": {
+    "Created": "ڕێکخستن بە سەرکەوتوویی دروستکرا",
+    "Updated": "ڕێکخستن بە سەرکەوتوویی نوێکرایەوە",
+    "Deleted": "ڕێکخستن بە سەرکەوتوویی سڕایەوە"
+  },
+  "Validation": {
+    "Errors": {
+      "TooShort": "کلیل زۆر کورتە",
+      "TooLong": "کلیل زۆر درێژە",
+      "InvalidUuid": "شێوازی ID نادروستە"
+    }
+  }
+}
