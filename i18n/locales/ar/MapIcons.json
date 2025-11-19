@@ -1,0 +1,77 @@
+{
+  "MapIconsTitle": "أيقونات الخريطة",
+  "ManageMapIcons": "إدارة أيقونات الخريطة المخصصة وضبط المراسي والحالة",
+  "CreateMapIcon": "إنشاء أيقونة خريطة",
+  "LoadingMapIcons": "جاري تحميل أيقونات الخريطة...",
+  "NoMapIconsFound": "لا توجد أيقونات خريطة",
+  "ViewMapIcon": "عرض أيقونة الخريطة",
+  "UpdateMapIcon": "تحديث أيقونة الخريطة",
+  "DeleteMapIcon": "حذف أيقونة الخريطة",
+  "Cancel": "إلغاء",
+  "Common": {
+    "Create": "إنشاء",
+    "Creating": "جاري الإنشاء...",
+    "Update": "تحديث",
+    "Updating": "جاري التحديث...",
+    "Uploading": "جاري الرفع...",
+    "Apply": "تطبيق",
+    "Cancel": "إلغاء",
+    "Active": "نشط",
+    "Inactive": "غير نشط",
+    "Name": "الاسم",
+    "Description": "الوصف",
+    "NotAvailable": "غير متوفر"
+  },
+  "Success": {
+    "Created": "تم إنشاء أيقونة الخريطة بنجاح",
+    "Updated": "تم تحديث أيقونة الخريطة بنجاح"
+  },
+  "Error": {
+    "FileRequired": "يرجى اختيار صورة للأيقونة قبل الحفظ",
+    "CreateFailed": "فشل إنشاء أيقونة الخريطة",
+    "UpdateFailed": "فشل تحديث أيقونة الخريطة"
+  },
+  "CreateDialog": {
+    "Title": "إنشاء أيقونة خريطة",
+    "Description": "قم برفع الأيقونة واضبط نقاط الارتكاز للاستخدام في الخريطة الحية.",
+    "File": "ملف الأيقونة",
+    "IconSize": "حجم الأيقونة (بكسل)",
+    "IconAnchorX": "مرتكز الأيقونة X",
+    "IconAnchorY": "مرتكز الأيقونة Y",
+    "PopupAnchorX": "مرتكز النافذة X",
+    "PopupAnchorY": "مرتكز النافذة Y",
+    "IsActive": "الحالة النشطة"
+  },
+  "UpdateDialog": {
+    "Title": "تحديث أيقونة خريطة",
+    "Description": "حرر ملف الأيقونة، المراسي، وحالة الظهور.",
+    "File": "ملف الأيقونة",
+    "IconSize": "حجم الأيقونة (بكسل)",
+    "IconAnchorX": "مرتكز الأيقونة X",
+    "IconAnchorY": "مرتكز الأيقونة Y",
+    "PopupAnchorX": "مرتكز النافذة X",
+    "PopupAnchorY": "مرتكز النافذة Y",
+    "IsActive": "الحالة النشطة"
+  },
+  "ViewDialog": {
+    "Title": "تفاصيل أيقونة الخريطة",
+    "Description": "عاين الأيقونة، المراسي، وإحصائيات الاستخدام.",
+    "IconSizeValue": "الحجم: {{value}} بكسل",
+    "AnchorValue": "مرتكز (س: {{x}}، ص: {{y}})",
+    "AnchorConfiguration": "إعداد المراسي",
+    "IconAnchor": "مرتكز الأيقونة ({{x}}, {{y}})",
+    "PopupAnchor": "مرتكز النافذة المنبثقة ({{x}}, {{y}})",
+    "IconFile": "ملف الأيقونة",
+    "Usage": "ملخص الاستخدام",
+    "ServicesCount": "الخدمات: {{count}}",
+    "StopsCount": "المحطات: {{count}}"
+  },
+  "FilterDialog": {
+    "Title": "تصفية أيقونات الخريطة",
+    "Description": "رشح الأيقونات حسب الحالة أو الحجم.",
+    "BasicFilters": "مرشحات أساسية",
+    "IsActive": "الحالة النشطة",
+    "IconSize": "حجم الأيقونة",
+    "IconSizePlaceholder": "أدخل حجم الأيقونة"
+  }
+}

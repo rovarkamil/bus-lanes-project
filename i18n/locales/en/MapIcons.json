@@ -1,0 +1,77 @@
+{
+  "MapIconsTitle": "Map Icons",
+  "ManageMapIcons": "Manage custom map markers, anchors, and availability",
+  "CreateMapIcon": "Create Map Icon",
+  "LoadingMapIcons": "Loading map icons...",
+  "NoMapIconsFound": "No map icons found",
+  "ViewMapIcon": "View map icon",
+  "UpdateMapIcon": "Update map icon",
+  "DeleteMapIcon": "Delete map icon",
+  "Cancel": "Cancel",
+  "Common": {
+    "Create": "Create",
+    "Creating": "Creating...",
+    "Update": "Update",
+    "Updating": "Updating...",
+    "Uploading": "Uploading...",
+    "Apply": "Apply",
+    "Cancel": "Cancel",
+    "Active": "Active",
+    "Inactive": "Inactive",
+    "Name": "Name",
+    "Description": "Description",
+    "NotAvailable": "Not available"
+  },
+  "Success": {
+    "Created": "Map icon created successfully",
+    "Updated": "Map icon updated successfully"
+  },
+  "Error": {
+    "FileRequired": "Please select an icon image before saving",
+    "CreateFailed": "Failed to create the map icon",
+    "UpdateFailed": "Failed to update the map icon"
+  },
+  "CreateDialog": {
+    "Title": "Create Map Icon",
+    "Description": "Upload an icon and configure its anchors for the live map.",
+    "File": "Icon file",
+    "IconSize": "Icon size (px)",
+    "IconAnchorX": "Icon anchor X",
+    "IconAnchorY": "Icon anchor Y",
+    "PopupAnchorX": "Popup anchor X",
+    "PopupAnchorY": "Popup anchor Y",
+    "IsActive": "Active status"
+  },
+  "UpdateDialog": {
+    "Title": "Update Map Icon",
+    "Description": "Edit the icon asset, anchors, and visibility status.",
+    "File": "Icon file",
+    "IconSize": "Icon size (px)",
+    "IconAnchorX": "Icon anchor X",
+    "IconAnchorY": "Icon anchor Y",
+    "PopupAnchorX": "Popup anchor X",
+    "PopupAnchorY": "Popup anchor Y",
+    "IsActive": "Active status"
+  },
+  "ViewDialog": {
+    "Title": "Map Icon Details",
+    "Description": "Preview the icon, anchors, and usage stats.",
+    "IconSizeValue": "Size: {{value}}px",
+    "AnchorValue": "Anchor (x: {{x}}, y: {{y}})",
+    "AnchorConfiguration": "Anchor Configuration",
+    "IconAnchor": "Icon anchor ({{x}}, {{y}})",
+    "PopupAnchor": "Popup anchor ({{x}}, {{y}})",
+    "IconFile": "Icon file",
+    "Usage": "Usage overview",
+    "ServicesCount": "Services: {{count}}",
+    "StopsCount": "Stops: {{count}}"
+  },
+  "FilterDialog": {
+    "Title": "Filter Map Icons",
+    "Description": "Filter icons by status or size.",
+    "BasicFilters": "Basic Filters",
+    "IsActive": "Active status",
+    "IconSize": "Icon size",
+    "IconSizePlaceholder": "Enter icon size"
+  }
+}

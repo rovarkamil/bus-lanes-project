@@ -34,6 +34,7 @@ import {
 } from "@/types/map";
 import { cn } from "@/lib/utils";
 import { Loader2, Trash2, Undo2 } from "lucide-react";
+import { useTranslation } from "@/i18n/client";
 
 const DEFAULT_CENTER: LatLngExpression = [36.1911, 44.0092];
 
@@ -83,16 +84,16 @@ const MapClickHandler = ({
 const DraftStopsList = ({
   draftStops,
   onRemove,
+  emptyLabel,
+  getDraftStopLabel,
 }: {
   draftStops: DraftStop[];
   onRemove: (index: number) => void;
+  emptyLabel: string;
+  getDraftStopLabel: (index: number, stop: DraftStop) => string;
 }) => {
   if (!draftStops.length) {
-    return (
-      <p className="text-xs text-muted-foreground">
-        Click the map while holding Shift to add draft stops.
-      </p>
-    );
+    return <p className="text-xs text-muted-foreground">{emptyLabel}</p>;
   }
   return (
     <ScrollArea className="max-h-40 rounded border">
@@ -104,7 +105,7 @@ const DraftStopsList = ({
           >
             <div>
               <p className="font-medium">
-                {stop.name || `Draft Stop #${index + 1}`}
+                {stop.name || getDraftStopLabel(index, stop)}
               </p>
               <p className="text-xs text-muted-foreground">
                 {stop.latitude.toFixed(5)}, {stop.longitude.toFixed(5)}
@@ -129,14 +130,16 @@ const ServicesSelect = ({
   services,
   current,
   onChange,
+  placeholder,
 }: {
   services: MapTransportService[];
   current?: string;
   onChange: (value: string) => void;
+  placeholder: string;
 }) => (
   <Select value={current} onValueChange={onChange}>
     <SelectTrigger>
-      <SelectValue placeholder="Assign transport service" />
+      <SelectValue placeholder={placeholder} />
     </SelectTrigger>
     <SelectContent>
       {services.map((service) => (
@@ -190,6 +193,8 @@ export const MapEditor = ({
   onResetDraft,
   className,
 }: MapEditorProps) => {
+  const { t, i18n } = useTranslation("Map");
+  const isRTL = i18n.language !== "en";
   const [draftPath, setDraftPath] = useState<CoordinateTuple[]>([]);
   const [draftStops, setDraftStops] = useState<DraftStop[]>([]);
   const [name, setName] = useState("");
@@ -246,49 +251,53 @@ export const MapEditor = ({
   }, [draftPath, data?.stops]);
 
   return (
-    <div className={cn("grid gap-6 lg:grid-cols-[340px,1fr]", className)}>
+    <div
+      className={cn("grid gap-6 lg:grid-cols-[340px,1fr]", className)}
+      dir={isRTL ? "rtl" : "ltr"}
+    >
       <Card className="border-border/70 bg-background/90 shadow-sm">
         <CardHeader>
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Draft Lane Configuration
+              {t("DraftLaneConfiguration")}
             </p>
             <p className="text-xs text-muted-foreground">
-              Click the map to add points. Shift+Click to add draft stops.
+              {t("ClickTheMapToAddPointsShiftClickToAddDraftStops")}
             </p>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Lane Name</Label>
+            <Label>{t("LaneName")}</Label>
             <Input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="e.g. Airport Express Lane"
+              placeholder={t("E.g.AirportExpressLane")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Description</Label>
+            <Label>{t("Description")}</Label>
             <Textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="Optional details about this lane..."
+              placeholder={t("OptionalDetailsAboutThisLane")}
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Transport Service</Label>
+            <Label>{t("TransportService")}</Label>
             <ServicesSelect
               services={data?.services ?? []}
               current={serviceId}
               onChange={(value) => setServiceId(value)}
+              placeholder={t("AssignTransportService")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Lane Color</Label>
+            <Label>{t("LaneColor")}</Label>
             <div className="flex items-center gap-2">
               <Input
                 type="color"
@@ -305,11 +314,15 @@ export const MapEditor = ({
           </div>
 
           <div className="space-y-2">
-            <Label>Draft Stops</Label>
+            <Label>{t("DraftStops")}</Label>
             <DraftStopsList
               draftStops={draftStops}
               onRemove={(index) =>
                 setDraftStops((prev) => prev.filter((_, idx) => idx !== index))
+              }
+              emptyLabel={t("ShiftClickToAddDraftStops")}
+              getDraftStopLabel={(index) =>
+                t("DraftStopNumber", { number: index + 1 })
               }
             />
           </div>
@@ -322,7 +335,7 @@ export const MapEditor = ({
               disabled={!draftPath.length}
             >
               <Undo2 className="mr-2 h-4 w-4" />
-              Undo Point
+              {t("UndoPoint")}
             </Button>
             <Button
               type="button"
@@ -331,13 +344,13 @@ export const MapEditor = ({
               disabled={!draftPath.length && !draftStops.length}
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              Reset Draft
+              {t("ResetDraft")}
             </Button>
           </div>
 
           <Button onClick={handleSubmit} disabled={!canSave || isSaving}>
             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Draft Lane
+            {t("SaveDraftLane")}
           </Button>
         </CardContent>
       </Card>
@@ -346,14 +359,15 @@ export const MapEditor = ({
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Map Workspace
+              {t("MapWorkspace")}
             </p>
             <p className="text-xs text-muted-foreground">
-              Click to add lane points. Hold Shift to add draft stops.
+              {t("ClickToAddLanePointsHoldShiftToAddDraftStops")}
             </p>
           </div>
           <Badge variant="secondary">
-            {draftPath.length} points • {draftStops.length} draft stops
+            {draftPath.length} {t("Points")} • {draftStops.length}{" "}
+            {t("DraftStops")}
           </Badge>
         </CardHeader>
         <CardContent className="p-0">
@@ -388,7 +402,9 @@ export const MapEditor = ({
                         key={`${point[0]}-${point[1]}-${index}`}
                         position={point}
                       >
-                        <Tooltip sticky>Point #{index + 1}</Tooltip>
+                        <Tooltip sticky>
+                          {t("PointNumber", { number: index + 1 })}
+                        </Tooltip>
                       </Marker>
                     ))}
                   </>
@@ -398,14 +414,16 @@ export const MapEditor = ({
                     key={`${stop.latitude}-${stop.longitude}-${index}`}
                     position={[stop.latitude, stop.longitude]}
                   >
-                    <Tooltip sticky>Draft Stop #{index + 1}</Tooltip>
+                    <Tooltip sticky>
+                      {t("DraftStopNumber", { number: index + 1 })}
+                    </Tooltip>
                   </Marker>
                 ))}
               </FeatureGroup>
             </MapContainer>
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
               <div className="rounded-full border border-dashed border-border/60 bg-background/80 px-4 py-1 text-xs text-muted-foreground shadow-sm">
-                Click to plot lane • Shift+Click to add stop
+                {t("ClickToPlotLaneShiftClickToAddStop")}
               </div>
             </div>
           </div>

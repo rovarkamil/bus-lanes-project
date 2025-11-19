@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { Permission } from "@prisma/client";
 import { useMapEditorData } from "@/hooks/employee-hooks/use-map";
-import MapEditor from "@/components/map/map-editor";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,23 @@ const MapEditorPage = () => {
   });
 
   const payload = data?.data;
+
+  const MapEditorClient = useMemo(
+    () =>
+      dynamic(() => import("@/components/map/map-editor"), {
+        ssr: false,
+        loading: () => (
+          <div
+            className="flex h-[480px] items-center justify-center gap-3 text-muted-foreground"
+            dir={isRTL ? "rtl" : "ltr"}
+          >
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span>{t("LoadingMapData")}</span>
+          </div>
+        ),
+      }),
+    [isRTL, t]
+  );
 
   const editorContent = useMemo(() => {
     if (!canEdit) {
@@ -42,7 +59,10 @@ const MapEditorPage = () => {
 
     if (error) {
       return (
-        <Card className="border-destructive/50 bg-destructive/5" dir={isRTL ? "rtl" : "ltr"}>
+        <Card
+          className="border-destructive/50 bg-destructive/5"
+          dir={isRTL ? "rtl" : "ltr"}
+        >
           <CardContent className="flex flex-col items-center gap-3 p-10 text-destructive">
             <p className="text-lg font-semibold">{t("FailedToLoadMapData")}</p>
             <p className="text-sm text-destructive/80">
@@ -64,7 +84,10 @@ const MapEditorPage = () => {
 
     if (isPending && !payload) {
       return (
-        <div className="flex h-[480px] items-center justify-center gap-3 text-muted-foreground" dir={isRTL ? "rtl" : "ltr"}>
+        <div
+          className="flex h-[480px] items-center justify-center gap-3 text-muted-foreground"
+          dir={isRTL ? "rtl" : "ltr"}
+        >
           <Loader2 className="h-5 w-5 animate-spin" />
           <span dir={isRTL ? "rtl" : "ltr"}>{t("LoadingMapData")}</span>
         </div>
@@ -72,14 +95,14 @@ const MapEditorPage = () => {
     }
 
     return (
-      <MapEditor
+      <MapEditorClient
         data={payload}
         onSave={(submission) => {
           console.log("Map editor submission", submission);
         }}
       />
     );
-  }, [canEdit, error, isPending, isRTL, payload, refetch, t]);
+  }, [MapEditorClient, canEdit, error, isPending, isRTL, payload, refetch, t]);
 
   return (
     <main className="space-y-6 px-4 py-8 md:px-8" dir={isRTL ? "rtl" : "ltr"}>
