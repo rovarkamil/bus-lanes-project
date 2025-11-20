@@ -188,8 +188,8 @@ const MapIconsPage = () => {
       },
     };
 
-    return ensureIndexColumn([...mapIconColumns, actionColumn]);
-  }, [session, isDeleting, isRTL, handleDelete]);
+    return ensureIndexColumn([...mapIconColumns(t), actionColumn]);
+  }, [t, session, isDeleting, isRTL, handleDelete]);
 
   const handleCreateSuccess = () => {
     setIsCreateDialogOpen(false);

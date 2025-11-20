@@ -1,0 +1,105 @@
+{
+  "TransportServicesTitle": "خدمات النقل",
+  "ManageTransportServices": "إدارة خدمات النقل والألوان والعروض التشغيلية.",
+  "CreateTransportService": "إنشاء خدمة نقل",
+  "LoadingTransportServices": "جاري تحميل خدمات النقل...",
+  "NoTransportServicesFound": "لا توجد خدمات نقل",
+  "Cancel": "إلغاء",
+  "TotalItems": "إجمالي العناصر",
+  "DisplayLimit": "حد العرض",
+  "Rows": "صفوف",
+  "ClearFilters": "مسح عوامل التصفية",
+  "Common": {
+    "Create": "إنشاء",
+    "Creating": "جاري الإنشاء...",
+    "Update": "تحديث",
+    "Updating": "جاري التحديث...",
+    "Apply": "تطبيق",
+    "Cancel": "إلغاء",
+    "Active": "نشط",
+    "Inactive": "غير نشط",
+    "Name": "الاسم",
+    "Description": "الوصف",
+    "NotAvailable": "غير متوفر"
+  },
+  "Success": {
+    "Created": "تم إنشاء خدمة النقل بنجاح",
+    "Updated": "تم تحديث خدمة النقل بنجاح"
+  },
+  "Error": {
+    "CreateFailed": "فشل إنشاء خدمة النقل",
+    "UpdateFailed": "فشل تحديث خدمة النقل"
+  },
+  "CreateDialog": {
+    "Title": "إنشاء خدمة نقل",
+    "Description": "حدد نوع الخدمة، اللون، وتفاصيل التشغيل.",
+    "Type": "نوع الخدمة",
+    "Color": "لون العلامة",
+    "IconId": "معرّف أيقونة الخريطة",
+    "MapIcon": "أيقونة الخريطة",
+    "Capacity": "السعة",
+    "OperatingFrom": "يبدأ التشغيل من",
+    "OperatingTo": "ينتهي التشغيل عند",
+    "IsActive": "الحالة النشطة"
+  },
+  "UpdateDialog": {
+    "Title": "تحديث خدمة نقل",
+    "Description": "عدّل بيانات الخدمة وإعدادات التشغيل.",
+    "Type": "نوع الخدمة",
+    "Color": "لون العلامة",
+    "IconId": "معرّف أيقونة الخريطة",
+    "MapIcon": "أيقونة الخريطة",
+    "Capacity": "السعة",
+    "OperatingFrom": "يبدأ التشغيل من",
+    "OperatingTo": "ينتهي التشغيل عند",
+    "IsActive": "الحالة النشطة"
+  },
+  "ViewDialog": {
+    "Title": "تفاصيل الخدمة",
+    "Description": "اعرض بيانات الخدمة، وفترة التشغيل، والعناصر المرتبطة.",
+    "OperationalDetails": "تفاصيل التشغيل",
+    "CapacityValue": "السعة: {{value}}",
+    "OperatingHours": "من {{from}} إلى {{to}}",
+    "RoutesCount": "الخطوط: {{count}}",
+    "LanesCount": "المسارات: {{count}}",
+    "MapIcon": "أيقونة الخريطة المعينة"
+  },
+  "FilterDialog": {
+    "Title": "تصفية الخدمات",
+    "Description": "رشّح الخدمات حسب النوع أو الحالة أو السعة.",
+    "BasicFilters": "مرشحات أساسية",
+    "Type": "نوع الخدمة",
+    "IsActive": "الحالة النشطة",
+    "Capacity": "السعة",
+    "CapacityPlaceholder": "أدخل السعة"
+  },
+  "Table": {
+    "Service": "الخدمة",
+    "Type": "النوع",
+    "Color": "اللون",
+    "Capacity": "السعة",
+    "OperatingHours": "ساعات التشغيل",
+    "OperatingRange": "من {{from}} إلى {{to}}",
+    "ScheduleTBD": "سيتم تحديد الجدول لاحقًا",
+    "Relations": "العلاقات",
+    "Status": "الحالة",
+    "Routes": "الخطوط",
+    "Lanes": "المسارات",
+    "Actions": "الإجراءات"
+  },
+  "Actions": {
+    "View": "عرض",
+    "Edit": "تعديل",
+    "Delete": "حذف",
+    "Deleting": "جارٍ الحذف...",
+    "DeleteConfirmTitle": "هل أنت متأكد؟",
+    "DeleteConfirmMessage": "لا يمكن التراجع عن هذا الإجراء."
+  },
+  "TransportServiceType": {
+    "BUS": "حافلة",
+    "MINIBUS": "ميني باص",
+    "TAXI": "تاكسي",
+    "SHARED_TAXI": "تاكسي مشترك",
+    "OTHER": "أخرى"
+  }
+}

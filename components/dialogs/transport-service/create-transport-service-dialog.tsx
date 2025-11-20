@@ -26,6 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TransportServiceType } from "@prisma/client";
+import SelectWithPagination from "@/components/select-with-pagination";
+import { useFetchMapIcons } from "@/hooks/employee-hooks/use-map-icon";
 
 interface CreateTransportServiceDialogProps {
   isOpen: boolean;
@@ -151,20 +153,36 @@ export const CreateTransportServiceDialog: FC<
             </div>
             <div className="space-y-2">
               <Label>{t("CreateDialog.Color")}</Label>
-              <Input
-                type="color"
-                value={form.watch("color")}
-                onChange={(e) => form.setValue("color", e.target.value)}
-              />
+              <div className="flex items-center gap-3">
+                <Input
+                  type="color"
+                  value={form.watch("color")}
+                  onChange={(e) => form.setValue("color", e.target.value)}
+                  className="h-10 w-16 rounded-md border"
+                />
+                <Input
+                  value={form.watch("color")}
+                  onChange={(e) => form.setValue("color", e.target.value)}
+                  className="flex-1"
+                />
+              </div>
             </div>
             <div className="space-y-2">
-              <Label>{t("CreateDialog.IconId")}</Label>
-              <Input
+              <Label>{t("CreateDialog.MapIcon")}</Label>
+              <SelectWithPagination
+                fetchFunction={useFetchMapIcons}
+                fields={[
+                  {
+                    key: "name",
+                    label: t("Common.Name"),
+                    type: "relation",
+                    relationKey: "en",
+                  },
+                ]}
+                onSelect={(item) => form.setValue("iconId", item?.id ?? null)}
+                placeholder={t("Table.ClickToSelectIcon")}
+                canClear
                 value={form.watch("iconId") ?? ""}
-                onChange={(e) =>
-                  form.setValue("iconId", e.target.value || null)
-                }
-                placeholder="map-icon-id"
               />
             </div>
             <div className="space-y-2">

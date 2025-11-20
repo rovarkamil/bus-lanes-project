@@ -44,7 +44,6 @@ export async function POST(req: NextRequest) {
           },
         });
 
-
         // Create super admin user
         const adminUser = await tx.user.create({
           data: {
@@ -67,25 +66,25 @@ export async function POST(req: NextRequest) {
             },
             {
               key: "DEVELOPER_MESSAGE",
-              value: "© Developed by Kubak Tech",
+              value: "© Developed by Rovar Dev",
               type: "STRING",
               isLocked: true,
             },
             {
               key: "COMPANY_ADDRESS",
-              value: "Market 1 Address",
+              value: "Not Available",
               type: "STRING",
               isLocked: true,
             },
             {
               key: "COMPANY_NAME",
-              value: "Market POS 1",
+              value: "Rovar Dev",
               type: "STRING",
               isLocked: true,
             },
             {
               key: "COMPANY_PHONE",
-              value: "0770 123 4567",
+              value: "0770 155 4024",
               type: "STRING",
               isLocked: true,
             },
@@ -103,7 +102,7 @@ export async function POST(req: NextRequest) {
             },
             {
               key: "THEME_PRIMARY_COLOR",
-              value: "#0345fc",
+              value: "#00C2FF",
               type: "STRING",
               isLocked: true,
             },

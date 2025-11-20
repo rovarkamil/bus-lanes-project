@@ -1,0 +1,105 @@
+{
+  "TransportServicesTitle": "خزمەتگوزارییەکانی گواستنەوە",
+  "ManageTransportServices": "خزمەتگوزارییەکان، ڕەنگەکان و تواناکان بەڕێوەبەرە.",
+  "CreateTransportService": "خزمەتگوزاری گواستنەوە دروست بکە",
+  "LoadingTransportServices": "خزمەتگوزارییەکانی گواستنەوە دەبارێن...",
+  "NoTransportServicesFound": "هیچ خزمەتگوزارییەکی گواستنەوە نییە",
+  "Cancel": "هەڵوەشاندنەوە",
+  "TotalItems": "کۆی بابەتەکان",
+  "DisplayLimit": "سنوری نیشاندان",
+  "Rows": "ڕیزەکان",
+  "ClearFilters": "پاککردنەوەی پاڵاوتن",
+  "Common": {
+    "Create": "دروستکردن",
+    "Creating": "لە دروستکردندایە...",
+    "Update": "نوێکردنەوە",
+    "Updating": "لە نوێکردنەوەدایە...",
+    "Apply": "جێبەجێکردن",
+    "Cancel": "هەڵوەشاندنەوە",
+    "Active": "چالاک",
+    "Inactive": "ناچالاک",
+    "Name": "ناو",
+    "Description": "وەسف",
+    "NotAvailable": "بەردەست نییە"
+  },
+  "Success": {
+    "Created": "خزمەتگوزاریی گواستنەوە بەسەرکەوتووی دروستکرا",
+    "Updated": "خزمەتگوزاریی گواستنەوە بەسەرکەوتووی نوێکرایەوە"
+  },
+  "Error": {
+    "CreateFailed": "نەتوانرا خزمەتگوزاریی گواستنەوە دروست بکرێت",
+    "UpdateFailed": "نەتوانرا خزمەتگوزاریی گواستنەوە نوێ بکرێتەوە"
+  },
+  "CreateDialog": {
+    "Title": "دروستکردنی خزمەتگوزاری گواستنەوە",
+    "Description": "جۆر، ڕەنگ و وردەکاریی کارکردن دیاری بکە.",
+    "Type": "جۆری خزمەت",
+    "Color": "ڕەنگی براند",
+    "IconId": "ناسنامەی ئایکۆنی نەخشە",
+    "MapIcon": "ئایکۆنی نەخشە",
+    "Capacity": "توانا",
+    "OperatingFrom": "دەستی پێکردن",
+    "OperatingTo": "کۆتایی هاتن",
+    "IsActive": "دۆخی چالاکی"
+  },
+  "UpdateDialog": {
+    "Title": "نوێکردنەوەی خزمەتگوزاری گواستنەوە",
+    "Description": "زانیارییەکان و ڕێکخستنەکانی کارکردن نوێ بکە.",
+    "Type": "جۆری خزمەت",
+    "Color": "ڕەنگی براند",
+    "IconId": "ناسنامەی ئایکۆنی نەخشە",
+    "MapIcon": "ئایکۆنی نەخشە",
+    "Capacity": "توانا",
+    "OperatingFrom": "دەستی پێکردن",
+    "OperatingTo": "کۆتایی هاتن",
+    "IsActive": "دۆخی چالاکی"
+  },
+  "ViewDialog": {
+    "Title": "وردەکاری خزمەتگوزاری",
+    "Description": "زانیاریی خزمەت، کاتەکانی کارکردن و بەرگەکان ببینە.",
+    "OperationalDetails": "زانیاریی کارکردن",
+    "CapacityValue": "توانا: {{value}}",
+    "OperatingHours": "لە {{from}}ەوە تا {{to}}",
+    "RoutesCount": "ڕێگاکان: {{count}}",
+    "LanesCount": "ڕێدەرەکان: {{count}}",
+    "MapIcon": "ئایکۆنی نەخشەی پەیوەست"
+  },
+  "FilterDialog": {
+    "Title": "پاڵاوتنی خزمەتگوزاری",
+    "Description": "بەپێی جۆر، دۆخ، یان تواناکان بپالێوە.",
+    "BasicFilters": "پاڵاوتنی سەرەکی",
+    "Type": "جۆری خزمەت",
+    "IsActive": "دۆخی چالاکی",
+    "Capacity": "توانا",
+    "CapacityPlaceholder": "توانا بنووسە"
+  },
+  "Table": {
+    "Service": "خزمەت",
+    "Type": "جۆر",
+    "Color": "ڕەنگ",
+    "Capacity": "توانا",
+    "OperatingHours": "کاتژمێری کارکردن",
+    "OperatingRange": "لە {{from}}ەوە بۆ {{to}}",
+    "ScheduleTBD": "کاتژمێری کارکردن دواتر دەستنیشان دەکرێت",
+    "Relations": "پەیوەندییەکان",
+    "Status": "دۆخ",
+    "Routes": "ڕێگاکان",
+    "Lanes": "ڕێدەرەکان",
+    "Actions": "کردارەکان"
+  },
+  "Actions": {
+    "View": "بینین",
+    "Edit": "دەستکاری",
+    "Delete": "سڕینەوە",
+    "Deleting": "سڕینەوە لە جێبەجێکردنایە...",
+    "DeleteConfirmTitle": "دڵنیایت؟",
+    "DeleteConfirmMessage": "ئەم کردارە نایەتەوە."
+  },
+  "TransportServiceType": {
+    "BUS": "ئۆتۆبوس",
+    "MINIBUS": "مینیبوس",
+    "TAXI": "تاکسی",
+    "SHARED_TAXI": "تاکسی پێکەوە",
+    "OTHER": "هیتر"
+  }
+}

@@ -110,7 +110,7 @@ const TransportServicesPage = () => {
   const columns = useMemo(() => {
     const actionColumn: Column<TransportServiceWithRelations> = {
       key: "actions",
-      label: "Actions",
+      label: t("Table.Actions"),
       sortable: false,
       className: "w-[120px]",
       render: (service) => {
@@ -144,7 +144,7 @@ const TransportServicesPage = () => {
                     <Eye className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>View</TooltipContent>
+                <TooltipContent>{t("Actions.View")}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
@@ -163,16 +163,18 @@ const TransportServicesPage = () => {
                     <Pencil className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Edit</TooltipContent>
+                <TooltipContent>{t("Actions.Edit")}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
             <ConfirmationDialog
-              title="Are you sure?"
-              message="This action cannot be undone."
+              title={t("Actions.DeleteConfirmTitle")}
+              message={t("Actions.DeleteConfirmMessage")}
               onConfirm={() => handleDelete(service.id)}
-              confirmLabel={isDeleting ? "Deleting..." : "Delete"}
-              cancelLabel="Cancel"
+              confirmLabel={
+                isDeleting ? t("Actions.Deleting") : t("Actions.Delete")
+              }
+              cancelLabel={t("Cancel")}
               variant="destructive"
               disabled={!canDelete || isDeleting}
               isRtl={isRTL}
@@ -189,7 +191,7 @@ const TransportServicesPage = () => {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Delete</TooltipContent>
+                  <TooltipContent>{t("Actions.Delete")}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </ConfirmationDialog>
@@ -198,8 +200,8 @@ const TransportServicesPage = () => {
       },
     };
 
-    return ensureIndexColumn([...transportServiceColumns, actionColumn]);
-  }, [session, isDeleting, isRTL, handleDelete]);
+    return ensureIndexColumn([...transportServiceColumns(t), actionColumn]);
+  }, [session, isDeleting, isRTL, handleDelete, t]);
 
   const handleCreateSuccess = () => {
     setIsCreateDialogOpen(false);

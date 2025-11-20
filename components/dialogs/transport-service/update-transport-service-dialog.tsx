@@ -26,7 +26,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TransportServiceType } from "@prisma/client";
+import { MapIcon, TransportServiceType } from "@prisma/client";
+import SelectWithPagination from "@/components/select-with-pagination";
+import { useFetchMapIcons } from "@/hooks/employee-hooks/use-map-icon";
 
 interface UpdateTransportServiceDialogProps {
   data: TransportServiceWithRelations;
@@ -43,6 +45,8 @@ export const UpdateTransportServiceDialog: FC<
   const [activeTab, setActiveTab] = useState<"english" | "arabic" | "kurdish">(
     "english"
   );
+
+  const [selectedMapIcon, setSelectedMapIcon] = useState<MapIcon | null>(null);
 
   const { mutateAsync: updateTransportService, isPending: isSubmitting } =
     useUpdateTransportService();
@@ -94,6 +98,7 @@ export const UpdateTransportServiceDialog: FC<
         isActive: data.isActive ?? true,
       });
     }
+    setSelectedMapIcon(data.icon);
   }, [data, form, isOpen]);
 
   const handleSubmit = async (formData: UpdateTransportServiceData) => {
@@ -168,19 +173,40 @@ export const UpdateTransportServiceDialog: FC<
             </div>
             <div className="space-y-2">
               <Label>{t("UpdateDialog.Color")}</Label>
-              <Input
-                type="color"
-                value={form.watch("color") ?? "#0066CC"}
-                onChange={(e) => form.setValue("color", e.target.value)}
-              />
+              <div className="flex items-center gap-3">
+                <Input
+                  type="color"
+                  value={form.watch("color") ?? "#0066CC"}
+                  onChange={(e) => form.setValue("color", e.target.value)}
+                  className="h-10 w-16 rounded-md border"
+                />
+                <Input
+                  value={form.watch("color") ?? "#0066CC"}
+                  onChange={(e) => form.setValue("color", e.target.value)}
+                  className="flex-1"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label>{t("UpdateDialog.IconId")}</Label>
-              <Input
+              <SelectWithPagination
+                fetchFunction={useFetchMapIcons}
+                fields={[
+                  {
+                    key: "name",
+                    label: t("Common.Name"),
+                    type: "relation",
+                    relationKey: "en",
+                  },
+                ]}
+                onSelect={(item) => {
+                  setSelectedMapIcon(item as MapIcon);
+                  form.setValue("iconId", (item?.id as string) ?? null);
+                }}
+                placeholder={t("Table.ClickToSelectIcon")}
+                defaultValue={selectedMapIcon ?? undefined}
+                canClear
                 value={form.watch("iconId") ?? ""}
-                onChange={(e) =>
-                  form.setValue("iconId", e.target.value || null)
-                }
               />
             </div>
             <div className="space-y-2">
@@ -256,5 +282,3 @@ export const UpdateTransportServiceDialog: FC<
     </CustomDialog>
   );
 };
-
-

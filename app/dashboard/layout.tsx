@@ -8,7 +8,7 @@ import {
   ChevronRight,
   Menu,
   CheckCircle,
-  Computer,
+  Home,
 } from "lucide-react";
 import { useTranslation } from "@/i18n/client";
 
@@ -23,7 +23,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useSession } from "next-auth/react";
 import { Loader } from "@/components/loader-table";
 import { DashboardRoute, DashboardRouteGroup } from "@/types/dashboard-routes";
-import { UsdPriceSetting } from "@/components/usd-price-setting";
 
 interface SidebarHeaderProps {
   isSidebarOpen: boolean;
@@ -38,7 +37,7 @@ const SidebarHeader: FC<SidebarHeaderProps> = ({
   isAutoHover,
   setIsAutoHover,
 }) => {
-  const { i18n } = useTranslation("Dashboard");
+  const { i18n, t } = useTranslation("Dashboard");
   const isRTL = i18n.language !== "en";
 
   return (
@@ -48,12 +47,12 @@ const SidebarHeader: FC<SidebarHeaderProps> = ({
           variant="ghost"
           onClick={() => setIsAutoHover(!isAutoHover)}
           className="rounded-full hover:bg-primary/10"
-          title={isAutoHover ? "Disable auto-hover" : "Enable auto-hover"}
+          title={isAutoHover ? t("DisableAutoHover") : t("EnableAutoHover")}
         >
           {isAutoHover ? (
-            <div className="text-xs">Auto ON</div>
+            <div className="text-xs">{t("AutoOn")}</div>
           ) : (
-            <div className="text-xs">Auto OFF</div>
+            <div className="text-xs">{t("AutoOff")}</div>
           )}
         </Button>
       )}
@@ -362,16 +361,15 @@ const DashboardLayout: FC<{ children: React.ReactNode }> = ({ children }) => {
               )}
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
-              <UsdPriceSetting />
+              {/* <UsdPriceSetting /> */}
               <Button
                 className={cn(
                   "bg-primary/20 text-primary hover:bg-primary/30",
                   "w-full gap-4"
                 )}
-                onClick={() => router.push("/pos")}
+                onClick={() => router.push("/")}
               >
-                <Computer />
-                POS
+                <Home />
               </Button>
               <div className="md:flex hidden items-center gap-1 sm:gap-2">
                 <ThemeToggleButton isExpanded={false} />

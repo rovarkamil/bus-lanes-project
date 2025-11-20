@@ -1,0 +1,107 @@
+{
+  "TransportServicesTitle": "Transport Services",
+  "ManageTransportServices": "Manage transport services, brand colors, and capacity settings.",
+  "CreateTransportService": "Create Transport Service",
+  "LoadingTransportServices": "Loading transport services...",
+  "NoTransportServicesFound": "No transport services found",
+  "Cancel": "Cancel",
+  "TotalItems": "Total Items",
+  "DisplayLimit": "Display Limit",
+  "Rows": "Rows",
+  "ClearFilters": "Clear Filters",
+  "Common": {
+    "Create": "Create",
+    "Creating": "Creating...",
+    "Update": "Update",
+    "Updating": "Updating...",
+    "Apply": "Apply",
+    "Cancel": "Cancel",
+    "Active": "Active",
+    "Inactive": "Inactive",
+    "Name": "Name",
+    "Description": "Description",
+    "NotAvailable": "Not available"
+  },
+  "Success": {
+    "Created": "Transport service created successfully",
+    "Updated": "Transport service updated successfully"
+  },
+  "Error": {
+    "CreateFailed": "Failed to create transport service",
+    "UpdateFailed": "Failed to update transport service"
+  },
+  "CreateDialog": {
+    "Title": "Create Transport Service",
+    "Description": "Define the service type, brand color, and operating details.",
+    "Type": "Service type",
+    "Color": "Brand color",
+    "IconId": "Map icon ID",
+    "MapIcon": "Map icon",
+    "Capacity": "Capacity",
+    "OperatingFrom": "Operating from",
+    "OperatingTo": "Operating to",
+    "IsActive": "Active status"
+  },
+  "UpdateDialog": {
+    "Title": "Update Transport Service",
+    "Description": "Modify the service metadata and operational settings.",
+    "Type": "Service type",
+    "Color": "Brand color",
+    "IconId": "Map icon ID",
+    "MapIcon": "Map icon",
+    "Capacity": "Capacity",
+    "OperatingFrom": "Operating from",
+    "OperatingTo": "Operating to",
+    "IsActive": "Active status"
+  },
+  "ViewDialog": {
+    "Title": "Service Details",
+    "Description": "Review the service metadata, operating window, and related assets.",
+    "OperationalDetails": "Operational details",
+    "CapacityValue": "Capacity: {{value}}",
+    "OperatingHours": "{{from}} – {{to}}",
+    "RoutesCount": "Routes: {{count}}",
+    "LanesCount": "Lanes: {{count}}",
+    "MapIcon": "Assigned map icon"
+  },
+  "FilterDialog": {
+    "Title": "Filter Services",
+    "Description": "Filter services by type, status, or capacity.",
+    "BasicFilters": "Basic Filters",
+    "Type": "Service type",
+    "IsActive": "Active status",
+    "Capacity": "Capacity",
+    "CapacityPlaceholder": "Enter capacity"
+  },
+  "Table": {
+    "Service": "Service",
+    "Type": "Type",
+    "Color": "Color",
+    "Capacity": "Capacity",
+    "OperatingHours": "Operating hours",
+    "OperatingRange": "{{from}} – {{to}}",
+    "ScheduleTBD": "Schedule to be determined",
+    "Relations": "Relations",
+    "Status": "Status",
+    "Routes": "Routes",
+    "Lanes": "Lanes",
+    "Actions": "Actions",
+    "MapIcon": "Map icon",
+    "ClickToSelectIcon": "Click to select map icon"
+  },
+  "Actions": {
+    "View": "View",
+    "Edit": "Edit",
+    "Delete": "Delete",
+    "Deleting": "Deleting...",
+    "DeleteConfirmTitle": "Are you sure?",
+    "DeleteConfirmMessage": "This action cannot be undone."
+  },
+  "TransportServiceType": {
+    "BUS": "Bus",
+    "MINIBUS": "Minibus",
+    "TAXI": "Taxi",
+    "SHARED_TAXI": "Shared taxi",
+    "OTHER": "Other"
+  }
+}

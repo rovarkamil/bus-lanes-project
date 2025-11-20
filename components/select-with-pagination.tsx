@@ -119,6 +119,34 @@ const SelectWithPagination = <
   } as TParams);
 
   // Update the getDisplayValue function to better handle different value types
+  const normalizeValue = useCallback(
+    (value: any): string | number | undefined => {
+      if (value === null || value === undefined) return undefined;
+      if (typeof value === "string" || typeof value === "number") return value;
+      if (typeof value === "object") {
+        const preferredOrder = [
+          i18n.language,
+          "en",
+          "ar",
+          "ckb",
+          "name",
+          "title",
+        ];
+        for (const key of preferredOrder) {
+          if (value[key] && typeof value[key] === "string") {
+            return value[key];
+          }
+        }
+        const firstString = Object.values(value).find(
+          (val) => typeof val === "string"
+        );
+        if (typeof firstString === "string") return firstString;
+      }
+      return undefined;
+    },
+    [i18n.language]
+  );
+
   const getDisplayValue = useCallback(
     (item: TItem | null) => {
       if (!item) return placeholder;
@@ -128,27 +156,35 @@ const SelectWithPagination = <
         return placeholder;
       }
 
-      // Handle cases where the item is a full object with relations
-      const itemAsAny = item as any; // Use type assertion for dynamic property access
-      if (itemAsAny.name) return itemAsAny.name;
-      if (itemAsAny.province?.name) return itemAsAny.province.name;
-      if (itemAsAny.branch?.name) return itemAsAny.branch.name;
-      if (itemAsAny.user?.name) return itemAsAny.user.name;
+      const itemAsAny = item as any;
 
-      // For objects with nested properties
+      const directName = normalizeValue(itemAsAny.name);
+      if (directName) return directName;
+
+      const provinceName = normalizeValue(itemAsAny.province?.name);
+      if (provinceName) return provinceName;
+
+      const branchName = normalizeValue(itemAsAny.branch?.name);
+      if (branchName) return branchName;
+
+      const userName = normalizeValue(itemAsAny.user?.name);
+      if (userName) return userName;
+
       for (const field of fields) {
         if (field.type === "relation" && field.relationKey) {
-          const value = itemAsAny[field.key]?.[field.relationKey];
+          const value = normalizeValue(
+            itemAsAny[field.key]?.[field.relationKey]
+          );
+          if (value) return value;
+        } else {
+          const value = normalizeValue(itemAsAny[field.key]);
           if (value) return value;
         }
       }
 
-      // If no name is found, try to get the first field value
-      const firstField = fields[0];
-      const value = itemAsAny[firstField.key];
-      return value || placeholder;
+      return placeholder;
     },
-    [fields, placeholder]
+    [fields, placeholder, normalizeValue]
   );
 
   // Update the initialization effect to properly set initial values
@@ -261,6 +297,8 @@ const SelectWithPagination = <
 
     // Special handling for name fields with language support
     if (field.key === "name") {
+      const localized = normalizeValue(item.name);
+      if (localized) return localized;
       if (i18n.language === "en" && item.englishName) {
         return item.englishName;
       }
@@ -278,9 +316,9 @@ const SelectWithPagination = <
     // Get the base value for other fields
     let value;
     if (field.type === "relation" && field.relationKey) {
-      value = item[field.key]?.[field.relationKey] || "N/A";
+      value = normalizeValue(item[field.key]?.[field.relationKey]) || "N/A";
     } else {
-      value = item[field.key];
+      value = normalizeValue(item[field.key]) ?? item[field.key];
     }
 
     // Format the value if a format function is provided
@@ -497,7 +535,7 @@ const SelectWithPagination = <
                           <TableCell className="text-left">
                             <Image
                               src={item[imageField] || "/images/no-image.jpg"}
-                              alt={getDisplayValue(item)}
+                              alt={(getDisplayValue(item) as string) ?? ""}
                               fill
                               className="rounded-sm"
                             />

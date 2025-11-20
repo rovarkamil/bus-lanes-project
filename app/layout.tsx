@@ -23,18 +23,18 @@ const Bahij = localFont({
 });
 // push
 export const metadata: Metadata = {
-  title: "Market POS",
-  description: "Market POS",
+  title: "Bus Interactive Map",
+  description: "Bus Interactive Map",
   icons: [
     {
       rel: "icon",
-      url: "/images/kubak-logo-black.png",
+      url: "/images/project-logo.png",
       media: "(prefers-color-scheme: light)",
       type: "image/png",
     },
     {
       rel: "icon",
-      url: "/images/kubak-logo-white.png",
+      url: "/images/project-logo.png",
       media: "(prefers-color-scheme: dark)",
       type: "image/png",
     },
