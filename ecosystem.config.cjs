@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "market-pos-system",
+      name: "bus-interactive-map-system",
       script: "node_modules/next/dist/bin/next",
       args: "start",
       instances: 1,
