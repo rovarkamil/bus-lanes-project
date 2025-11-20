@@ -61,19 +61,29 @@ export type BusLaneWithRelations = Prisma.BusLaneGetPayload<{
 }>;
 
 // Schema Definitions
-const baseBusLaneSchema = z.object({
-  nameFields: languageFieldsSchema,
-  descriptionFields: descriptionFieldsSchema.optional(),
-  path: pathSchema,
-  color: hexColorSchema.default("#0066CC"),
-  weight: positiveIntSchema.min(1).max(20).default(5),
-  opacity: percentageSchema.default(0.8),
-  images: z.array(z.any()).optional(),
-  stopIds: z.array(uuidSchema).optional(),
-  routeIds: z.array(uuidSchema).optional(),
-  serviceId: uuidSchema.nullable().optional(),
-  isActive: z.boolean().default(true),
+const laneDraftStopSchema = z.object({
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  name: z.string().max(120).optional(),
 });
+
+const baseBusLaneSchema = z
+  .object({
+    nameFields: languageFieldsSchema,
+    descriptionFields: descriptionFieldsSchema.optional(),
+    path: pathSchema,
+    color: hexColorSchema.default("#0066CC"),
+    weight: positiveIntSchema.min(1).max(20).default(5),
+    opacity: percentageSchema.default(0.8),
+    images: z.array(z.any()).optional(),
+    stopIds: z.array(uuidSchema).optional(),
+    routeIds: z.array(uuidSchema).optional(),
+    serviceId: uuidSchema.nullable().optional(),
+    isActive: z.boolean().default(true),
+  })
+  .extend({
+    draftStops: z.array(laneDraftStopSchema).optional(),
+  });
 
 export const busLaneSchema = baseModelSchema.extend(baseBusLaneSchema.shape);
 export const createBusLaneSchema = baseBusLaneSchema;
@@ -88,6 +98,7 @@ export const deleteBusLaneSchema = z.object({
 export type CreateBusLaneData = z.infer<typeof createBusLaneSchema>;
 export type UpdateBusLaneData = z.infer<typeof updateBusLaneSchema>;
 export type DeleteBusLaneData = z.infer<typeof deleteBusLaneSchema>;
+export type LaneDraftStopInput = z.infer<typeof laneDraftStopSchema>;
 
 // Filter Types
 export interface BusLaneFilterParams extends FilterParams {

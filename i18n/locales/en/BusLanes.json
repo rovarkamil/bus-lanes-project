@@ -1,0 +1,133 @@
+{
+  "BusLanesTitle": "Bus Lanes",
+  "ManageBusLanes": "Plan, audit, and publish bus lanes with localized descriptions.",
+  "CreateBusLane": "Create Bus Lane",
+  "LoadingBusLanes": "Loading bus lanes...",
+  "NoBusLanesFound": "No bus lanes found",
+  "Cancel": "Cancel",
+  "TotalItems": "Total Items",
+  "DisplayLimit": "Display Limit",
+  "Rows": "Rows",
+  "ClearFilters": "Clear Filters",
+  "Common": {
+    "Create": "Create",
+    "Creating": "Creating...",
+    "Update": "Update",
+    "Updating": "Updating...",
+    "Upload": "Upload",
+    "Uploading": "Uploading...",
+    "Active": "Active",
+    "Inactive": "Inactive",
+    "Name": "Name",
+    "Description": "Description",
+    "NotAvailable": "Not available",
+    "None": "None"
+  },
+  "MapDialog": {
+    "Title": "Lane map builder",
+    "Description": "Click the map to add lane points. Hold Shift to add draft stops.",
+    "ApplyChanges": "Apply lane geometry",
+    "ReferenceLayers": "Reference layers",
+    "ReferenceLayersDescription": "Existing stops, lanes, and routes are rendered for context.",
+    "NoReferenceLayers": "No reference layers available yet.",
+    "OpenBuilder": "Open map builder",
+    "EditPath": "Edit path in map builder",
+    "PathSummary": "{{count}} points plotted",
+    "NoPath": "No path configured yet",
+    "SummaryHelper": "Use the interactive builder for precise coordinates."
+  },
+  "Success": {
+    "Created": "Bus lane created successfully",
+    "Updated": "Bus lane updated successfully"
+  },
+  "Error": {
+    "CreateFailed": "Failed to create bus lane",
+    "UpdateFailed": "Failed to update bus lane",
+    "ImagesRequired": "At least one image is required"
+  },
+  "CreateDialog": {
+    "Title": "Create Bus Lane",
+    "Description": "Define the geometry, styling, and relations for this lane.",
+    "PathRequired": "Path JSON is required.",
+    "InvalidPath": "Path JSON must be a valid array of coordinates.",
+    "PathJSON": "Path coordinates (JSON)",
+    "Color": "Line color",
+    "Weight": "Line weight",
+    "Opacity": "Opacity",
+    "TransportService": "Transport service",
+    "ServiceId": "Service ID",
+    "Stops": "Stops",
+    "Routes": "Routes",
+    "Images": "Lane imagery",
+
+    "IsActive": "Active status"
+  },
+  "UpdateDialog": {
+    "Title": "Update Bus Lane",
+    "Description": "Modify the lane geometry, styling, and linked assets.",
+    "PathRequired": "Path JSON is required.",
+    "InvalidPath": "Path JSON must be a valid array of coordinates.",
+    "PathJSON": "Path coordinates (JSON)",
+    "Color": "Line color",
+    "Weight": "Line weight",
+    "Opacity": "Opacity",
+    "TransportService": "Transport service",
+    "ServiceId": "Service ID",
+    "Stops": "Stops",
+    "Routes": "Routes",
+    "Images": "Lane imagery",
+
+    "IsActive": "Active status"
+  },
+  "ViewDialog": {
+    "Title": "Lane Details",
+    "Description": "Review metadata, relations, and imagery for this lane.",
+    "WeightOpacity": "Weight {{weight}} • Opacity {{opacity}}",
+    "Relations": "Relations",
+    "Routes": "Routes: {{count}}",
+    "Stops": "Stops: {{count}}",
+    "Service": "Service",
+    "PathPoints": "Path points",
+    "Images": "Images",
+    "NoImages": "No images uploaded for this lane."
+  },
+  "FilterDialog": {
+    "Title": "Filter Bus Lanes",
+    "Description": "Filter lanes by linked service or status.",
+    "BasicFilters": "Basic Filters",
+    "ServiceId": "Service ID",
+    "ServiceIdPlaceholder": "Enter service ID",
+    "IsActive": "Active status",
+    "IsActivePlaceholder": "Select a status"
+  },
+  "Table": {
+    "Name": "Name",
+    "PathPoints": "Path points",
+    "PathPointsBadge": "{{count}} pts",
+    "Color": "Color",
+    "Relations": "Relations",
+    "Status": "Status",
+    "Service": "Service",
+    "ServiceType": "Service type",
+    "RouteNumber": "Route #",
+    "Created": "Created",
+    "Stops": "Stops",
+    "Routes": "Routes",
+    "Actions": "Actions"
+  },
+  "Actions": {
+    "View": "View",
+    "Edit": "Edit",
+    "Delete": "Delete",
+    "Deleting": "Deleting...",
+    "DeleteConfirmTitle": "Are you sure?",
+    "DeleteConfirmMessage": "This action cannot be undone."
+  },
+  "TransportServiceType": {
+    "BUS": "Bus",
+    "MINIBUS": "Minibus",
+    "TAXI": "Taxi",
+    "SHARED_TAXI": "Shared taxi",
+    "OTHER": "Other"
+  }
+}

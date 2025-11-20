@@ -19,6 +19,8 @@
     "Active": "Active",
     "Inactive": "Inactive",
     "Name": "Name",
+    "Size": "Size",
+    "File": "File",
     "Description": "Description",
     "NotAvailable": "Not available"
   },

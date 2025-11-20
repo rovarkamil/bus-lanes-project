@@ -1,0 +1,130 @@
+{
+  "BusLanesTitle": "مسارات الحافلات",
+  "ManageBusLanes": "قم بتخطيط ومراجعة ونشر مسارات الحافلات مع بيانات موثوقة.",
+  "CreateBusLane": "إنشاء مسار حافلة",
+  "LoadingBusLanes": "جاري تحميل مسارات الحافلات...",
+  "NoBusLanesFound": "لا توجد مسارات حافلات",
+  "Cancel": "إلغاء",
+  "SelectTransportService": "اختر خدمة النقل",
+  "SelectStops": "اختر المحطات",
+  "SelectRoutes": "اختر الخطوط",
+  "Common": {
+    "Create": "إنشاء",
+    "Creating": "جارٍ الإنشاء...",
+    "Update": "تحديث",
+    "Updating": "جارٍ التحديث...",
+    "Upload": "رفع",
+    "Uploading": "جارٍ الرفع...",
+    "Active": "نشط",
+    "Inactive": "غير نشط",
+    "Name": "الاسم",
+    "Description": "الوصف",
+    "NotAvailable": "غير متوفر",
+    "None": "لا يوجد"
+  },
+  "MapDialog": {
+    "Title": "منشئ المسار على الخريطة",
+    "Description": "انقر على الخريطة لإضافة نقاط المسار. اضغط مع زر Shift لإضافة محطات مؤقتة.",
+    "ApplyChanges": "تطبيق مسار المسار",
+    "ReferenceLayers": "طبقات مرجعية",
+    "ReferenceLayersDescription": "تظهر المحطات والخطوط والمسارات الحالية للسياق.",
+    "NoReferenceLayers": "لا توجد طبقات مرجعية متاحة.",
+    "OpenBuilder": "فتح منشئ الخريطة",
+    "EditPath": "تعديل المسار على الخريطة",
+    "PathSummary": "تم رسم {{count}} نقطة",
+    "NoPath": "لم يتم تكوين مسار بعد",
+    "SummaryHelper": "استخدم المنشئ التفاعلي للحصول على إحداثيات دقيقة."
+  },
+  "Success": {
+    "Created": "تم إنشاء مسار الحافلة بنجاح",
+    "Updated": "تم تحديث مسار الحافلة بنجاح"
+  },
+  "Error": {
+    "CreateFailed": "فشل إنشاء مسار الحافلة",
+    "UpdateFailed": "فشل تحديث مسار الحافلة",
+    "ImagesRequired": "يجب رفع صورة واحدة على الأقل"
+  },
+  "CreateDialog": {
+    "Title": "إنشاء مسار حافلة",
+    "Description": "حدد المسار، التنسيق، والعلاقات لهذا المسار.",
+    "PathRequired": "مطلوب إدخال مسار بصيغة JSON.",
+    "InvalidPath": "يجب أن يكون المسار مصفوفة إحداثيات صحيحة.",
+    "PathJSON": "إحداثيات المسار (JSON)",
+    "Color": "لون الخط",
+    "Weight": "سماكة الخط",
+    "Opacity": "الشفافية",
+    "TransportService": "خدمة النقل",
+    "ServiceId": "معرّف الخدمة",
+    "Stops": "المحطات",
+    "Routes": "الخطوط",
+    "Images": "صور المسار",
+    "IsActive": "الحالة النشطة"
+  },
+  "UpdateDialog": {
+    "Title": "تحديث مسار حافلة",
+    "Description": "عدّل المسار، التنسيق، والعناصر المرتبطة.",
+    "PathRequired": "مطلوب إدخال مسار بصيغة JSON.",
+    "InvalidPath": "يجب أن يكون المسار مصفوفة إحداثيات صحيحة.",
+    "PathJSON": "إحداثيات المسار (JSON)",
+    "Color": "لون الخط",
+    "Weight": "سماكة الخط",
+    "Opacity": "الشفافية",
+    "TransportService": "خدمة النقل",
+    "ServiceId": "معرّف الخدمة",
+    "Stops": "المحطات",
+    "Routes": "الخطوط",
+    "Images": "صور المسار",
+    "IsActive": "الحالة النشطة"
+  },
+  "ViewDialog": {
+    "Title": "تفاصيل المسار",
+    "Description": "استعرض البيانات والعلاقات والوسائط لهذا المسار.",
+    "WeightOpacity": "السماكة {{weight}} • الشفافية {{opacity}}",
+    "Relations": "العلاقات",
+    "Routes": "الخطوط: {{count}}",
+    "Stops": "المحطات: {{count}}",
+    "Service": "الخدمة",
+    "PathPoints": "نقاط المسار",
+    "Images": "الصور",
+    "NoImages": "لا توجد صور لهذا المسار."
+  },
+  "FilterDialog": {
+    "Title": "تصفية المسارات",
+    "Description": "رشّح المسارات حسب الخدمة أو الحالة.",
+    "BasicFilters": "مرشحات أساسية",
+    "ServiceId": "معرّف الخدمة",
+    "ServiceIdPlaceholder": "أدخل معرّف الخدمة",
+    "IsActive": "الحالة النشطة",
+    "IsActivePlaceholder": "اختر الحالة"
+  },
+  "Table": {
+    "Name": "الاسم",
+    "PathPoints": "نقاط المسار",
+    "PathPointsBadge": "{{count}} نقطة",
+    "Color": "اللون",
+    "Relations": "العلاقات",
+    "Status": "الحالة",
+    "Service": "الخدمة",
+    "Created": "تم الإنشاء",
+    "Stops": "المحطات",
+    "Routes": "الخطوط",
+    "ServiceType": "نوع الخدمة",
+    "RouteNumber": "رقم الخط",
+    "Actions": "الإجراءات"
+  },
+  "Actions": {
+    "View": "عرض",
+    "Edit": "تعديل",
+    "Delete": "حذف",
+    "Deleting": "جارٍ الحذف...",
+    "DeleteConfirmTitle": "هل أنت متأكد؟",
+    "DeleteConfirmMessage": "لا يمكن التراجع عن هذا الإجراء."
+  },
+  "TransportServiceType": {
+    "BUS": "حافلة",
+    "MINIBUS": "ميني باص",
+    "TAXI": "تاكسي",
+    "SHARED_TAXI": "تاكسي مشترك",
+    "OTHER": "أخرى"
+  }
+}

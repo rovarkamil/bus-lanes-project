@@ -178,6 +178,11 @@ export const CreateTransportServiceDialog: FC<
                     type: "relation",
                     relationKey: "en",
                   },
+                  {
+                    key: "iconSize",
+                    label: t("Common.Size"),
+                    type: "number",
+                  },
                 ]}
                 onSelect={(item) => form.setValue("iconId", item?.id ?? null)}
                 placeholder={t("Table.ClickToSelectIcon")}

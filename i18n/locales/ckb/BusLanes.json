@@ -1,0 +1,130 @@
+{
+  "BusLanesTitle": "ڕێدەرە بۆسەکان",
+  "ManageBusLanes": "ڕێدەرەکان دیزاین بکە، پشکنین بکە و بڵاوبکەوە بە زانیارییە ناوخۆییەکان.",
+  "CreateBusLane": "ڕێدەری بۆس دروست بکە",
+  "LoadingBusLanes": "ڕێدەرەکانی بۆس دەبارێن...",
+  "NoBusLanesFound": "هیچ ڕێدەری بۆس نەدۆزرایەوە",
+  "Cancel": "هەڵوەشاندنەوە",
+  "SelectTransportService": "خزمەتگوزاری هەڵبژێرە",
+  "SelectStops": "وەستانە هەڵبژێرە",
+  "SelectRoutes": "ڕێگا هەڵبژێرە",
+  "Common": {
+    "Create": "دروستکردن",
+    "Creating": "لە دروستکردندایە...",
+    "Update": "نوێکردنەوە",
+    "Updating": "لە نوێکردنەوەدایە...",
+    "Upload": "بارکردن",
+    "Uploading": "بار دەکرێت...",
+    "Active": "چالاک",
+    "Inactive": "ناچالاک",
+    "Name": "ناو",
+    "Description": "وەسف",
+    "NotAvailable": "بەردەست نییە",
+    "None": "نییە"
+  },
+  "MapDialog": {
+    "Title": "دروستکەری ڕێدەر لەسەر نەخشە",
+    "Description": "لەسەر نەخشەکە کلیک بکە بۆ زیادکردنی خاڵەکانی ڕێگا. Shift بگرە بۆ زیادکردنی وەستانەکان.",
+    "ApplyChanges": "جێبەجێکردنی ڕێڕەوی ڕێدەر",
+    "ReferenceLayers": "لەیرەکانی سەرچاوە",
+    "ReferenceLayersDescription": "وەستانەکان، ڕێگاکان و ڕێدرەکانی ئێستا بۆ کۆنتێکست نیشان دەدرێن.",
+    "NoReferenceLayers": "هیچ لەیرەی سەرچاوە نییە.",
+    "OpenBuilder": "دروستکەری نەخشە بکەرەوە",
+    "EditPath": "ڕێگاکە لەسەر نەخشە دەستکاری بکە",
+    "PathSummary": "{{count}} خاڵ دیاری کرا",
+    "NoPath": "هێشتا ڕێگایەک دیاری نەکراوە",
+    "SummaryHelper": "دروستکەری تەواوی نەخشە بەکاربهێنە بۆ ناونیشانی ورد."
+  },
+  "Success": {
+    "Created": "ڕێدەری بۆس بەسەرکەوتووی دروستکرا",
+    "Updated": "ڕێدەری بۆس بەسەرکەوتووی نوێکرایەوە"
+  },
+  "Error": {
+    "CreateFailed": "نەتوانرا ڕێدەری بۆس دروست بکرێت",
+    "UpdateFailed": "نەتوانرا ڕێدەری بۆس نوێ بکرێتەوە",
+    "ImagesRequired": "پێویستە لانیکەم یەک وێنە بار بکرێت"
+  },
+  "CreateDialog": {
+    "Title": "دروستکردنی ڕێدەری بۆس",
+    "Description": "ڕێگای نەخشە، ڕەنگ و پەیوەندیەکان دیاری بکە.",
+    "PathRequired": "پێویستە نەخشەکە بە جەی ئەلی نیوەکان تۆمار بکرێت.",
+    "InvalidPath": "پێویستە نەخشەکە مۆڵگەی دروست بێت.",
+    "PathJSON": "کۆردیناتەکان (JSON)",
+    "Color": "ڕەنگی هێڵ",
+    "Weight": "قەبارەی هێڵ",
+    "Opacity": "ڕوونی",
+    "TransportService": "خزمەتگوزاری گواستنەوە",
+    "ServiceId": "ناسنامەی خزمەتگوزاری",
+    "Stops": "وەستانەکان",
+    "Routes": "ڕێگاکان",
+    "Images": "وێنەکانی ڕێدەر",
+    "IsActive": "دۆخی چالاکی"
+  },
+  "UpdateDialog": {
+    "Title": "نوێکردنەوەی ڕێدەری بۆس",
+    "Description": "ڕێگاکە، ڕەنگ و پەیوەندیەکان نوێ بکە.",
+    "PathRequired": "پێویستە نەخشەکە بە JSON بنووسرێت.",
+    "InvalidPath": "پێویستە نەخشەکە مۆڵگەی درست بێت.",
+    "PathJSON": "کۆردیناتەکان (JSON)",
+    "Color": "ڕەنگی هێڵ",
+    "Weight": "قەبارەی هێڵ",
+    "Opacity": "ڕوونی",
+    "TransportService": "خزمەتگوزاری گواستنەوە",
+    "ServiceId": "ناسنامەی خزمەتگوزاری",
+    "Stops": "وەستانەکان",
+    "Routes": "ڕێگاکان",
+    "Images": "وێنەکانی ڕێدەر",
+    "IsActive": "دۆخی چالاکی"
+  },
+  "ViewDialog": {
+    "Title": "وردەکاریی ڕێدەر",
+    "Description": "زانیاری و پەیوەندی و وێنەکان ببینە.",
+    "WeightOpacity": "قەبارە {{weight}} • ڕوونی {{opacity}}",
+    "Relations": "پەیوەندییەکان",
+    "Routes": "ڕێگا: {{count}}",
+    "Stops": "وەستانە: {{count}}",
+    "Service": "خزمەتگوزاری",
+    "PathPoints": "خاڵەکانی ڕێگا",
+    "Images": "وێنەکان",
+    "NoImages": "هیچ وێنەیەک بۆ ئەم ڕێدەرە نییە."
+  },
+  "FilterDialog": {
+    "Title": "پاڵاوتنی ڕێدەر",
+    "Description": "بەپێی خزمەتگوزاری یان دۆخ پالبدە.",
+    "BasicFilters": "پاڵاوتنی سەرەکی",
+    "ServiceId": "ناسنامەی خزمەتگوزاری",
+    "ServiceIdPlaceholder": "ناسنامەی خزمەت بنووسە",
+    "IsActive": "دۆخی چالاکی",
+    "IsActivePlaceholder": "دۆخ هەڵبژێرە"
+  },
+  "Table": {
+    "Name": "ناو",
+    "PathPoints": "خاڵەکانی ڕێگا",
+    "PathPointsBadge": "{{count}} خاڵ",
+    "Color": "ڕەنگ",
+    "Relations": "پەیوەندییەکان",
+    "Status": "دۆخ",
+    "Service": "خزمەتگوزاری",
+    "Created": "دروستکراوە",
+    "Stops": "وەستانەکان",
+    "Routes": "ڕێگاکان",
+    "ServiceType": "جۆری خزمەت",
+    "RouteNumber": "ژمارەی ڕێگا",
+    "Actions": "کردارەکان"
+  },
+  "Actions": {
+    "View": "بینین",
+    "Edit": "دەستکاری",
+    "Delete": "سڕینەوە",
+    "Deleting": "سڕینەوە لە جێبەجێکردندایە...",
+    "DeleteConfirmTitle": "دڵنیایت؟",
+    "DeleteConfirmMessage": "ناتوانرێت ئەم کردارە گەڕێندرێتەوە."
+  },
+  "TransportServiceType": {
+    "BUS": "ئۆتۆبوس",
+    "MINIBUS": "مینیبوس",
+    "TAXI": "تاکسی",
+    "SHARED_TAXI": "تاکسی پێکەوە",
+    "OTHER": "هیتر"
+  }
+}

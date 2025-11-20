@@ -46,7 +46,9 @@ export const UpdateTransportServiceDialog: FC<
     "english"
   );
 
-  const [selectedMapIcon, setSelectedMapIcon] = useState<MapIcon | null>(null);
+  const [selectedMapIcon, setSelectedMapIcon] = useState<MapIcon | null>(
+    data.icon ?? null
+  );
 
   const { mutateAsync: updateTransportService, isPending: isSubmitting } =
     useUpdateTransportService();
@@ -197,6 +199,11 @@ export const UpdateTransportServiceDialog: FC<
                     label: t("Common.Name"),
                     type: "relation",
                     relationKey: "en",
+                  },
+                  {
+                    key: "iconSize",
+                    label: t("Common.Size"),
+                    type: "number",
                   },
                 ]}
                 onSelect={(item) => {

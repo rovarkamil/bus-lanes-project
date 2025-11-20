@@ -19,6 +19,8 @@
     "Active": "نشط",
     "Inactive": "غير نشط",
     "Name": "الاسم",
+    "Size": "الحجم",
+    "File": "الملف",
     "Description": "الوصف",
     "NotAvailable": "غير متوفر"
   },

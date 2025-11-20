@@ -1,7 +1,11 @@
 "use server";
 
 import { Prisma } from "@prisma/client";
-import { CreateBusLaneData, UpdateBusLaneData } from "@/types/models/bus-lane";
+import {
+  CreateBusLaneData,
+  LaneDraftStopInput,
+  UpdateBusLaneData,
+} from "@/types/models/bus-lane";
 import {
   handleLanguageCreation,
   handleLanguageUpdate,
@@ -12,6 +16,7 @@ import {
   UploadedFileInput,
 } from "@/lib/helpers/file-utils";
 import { normalizeLanguageFields } from "@/lib/helpers/language-utils";
+import { createBusStopWithBusinessLogic } from "@/lib/helpers/bus-stop-helpers";
 
 type PrismaTransaction = Prisma.TransactionClient;
 
@@ -23,6 +28,56 @@ type BusLaneUpdateData = UpdateBusLaneData & {
   images?: UploadedFileInput[];
 };
 
+type MinimalLaneStop = { id: string; nameId?: string | null };
+
+async function createDraftStopsForLane({
+  draftStops,
+  laneId,
+  tx,
+  uploadedById,
+}: {
+  draftStops?: LaneDraftStopInput[];
+  laneId: string;
+  tx: PrismaTransaction;
+  uploadedById?: string | null;
+}): Promise<MinimalLaneStop[]> {
+  if (!draftStops?.length) {
+    return [];
+  }
+
+  const createdStops = await Promise.all(
+    draftStops.map((stop, index) =>
+      createBusStopWithBusinessLogic({
+        data: {
+          nameFields: {
+            en: stop.name ?? `Lane stop ${index + 1}`,
+            ar: null,
+            ckb: null,
+          },
+          descriptionFields: undefined,
+          latitude: stop.latitude,
+          longitude: stop.longitude,
+          laneIds: [laneId],
+          routeIds: [],
+          isActive: true,
+          hasShelter: false,
+          hasBench: false,
+          hasLighting: false,
+          isAccessible: false,
+          hasRealTimeInfo: false,
+        },
+        tx,
+        uploadedById,
+      })
+    )
+  );
+
+  return createdStops.map((stop) => ({
+    id: stop.id,
+    nameId: (stop as { nameId?: string | null }).nameId ?? null,
+  }));
+}
+
 export async function createBusLaneWithBusinessLogic({
   data,
   tx,
@@ -32,6 +87,8 @@ export async function createBusLaneWithBusinessLogic({
   tx: PrismaTransaction;
   uploadedById?: string | null;
 }) {
+  const { draftStops, stopIds, routeIds, ...laneData } = data;
+
   const languagePayload = normalizeLanguageFields(data, [
     "nameFields",
     "descriptionFields",
@@ -49,22 +106,24 @@ export async function createBusLaneWithBusinessLogic({
 
   const lane = await tx.busLane.create({
     data: {
-      path: data.path as Prisma.InputJsonValue,
-      color: data.color,
-      weight: data.weight,
-      opacity: data.opacity,
-      isActive: data.isActive ?? true,
+      path: laneData.path as Prisma.InputJsonValue,
+      color: laneData.color,
+      weight: laneData.weight,
+      opacity: laneData.opacity,
+      isActive: laneData.isActive ?? true,
       name: { connect: { id: nameId } },
       description: descriptionId
         ? { connect: { id: descriptionId } }
         : undefined,
-      service: data.serviceId ? { connect: { id: data.serviceId } } : undefined,
-      images: imageConnections ? { connect: imageConnections } : undefined,
-      stops: data.stopIds?.length
-        ? { connect: data.stopIds.map((stopId) => ({ id: stopId })) }
+      service: laneData.serviceId
+        ? { connect: { id: laneData.serviceId } }
         : undefined,
-      routes: data.routeIds?.length
-        ? { connect: data.routeIds.map((routeId) => ({ id: routeId })) }
+      images: imageConnections ? { connect: imageConnections } : undefined,
+      stops: stopIds?.length
+        ? { connect: stopIds.map((stopId) => ({ id: stopId })) }
+        : undefined,
+      routes: routeIds?.length
+        ? { connect: routeIds.map((routeId) => ({ id: routeId })) }
         : undefined,
     },
     include: {
@@ -76,6 +135,20 @@ export async function createBusLaneWithBusinessLogic({
       routes: { select: { id: true, nameId: true } },
     },
   });
+
+  const createdStops = await createDraftStopsForLane({
+    draftStops,
+    laneId: lane.id,
+    tx,
+    uploadedById,
+  });
+
+  if (createdStops.length) {
+    return {
+      ...lane,
+      stops: [...lane.stops, ...createdStops],
+    };
+  }
 
   return lane;
 }
@@ -97,6 +170,7 @@ export async function updateBusLaneWithBusinessLogic({
     stopIds,
     routeIds,
     serviceId,
+    draftStops,
     ...rest
   } = data;
 
@@ -187,6 +261,20 @@ export async function updateBusLaneWithBusinessLogic({
       routes: { select: { id: true, nameId: true } },
     },
   });
+
+  const createdStops = await createDraftStopsForLane({
+    draftStops,
+    laneId: id,
+    tx,
+    uploadedById,
+  });
+
+  if (createdStops.length) {
+    return {
+      ...lane,
+      stops: [...lane.stops, ...createdStops],
+    };
+  }
 
   return lane;
 }

@@ -55,6 +55,8 @@ interface SelectWithPaginationProps {
   getItemById?: (id: string | number) => Promise<any>;
   defaultValue?: any[];
   onValueChange?: (value: any[]) => void;
+  params?: Record<string, unknown>;
+  select?: string;
 }
 
 const MultipleSelectWithPagination: FC<SelectWithPaginationProps> = ({
@@ -64,6 +66,8 @@ const MultipleSelectWithPagination: FC<SelectWithPaginationProps> = ({
   imageField,
   placeholder = "Select items",
   value,
+  params,
+  select,
   initialSelectedItems,
   getItemById,
   defaultValue,
@@ -74,7 +78,7 @@ const MultipleSelectWithPagination: FC<SelectWithPaginationProps> = ({
   const [search, setSearch] = useState("");
   const [currentSearch, setCurrentSearch] = useState("");
   const [searchField, setSearchField] = useState(fields[0].key);
-  const { t } = useTranslation("Common");
+  const { t, i18n } = useTranslation("Common");
 
   const {
     data: items,
@@ -82,9 +86,9 @@ const MultipleSelectWithPagination: FC<SelectWithPaginationProps> = ({
     error,
     refetch,
   } = fetchFunction({
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    params: { [searchField]: currentSearch },
+    ...params,
+    ...(select ? { select } : {}),
+    ...(currentSearch ? { [searchField]: currentSearch } : {}),
     page,
     limit: 10,
   });
@@ -107,7 +111,8 @@ const MultipleSelectWithPagination: FC<SelectWithPaginationProps> = ({
             console.error("Error fetching item details:", error);
           }
         } else if (items) {
-          const dataArray = items?.items || items?.data?.data || items?.data || [];
+          const dataArray =
+            items?.items || items?.data?.data || items?.data || [];
           initialValues = dataArray.filter((item: any) =>
             value.includes(item.id)
           );
@@ -148,15 +153,45 @@ const MultipleSelectWithPagination: FC<SelectWithPaginationProps> = ({
     return () => clearTimeout(debounceTimeout);
   }, [search, refetch]);
 
-  const totalPages = items?.totalPages || items?.meta?.totalPages || items?.pagination?.totalPages || 1;
+  const totalPages =
+    items?.totalPages ||
+    items?.meta?.totalPages ||
+    items?.pagination?.totalPages ||
+    1;
 
-  // Update the getDisplayValue function
+  const normalizeValue = useCallback(
+    (value: any): string | number | undefined => {
+      if (value === null || value === undefined) return undefined;
+      if (typeof value === "string" || typeof value === "number") return value;
+      if (typeof value === "object") {
+        const preferredOrder = [
+          i18n.language,
+          "en",
+          "ar",
+          "ckb",
+          "name",
+          "title",
+        ];
+        for (const key of preferredOrder) {
+          if (value[key] && typeof value[key] === "string") {
+            return value[key];
+          }
+        }
+        const firstString = Object.values(value).find(
+          (val) => typeof val === "string"
+        );
+        if (typeof firstString === "string") return firstString;
+      }
+      return undefined;
+    },
+    [i18n.language]
+  );
+
   const getDisplayValue = useCallback(
     (items: any[]) => {
       if (!items.length) return placeholder;
-      return `${items.length} ${t(`item${items.length > 1 ? "s" : ""}`)} ${t(
-        "selected"
-      )}`;
+      const key = items.length > 1 ? "items" : "item";
+      return `${items.length} ${t(key)} ${t("selected")}`;
     },
     [placeholder, t]
   );
@@ -173,7 +208,7 @@ const MultipleSelectWithPagination: FC<SelectWithPaginationProps> = ({
               key={item.id}
               className="flex items-center gap-1 px-2 py-1 text-sm rounded-md bg-primary/10 border"
             >
-              {item.name || "Unknown"}
+              {normalizeValue(item.name) ?? item.name ?? "Unknown"}
               <Button
                 type="button"
                 variant="ghost"
@@ -191,14 +226,21 @@ const MultipleSelectWithPagination: FC<SelectWithPaginationProps> = ({
         </div>
       );
     },
-    [handleSelectItem]
+    [handleSelectItem, normalizeValue]
   );
 
   const renderCellContent = (item: any, field: Field) => {
+    if (field.type === "relation" && field.relationKey) {
+      return (
+        normalizeValue(item[field.key]?.[field.relationKey]) ??
+        item[field.key]?.[field.relationKey] ??
+        "N/A"
+      );
+    }
     if (field.key === "branch") {
       return item.branch?.name || "N/A";
     }
-    return item[field.key];
+    return normalizeValue(item[field.key]) ?? item[field.key];
   };
 
   return (
@@ -264,7 +306,12 @@ const MultipleSelectWithPagination: FC<SelectWithPaginationProps> = ({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(items?.items || items?.data?.data || items?.data || []).map((item: any) => (
+                    {(
+                      items?.items ||
+                      items?.data?.data ||
+                      items?.data ||
+                      []
+                    ).map((item: any) => (
                       <TableRow
                         key={item.id}
                         onClick={() => handleSelectItem(item)}

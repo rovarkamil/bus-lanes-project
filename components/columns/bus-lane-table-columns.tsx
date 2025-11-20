@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Activity, Route as RouteIcon, MapPin, CircleDot } from "lucide-react";
 
-const PathLengthCell = ({ path }: { path: unknown }) => {
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+const PathLengthCell = ({ path, t }: { path: unknown; t: Translate }) => {
   const length = useMemo(() => {
     if (!Array.isArray(path)) return 0;
     return path.length;
@@ -20,7 +22,7 @@ const PathLengthCell = ({ path }: { path: unknown }) => {
       className="bg-blue-50 text-blue-700 border-blue-200"
     >
       <Activity className="w-3 h-3 mr-1" />
-      {length} pts
+      {t("Table.PathPointsBadge", { count: length })}
     </Badge>
   );
 };
@@ -52,7 +54,7 @@ const ColorCell = ({ color }: { color: string }) => (
   </div>
 );
 
-const StatusBadge = ({ isActive }: { isActive: boolean }) => (
+const StatusBadge = ({ isActive, t }: { isActive: boolean; t: Translate }) => (
   <Badge
     variant="outline"
     className={cn(
@@ -63,7 +65,7 @@ const StatusBadge = ({ isActive }: { isActive: boolean }) => (
     )}
   >
     <CircleDot className="w-3 h-3 mr-1" />
-    {isActive ? "Active" : "Inactive"}
+    {isActive ? t("Common.Active") : t("Common.Inactive")}
   </Badge>
 );
 
@@ -78,14 +80,18 @@ const DateCell = ({ value }: { value: Date }) => (
   </div>
 );
 
-export const busLaneColumns: Column<BusLaneWithRelations>[] = [
+export const busLaneColumns = (
+  t: Translate
+): Column<BusLaneWithRelations>[] => [
   {
     key: "name",
-    label: "Name",
+    label: t("Table.Name"),
     sortable: true,
     render: (lane) => (
       <div className="flex flex-col">
-        <span className="text-sm font-medium">{lane.name?.en ?? "-"}</span>
+        <span className="text-sm font-medium">
+          {lane.name?.en ?? t("Common.NotAvailable")}
+        </span>
         {lane.description?.en && (
           <span className="text-xs text-muted-foreground line-clamp-2">
             {lane.description.en}
@@ -96,31 +102,31 @@ export const busLaneColumns: Column<BusLaneWithRelations>[] = [
   },
   {
     key: "path",
-    label: "Path Points",
+    label: t("Table.PathPoints"),
     sortable: false,
-    render: (lane) => <PathLengthCell path={lane.path} />,
+    render: (lane) => <PathLengthCell path={lane.path} t={t} />,
   },
   {
     key: "color",
-    label: "Color",
+    label: t("Table.Color"),
     sortable: false,
     render: (lane) => <ColorCell color={lane.color} />,
   },
   {
     key: "relations",
-    label: "Relations",
+    label: t("Table.Relations"),
     sortable: false,
     className: "min-w-[220px]",
     render: (lane) => (
       <div className="flex flex-col gap-1">
         <RelationCountCell
           icon={MapPin}
-          label="Stops"
+          label={t("Table.Stops")}
           count={lane.stops?.length ?? 0}
         />
         <RelationCountCell
           icon={RouteIcon}
-          label="Routes"
+          label={t("Table.Routes")}
           count={lane.routes?.length ?? 0}
         />
       </div>
@@ -128,24 +134,30 @@ export const busLaneColumns: Column<BusLaneWithRelations>[] = [
   },
   {
     key: "isActive",
-    label: "Status",
+    label: t("Table.Status"),
     sortable: true,
-    render: (lane) => <StatusBadge isActive={lane.isActive ?? false} />,
+    render: (lane) => <StatusBadge isActive={lane.isActive ?? false} t={t} />,
   },
   {
     key: "service",
-    label: "Service",
+    label: t("Table.Service"),
     sortable: true,
     render: (lane) => (
       <div className="flex items-center gap-2">
         <RouteIcon className="w-4 h-4 text-muted-foreground" />
-        <span className="text-sm">{lane.service?.type ?? "—"}</span>
+        <span className="text-sm">
+          {lane.service?.type
+            ? t(`TransportServiceType.${lane.service.type}`, {
+                defaultValue: lane.service.type,
+              })
+            : t("Common.None")}
+        </span>
       </div>
     ),
   },
   {
     key: "createdAt",
-    label: "Created",
+    label: t("Table.Created"),
     sortable: true,
     render: (lane) => <DateCell value={lane.createdAt} />,
   },
