@@ -1,0 +1,110 @@
+{
+  "BusSchedulesTitle": "خشتەکانی پاس",
+  "ManageBusSchedules": "بەڕێوەبردنی خشتەکانی پاس و کاتەکانی دەرچوون و وەستگەکانی ڕێگە.",
+  "CreateBusSchedule": "دروستکردنی خشتەی پاس",
+  "LoadingBusSchedules": "بارکردنی خشتەکانی پاس...",
+  "NoBusSchedulesFound": "هیچ خشتەیەکی پاس نەدۆزرایەوە",
+  "Cancel": "هەڵوەشاندن",
+  "TotalItems": "کۆی بەشەکان",
+  "DisplayLimit": "سنوری پیشاندان",
+  "Rows": "ڕیفەکان",
+  "ClearFilters": "پاککردنەوەی فیلتەرەکان",
+  "Common": {
+    "Create": "دروستکردن",
+    "Creating": "دروستکردن...",
+    "Update": "نوێکردنەوە",
+    "Updating": "نوێکردنەوە...",
+    "Apply": "جێبەجێکردن",
+    "Cancel": "هەڵوەشاندن",
+    "Active": "چالاک",
+    "Inactive": "ناچالاک",
+    "Name": "ناو",
+    "Description": "وەسف",
+    "NotAvailable": "بەردەست نییە",
+    "None": "هیچ"
+  },
+  "Success": {
+    "Created": "خشتەی پاس بە سەرکەوتوویی دروست کرا",
+    "Updated": "خشتەی پاس بە سەرکەوتوویی نوێکرایەوە"
+  },
+  "Error": {
+    "CreateFailed": "دروستکردنی خشتەی پاس سەرکەوتوو نەبوو",
+    "UpdateFailed": "نوێکردنەوەی خشتەی پاس سەرکەوتوو نەبوو",
+    "RouteStopRequired": "ڕێگە و وەستگە پێویستن"
+  },
+  "CreateDialog": {
+    "Title": "دروستکردنی خشتەی پاس",
+    "Description": "پێناسەکردنی وردەکاریەکانی خشتە و ڕێگە و وەستگە و کاتی دەرچوون.",
+    "RouteId": "ڕێگە",
+    "StopId": "وەستگە",
+    "DepartureTime": "کاتی دەرچوون",
+    "DayOfWeek": "ڕۆژی هەفتە",
+    "SpecificDate": "بەرواری دیاریکراو",
+    "Notes": "تێبینیەکان",
+    "NotesPlaceholder": "تێبینی زیادە بنووسە",
+    "IsActive": "دۆخی چالاکی"
+  },
+  "UpdateDialog": {
+    "Title": "نوێکردنەوەی خشتەی پاس",
+    "Description": "گۆڕینی وردەکاریەکانی خشتە و ڕێکخستنەکانی کارکردن.",
+    "RouteId": "ڕێگە",
+    "StopId": "وەستگە",
+    "DepartureTime": "کاتی دەرچوون",
+    "DayOfWeek": "ڕۆژی هەفتە",
+    "SpecificDate": "بەرواری دیاریکراو",
+    "Notes": "تێبینیەکان",
+    "NotesPlaceholder": "تێبینی زیادە بنووسە",
+    "IsActive": "دۆخی چالاکی"
+  },
+  "ViewDialog": {
+    "Title": "وردەکاریەکانی خشتە",
+    "Description": "پێداچوونەوەی زانیاریەکانی خشتە و وردەکاریە پەیوەندیدارەکان.",
+    "Route": "ڕێگە",
+    "Stop": "وەستگە",
+    "DepartureTime": "کاتی دەرچوون",
+    "Notes": "تێبینیەکان"
+  },
+  "FilterDialog": {
+    "Title": "فیلتەرکردنی خشتەکان",
+    "Description": "فیلتەرکردنی خشتەکان بەپێی ڕێگە یان وەستگە یان ڕۆژ یان دۆخ.",
+    "BasicFilters": "فیلتەرە بنەڕەتییەکان",
+    "RouteId": "ڕێگە",
+    "RouteIdPlaceholder": "ناسنامەی ڕێگە بنووسە",
+    "StopId": "وەستگە",
+    "StopIdPlaceholder": "ناسنامەی وەستگە بنووسە",
+    "DayOfWeek": "ڕۆژی هەفتە",
+    "IsActive": "دۆخی چالاکی",
+    "IsActivePlaceholder": "دۆخ هەڵبژێرە"
+  },
+  "Table": {
+    "Route": "ڕێگە",
+    "Stop": "وەستگە",
+    "Departure": "دەرچوون",
+    "Day": "ڕۆژ",
+    "SpecificDate": "بەرواری دیاریکراو",
+    "Notes": "تێبینیەکان",
+    "Status": "دۆخ",
+    "Actions": "کردارەکان"
+  },
+  "Actions": {
+    "View": "بینین",
+    "Edit": "دەستکاریکردن",
+    "Delete": "سڕینەوە",
+    "Deleting": "سڕینەوە...",
+    "DeleteConfirmTitle": "ئایا دڵنیایت؟",
+    "DeleteConfirmMessage": "ناتوانیت ئەم کردارە هەڵبگریتەوە."
+  },
+  "DayOfWeek": {
+    "MONDAY": "دووشەممە",
+    "TUESDAY": "سێشەممە",
+    "WEDNESDAY": "چوارشەممە",
+    "THURSDAY": "پێنجشەممە",
+    "FRIDAY": "هەینی",
+    "SATURDAY": "شەممە",
+    "SUNDAY": "یەکشەممە"
+  },
+  "BasicInformation": "زانیاری بنەڕەتی",
+  "ViewBusSchedule": "بینینی خشتەی پاس",
+  "UpdateBusSchedule": "نوێکردنەوەی خشتەی پاس",
+  "DeleteBusSchedule": "سڕینەوەی خشتەی پاس"
+}

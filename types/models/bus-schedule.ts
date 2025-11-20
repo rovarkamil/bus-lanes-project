@@ -43,8 +43,16 @@ export type BusSchedulesResponse =
 // Prisma Types
 export type BusScheduleWithRelations = Prisma.BusScheduleGetPayload<{
   include: {
-    route: true;
-    stop: true;
+    route: {
+      include: {
+        name: true;
+      };
+    };
+    stop: {
+      include: {
+        name: true;
+      };
+    };
   };
 }>;
 

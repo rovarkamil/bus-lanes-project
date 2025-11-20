@@ -5,48 +5,82 @@ import { BusStopWithRelations } from "@/types/models/bus-stop";
 import { Badge } from "@/components/ui/badge";
 import { Map, Layers, Image as ImageIcon, Navigation2 } from "lucide-react";
 
-const CoordinateCell = ({ latitude, longitude }: { latitude?: number | null; longitude?: number | null }) => (
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+const CoordinateCell = ({
+  latitude,
+  longitude,
+}: {
+  latitude?: number | null;
+  longitude?: number | null;
+}) => (
   <div className="flex flex-col">
     <span className="text-sm font-medium">{latitude?.toFixed(5) ?? "—"}</span>
-    <span className="text-xs text-muted-foreground">{longitude?.toFixed(5) ?? "—"}</span>
+    <span className="text-xs text-muted-foreground">
+      {longitude?.toFixed(5) ?? "—"}
+    </span>
   </div>
 );
 
-const FeatureBadge = ({ label, value }: { label: string; value?: boolean }) =>
+const FeatureBadge = ({
+  label,
+  value,
+  t,
+}: {
+  label: string;
+  value?: boolean;
+  t: Translate;
+}) =>
   value ? (
-    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 font-medium">
-      {label}
+    <Badge
+      variant="outline"
+      className="bg-emerald-50 text-emerald-700 border-emerald-200 font-medium"
+    >
+      {t(label)}
     </Badge>
   ) : null;
 
-const RelationsCell = ({ stop }: { stop: BusStopWithRelations }) => (
+const RelationsCell = ({
+  stop,
+  t,
+}: {
+  stop: BusStopWithRelations;
+  t: Translate;
+}) => (
   <div className="flex flex-wrap gap-2">
     <Badge variant="secondary">
-      Lanes: {stop.lanes?.length ?? 0}
+      {t("Table.Lanes")}: {stop.lanes?.length ?? 0}
     </Badge>
     <Badge variant="secondary">
-      Routes: {stop.routes?.length ?? 0}
+      {t("Table.Routes")}: {stop.routes?.length ?? 0}
     </Badge>
     <Badge variant="secondary">
-      Schedules: {stop.schedules?.length ?? 0}
+      {t("Table.Schedules")}: {stop.schedules?.length ?? 0}
     </Badge>
   </div>
 );
 
-const ImageCountCell = ({ count }: { count: number }) =>
+const ImageCountCell = ({ count, t }: { count: number; t: Translate }) =>
   count > 0 ? (
-    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+    <Badge
+      variant="outline"
+      className="bg-blue-50 text-blue-700 border-blue-200"
+    >
       <ImageIcon className="w-3 h-3 mr-1" />
       {count}
     </Badge>
   ) : (
-    <span className="text-sm text-muted-foreground">No images</span>
+    <span className="text-sm text-muted-foreground">
+      {t("Common.NotAvailable")}
+    </span>
   );
 
-export const busStopColumns: Column<BusStopWithRelations>[] = [
+export const busStopColumns = (
+  t: Translate
+): Column<BusStopWithRelations>[] => [
   {
     key: "name",
-    label: "Name",
+    label: t("Table.Name"),
     sortable: true,
     render: (stop) => (
       <div className="flex flex-col">
@@ -61,13 +95,15 @@ export const busStopColumns: Column<BusStopWithRelations>[] = [
   },
   {
     key: "coordinates",
-    label: "Coordinates",
+    label: t("Table.Coordinates"),
     sortable: false,
-    render: (stop) => <CoordinateCell latitude={stop.latitude} longitude={stop.longitude} />,
+    render: (stop) => (
+      <CoordinateCell latitude={stop.latitude} longitude={stop.longitude} />
+    ),
   },
   {
     key: "zone",
-    label: "Zone",
+    label: t("Table.Zone"),
     sortable: true,
     render: (stop) => (
       <div className="flex items-center gap-2">
@@ -78,57 +114,77 @@ export const busStopColumns: Column<BusStopWithRelations>[] = [
   },
   {
     key: "icon",
-    label: "Map Icon",
+    label: t("Table.MapIcon"),
     sortable: false,
     render: (stop) =>
       stop.icon ? (
-        <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200">
+        <Badge
+          variant="outline"
+          className="bg-indigo-50 text-indigo-700 border-indigo-200"
+        >
           <Map className="w-3 h-3 mr-1" />
           {stop.icon.name?.en ?? "Custom icon"}
         </Badge>
       ) : (
-        <span className="text-sm text-muted-foreground">Default</span>
+        <span className="text-sm text-muted-foreground">
+          {t("Common.NotAvailable")}
+        </span>
       ),
   },
   {
     key: "images",
-    label: "Images",
+    label: t("Table.Images"),
     sortable: false,
-    render: (stop) => <ImageCountCell count={stop.images?.length ?? 0} />,
+    render: (stop) => <ImageCountCell count={stop.images?.length ?? 0} t={t} />,
   },
   {
     key: "amenities",
-    label: "Amenities",
+    label: t("Table.Amenities"),
     sortable: false,
     render: (stop) => (
       <div className="flex flex-wrap gap-2">
-        <FeatureBadge label="Shelter" value={stop.hasShelter} />
-        <FeatureBadge label="Bench" value={stop.hasBench} />
-        <FeatureBadge label="Lighting" value={stop.hasLighting} />
-        <FeatureBadge label="Accessible" value={stop.isAccessible} />
-        <FeatureBadge label="Real-time" value={stop.hasRealTimeInfo} />
+        <FeatureBadge label="Table.HasShelter" value={stop.hasShelter} t={t} />
+        <FeatureBadge label="Table.HasBench" value={stop.hasBench} t={t} />
+        <FeatureBadge
+          label="Table.HasLighting"
+          value={stop.hasLighting}
+          t={t}
+        />
+        <FeatureBadge
+          label="Table.IsAccessible"
+          value={stop.isAccessible}
+          t={t}
+        />
+        <FeatureBadge
+          label="Table.HasRealTimeInfo"
+          value={stop.hasRealTimeInfo}
+          t={t}
+        />
       </div>
     ),
   },
   {
     key: "relations",
-    label: "Usage",
+    label: t("Table.Usage"),
     sortable: false,
-    render: (stop) => <RelationsCell stop={stop} />,
+    render: (stop) => <RelationsCell stop={stop} t={t} />,
   },
   {
     key: "order",
-    label: "Order",
+    label: t("Table.Order"),
     sortable: true,
     render: (stop) => (
-      <Badge variant="outline" className="bg-muted text-foreground border-border">
+      <Badge
+        variant="outline"
+        className="bg-muted text-foreground border-border"
+      >
         #{stop.order ?? "—"}
       </Badge>
     ),
   },
   {
     key: "mapLink",
-    label: "View",
+    label: t("Table.View"),
     sortable: false,
     render: (stop) => (
       <a
@@ -138,9 +194,8 @@ export const busStopColumns: Column<BusStopWithRelations>[] = [
         className="inline-flex items-center gap-2 text-primary hover:underline text-sm"
       >
         <Navigation2 className="w-4 h-4" />
-        Open Map
+        {t("Table.View")}
       </a>
     ),
   },
 ];
-

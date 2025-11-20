@@ -1,0 +1,110 @@
+{
+  "BusSchedulesTitle": "جداول الحافلات",
+  "ManageBusSchedules": "إدارة جداول الحافلات وأوقات المغادرة ومحطات المسارات.",
+  "CreateBusSchedule": "إنشاء جدول حافلة",
+  "LoadingBusSchedules": "جاري تحميل جداول الحافلات...",
+  "NoBusSchedulesFound": "لم يتم العثور على جداول حافلات",
+  "Cancel": "إلغاء",
+  "TotalItems": "إجمالي العناصر",
+  "DisplayLimit": "حد العرض",
+  "Rows": "صفوف",
+  "ClearFilters": "مسح المرشحات",
+  "Common": {
+    "Create": "إنشاء",
+    "Creating": "جاري الإنشاء...",
+    "Update": "تحديث",
+    "Updating": "جاري التحديث...",
+    "Apply": "تطبيق",
+    "Cancel": "إلغاء",
+    "Active": "نشط",
+    "Inactive": "غير نشط",
+    "Name": "الاسم",
+    "Description": "الوصف",
+    "NotAvailable": "غير متاح",
+    "None": "لا شيء"
+  },
+  "Success": {
+    "Created": "تم إنشاء جدول الحافلة بنجاح",
+    "Updated": "تم تحديث جدول الحافلة بنجاح"
+  },
+  "Error": {
+    "CreateFailed": "فشل إنشاء جدول الحافلة",
+    "UpdateFailed": "فشل تحديث جدول الحافلة",
+    "RouteStopRequired": "المسار والمحطة مطلوبان"
+  },
+  "CreateDialog": {
+    "Title": "إنشاء جدول حافلة",
+    "Description": "تحديد تفاصيل الجدول والمسار والمحطة ووقت المغادرة.",
+    "RouteId": "المسار",
+    "StopId": "المحطة",
+    "DepartureTime": "وقت المغادرة",
+    "DayOfWeek": "يوم الأسبوع",
+    "SpecificDate": "تاريخ محدد",
+    "Notes": "ملاحظات",
+    "NotesPlaceholder": "أدخل ملاحظات إضافية",
+    "IsActive": "حالة النشاط"
+  },
+  "UpdateDialog": {
+    "Title": "تحديث جدول الحافلة",
+    "Description": "تعديل تفاصيل الجدول وإعدادات التشغيل.",
+    "RouteId": "المسار",
+    "StopId": "المحطة",
+    "DepartureTime": "وقت المغادرة",
+    "DayOfWeek": "يوم الأسبوع",
+    "SpecificDate": "تاريخ محدد",
+    "Notes": "ملاحظات",
+    "NotesPlaceholder": "أدخل ملاحظات إضافية",
+    "IsActive": "حالة النشاط"
+  },
+  "ViewDialog": {
+    "Title": "تفاصيل الجدول",
+    "Description": "مراجعة معلومات الجدول والتفاصيل ذات الصلة.",
+    "Route": "المسار",
+    "Stop": "المحطة",
+    "DepartureTime": "وقت المغادرة",
+    "Notes": "ملاحظات"
+  },
+  "FilterDialog": {
+    "Title": "تصفية الجداول",
+    "Description": "تصفية الجداول حسب المسار أو المحطة أو اليوم أو الحالة.",
+    "BasicFilters": "المرشحات الأساسية",
+    "RouteId": "المسار",
+    "RouteIdPlaceholder": "أدخل معرف المسار",
+    "StopId": "المحطة",
+    "StopIdPlaceholder": "أدخل معرف المحطة",
+    "DayOfWeek": "يوم الأسبوع",
+    "IsActive": "حالة النشاط",
+    "IsActivePlaceholder": "اختر الحالة"
+  },
+  "Table": {
+    "Route": "المسار",
+    "Stop": "المحطة",
+    "Departure": "المغادرة",
+    "Day": "اليوم",
+    "SpecificDate": "تاريخ محدد",
+    "Notes": "ملاحظات",
+    "Status": "الحالة",
+    "Actions": "الإجراءات"
+  },
+  "Actions": {
+    "View": "عرض",
+    "Edit": "تعديل",
+    "Delete": "حذف",
+    "Deleting": "جاري الحذف...",
+    "DeleteConfirmTitle": "هل أنت متأكد؟",
+    "DeleteConfirmMessage": "لا يمكن التراجع عن هذا الإجراء."
+  },
+  "DayOfWeek": {
+    "MONDAY": "الاثنين",
+    "TUESDAY": "الثلاثاء",
+    "WEDNESDAY": "الأربعاء",
+    "THURSDAY": "الخميس",
+    "FRIDAY": "الجمعة",
+    "SATURDAY": "السبت",
+    "SUNDAY": "الأحد"
+  },
+  "BasicInformation": "المعلومات الأساسية",
+  "ViewBusSchedule": "عرض جدول الحافلة",
+  "UpdateBusSchedule": "تحديث جدول الحافلة",
+  "DeleteBusSchedule": "حذف جدول الحافلة"
+}

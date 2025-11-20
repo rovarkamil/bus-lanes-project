@@ -42,8 +42,16 @@ export const { GET, POST, PUT, DELETE } = createEmployeeModelRoutes({
     name: true,
     description: true,
     service: true,
-    lanes: true,
-    stops: true,
+    lanes: {
+      include: {
+        name: true,
+      },
+    },
+    stops: {
+      include: {
+        name: true,
+      },
+    },
     schedules: true,
   },
   defaultSort: { field: "createdAt", order: "desc" },
@@ -95,5 +103,3 @@ export const { GET, POST, PUT, DELETE } = createEmployeeModelRoutes({
     },
   },
 });
-
-

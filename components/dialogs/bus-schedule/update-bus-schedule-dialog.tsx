@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 import { useTranslation } from "@/i18n/client";
 import { DayOfWeek } from "@prisma/client";
 import { useForm } from "react-hook-form";
@@ -25,6 +25,11 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Info } from "lucide-react";
+import SelectWithPagination from "@/components/select-with-pagination";
+import { useFetchBusRoutes } from "@/hooks/employee-hooks/use-bus-route";
+import { useFetchBusStops } from "@/hooks/employee-hooks/use-bus-stop";
+import { BusRouteWithRelations } from "@/types/models/bus-route";
+import { BusStopWithRelations } from "@/types/models/bus-stop";
 
 interface UpdateBusScheduleDialogProps {
   data: BusScheduleWithRelations;
@@ -41,6 +46,13 @@ export const UpdateBusScheduleDialog: FC<UpdateBusScheduleDialogProps> = ({
 }) => {
   const { t, i18n } = useTranslation("BusSchedules");
   const isRTL = i18n.language !== "en";
+  const [selectedRoute, setSelectedRoute] =
+    useState<BusRouteWithRelations | null>(
+      (data.route as BusRouteWithRelations) || null
+    );
+  const [selectedStop, setSelectedStop] = useState<BusStopWithRelations | null>(
+    (data.stop as BusStopWithRelations) || null
+  );
 
   const { mutateAsync: updateSchedule, isPending: isSubmitting } =
     useUpdateBusSchedule();
@@ -73,23 +85,23 @@ export const UpdateBusScheduleDialog: FC<UpdateBusScheduleDialogProps> = ({
         notes: data.notes ?? "",
         isActive: data.isActive,
       });
+
+      setSelectedRoute((data.route as BusRouteWithRelations) || null);
+      setSelectedStop((data.stop as BusStopWithRelations) || null);
     }
   }, [data, form, isOpen]);
 
   const handleSubmit = async (formData: UpdateBusScheduleData) => {
     try {
-      const routeId = (formData.routeId ?? "").trim();
-      const stopId = (formData.stopId ?? "").trim();
-
-      if (!routeId || !stopId) {
+      if (!selectedRoute || !selectedStop) {
         toast.error(t("Error.RouteStopRequired"));
         return;
       }
 
       await updateSchedule({
         ...formData,
-        routeId,
-        stopId,
+        routeId: selectedRoute.id,
+        stopId: selectedStop.id,
         notes: formData.notes?.trim() || undefined,
         specificDate: formData.specificDate || undefined,
       });
@@ -122,16 +134,51 @@ export const UpdateBusScheduleDialog: FC<UpdateBusScheduleDialogProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>{t("UpdateDialog.RouteId")}</Label>
-              <Input
-                value={form.watch("routeId")}
-                onChange={(e) => form.setValue("routeId", e.target.value)}
+              <SelectWithPagination
+                fetchFunction={useFetchBusRoutes}
+                onSelect={(item) => {
+                  setSelectedRoute(item);
+                  form.setValue("routeId", item?.id || "");
+                }}
+                fields={[
+                  {
+                    key: "name",
+                    label: t("Common.Name"),
+                    type: "relation",
+                  },
+                  {
+                    key: "routeNumber",
+                    label: t("Table.Route"),
+                    type: "string",
+                  },
+                ]}
+                placeholder={t("UpdateDialog.RouteId")}
+                value={selectedRoute?.id}
+                defaultValue={selectedRoute || undefined}
+                initialSelectedItem={selectedRoute || undefined}
+                canClear
               />
             </div>
             <div className="space-y-2">
               <Label>{t("UpdateDialog.StopId")}</Label>
-              <Input
-                value={form.watch("stopId")}
-                onChange={(e) => form.setValue("stopId", e.target.value)}
+              <SelectWithPagination
+                fetchFunction={useFetchBusStops}
+                onSelect={(item) => {
+                  setSelectedStop(item);
+                  form.setValue("stopId", item?.id || "");
+                }}
+                fields={[
+                  {
+                    key: "name",
+                    label: t("Common.Name"),
+                    type: "relation",
+                  },
+                ]}
+                placeholder={t("UpdateDialog.StopId")}
+                value={selectedStop?.id}
+                defaultValue={selectedStop || undefined}
+                initialSelectedItem={selectedStop || undefined}
+                canClear
               />
             </div>
             <div className="space-y-2">
@@ -213,11 +260,7 @@ export const UpdateBusScheduleDialog: FC<UpdateBusScheduleDialogProps> = ({
           </Button>
           <Button
             type="submit"
-            disabled={
-              isSubmitting ||
-              !(form.watch("routeId") ?? "").trim() ||
-              !(form.watch("stopId") ?? "").trim()
-            }
+            disabled={isSubmitting || !selectedRoute || !selectedStop}
           >
             {isSubmitting ? t("Common.Updating") : t("Common.Update")}
           </Button>

@@ -52,6 +52,7 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 
 const BusRoutesPage = () => {
   const { t, i18n } = useTranslation("BusRoutes");
+  const { t: tTransportServices } = useTranslation("TransportServices");
   const isRTL = i18n.language !== "en";
   const { data: session } = useSession();
 
@@ -110,7 +111,7 @@ const BusRoutesPage = () => {
   const columns = useMemo(() => {
     const actionColumn: Column<BusRouteWithRelations> = {
       key: "actions",
-      label: "Actions",
+      label: t("Table.Actions"),
       sortable: false,
       className: "w-[120px]",
       render: (route) => {
@@ -135,7 +136,7 @@ const BusRoutesPage = () => {
                     <Eye className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>View</TooltipContent>
+                <TooltipContent>{t("Actions.View")}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
@@ -154,16 +155,18 @@ const BusRoutesPage = () => {
                     <Pencil className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Edit</TooltipContent>
+                <TooltipContent>{t("Actions.Edit")}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
             <ConfirmationDialog
-              title="Are you sure?"
-              message="This action cannot be undone."
+              title={t("Actions.DeleteConfirmTitle")}
+              message={t("Actions.DeleteConfirmMessage")}
               onConfirm={() => handleDelete(route.id)}
-              confirmLabel={isDeleting ? "Deleting..." : "Delete"}
-              cancelLabel="Cancel"
+              confirmLabel={
+                isDeleting ? t("Actions.Deleting") : t("Actions.Delete")
+              }
+              cancelLabel={t("Common.Cancel")}
               variant="destructive"
               disabled={!canDelete || isDeleting}
               isRtl={isRTL}
@@ -180,7 +183,7 @@ const BusRoutesPage = () => {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Delete</TooltipContent>
+                  <TooltipContent>{t("Actions.Delete")}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </ConfirmationDialog>
@@ -189,8 +192,11 @@ const BusRoutesPage = () => {
       },
     };
 
-    return ensureIndexColumn([...busRouteColumns, actionColumn]);
-  }, [session, isDeleting, isRTL, handleDelete]);
+    return ensureIndexColumn([
+      ...busRouteColumns(t, tTransportServices),
+      actionColumn,
+    ]);
+  }, [session, isDeleting, isRTL, handleDelete, t, tTransportServices]);
 
   const handleCreateSuccess = () => {
     setIsCreateDialogOpen(false);

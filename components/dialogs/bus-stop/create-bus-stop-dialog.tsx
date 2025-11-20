@@ -5,7 +5,15 @@ import { useTranslation } from "@/i18n/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Info } from "lucide-react";
+import {
+  Info,
+  Home,
+  Sofa,
+  Lightbulb,
+  Accessibility,
+  Radio,
+  ToggleLeft,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomDialog } from "@/components/ui/custom-dialog";
 import { Label } from "@/components/ui/label";
@@ -23,6 +31,17 @@ import {
   uploadMultipleImages,
   type UploadedFile,
 } from "@/utils/supabase-storage-handler";
+import SelectWithPagination from "@/components/select-with-pagination";
+import MultipleSelectWithPagination from "@/components/multiple-select-with-pagination";
+import { useFetchZones } from "@/hooks/employee-hooks/use-zone";
+import { useFetchMapIcons } from "@/hooks/employee-hooks/use-map-icon";
+import { useFetchBusLanes } from "@/hooks/employee-hooks/use-bus-lane";
+import { useFetchBusRoutes } from "@/hooks/employee-hooks/use-bus-route";
+import { ZoneWithRelations } from "@/types/models/zone";
+import { MapIconWithRelations } from "@/types/models/map-icon";
+import { BusLaneWithRelations } from "@/types/models/bus-lane";
+import { BusRouteWithRelations } from "@/types/models/bus-route";
+import { cn } from "@/lib/utils";
 
 type SelectedImage = {
   file: File;
@@ -50,8 +69,18 @@ export const CreateBusStopDialog: FC<CreateBusStopDialogProps> = ({
   );
   const [images, setImages] = useState<SelectedImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [laneIdsInput, setLaneIdsInput] = useState("");
-  const [routeIdsInput, setRouteIdsInput] = useState("");
+  const [selectedZone, setSelectedZone] = useState<ZoneWithRelations | null>(
+    null
+  );
+  const [selectedIcon, setSelectedIcon] = useState<MapIconWithRelations | null>(
+    null
+  );
+  const [selectedLanes, setSelectedLanes] = useState<BusLaneWithRelations[]>(
+    []
+  );
+  const [selectedRoutes, setSelectedRoutes] = useState<BusRouteWithRelations[]>(
+    []
+  );
 
   const { mutateAsync: createBusStop, isPending: isSubmitting } =
     useCreateBusStop();
@@ -117,15 +146,6 @@ export const CreateBusStopDialog: FC<CreateBusStopDialogProps> = ({
         );
       }
 
-      const parsedLaneIds = laneIdsInput
-        .split(",")
-        .map((value) => value.trim())
-        .filter(Boolean);
-      const parsedRouteIds = routeIdsInput
-        .split(",")
-        .map((value) => value.trim())
-        .filter(Boolean);
-
       const payload: CreateBusStopData = {
         ...formData,
         latitude: Number(formData.latitude),
@@ -140,10 +160,16 @@ export const CreateBusStopDialog: FC<CreateBusStopDialogProps> = ({
           name: image.name,
           size: image.size,
         })),
-        iconId: formData.iconId || null,
-        zoneId: formData.zoneId || null,
-        laneIds: parsedLaneIds.length ? parsedLaneIds : undefined,
-        routeIds: parsedRouteIds.length ? parsedRouteIds : undefined,
+        iconId: selectedIcon?.id || null,
+        zoneId: selectedZone?.id || null,
+        laneIds:
+          selectedLanes.length > 0
+            ? selectedLanes.map((lane) => lane.id)
+            : undefined,
+        routeIds:
+          selectedRoutes.length > 0
+            ? selectedRoutes.map((route) => route.id)
+            : undefined,
       };
 
       await createBusStop(payload);
@@ -163,8 +189,10 @@ export const CreateBusStopDialog: FC<CreateBusStopDialogProps> = ({
   const resetForm = () => {
     form.reset();
     setImages([]);
-    setLaneIdsInput("");
-    setRouteIdsInput("");
+    setSelectedZone(null);
+    setSelectedIcon(null);
+    setSelectedLanes([]);
+    setSelectedRoutes([]);
   };
 
   const handleImageSelect = (files: File[], urls?: string[]) => {
@@ -245,22 +273,44 @@ export const CreateBusStopDialog: FC<CreateBusStopDialogProps> = ({
             </div>
             <div className="space-y-2">
               <Label>{t("CreateDialog.ZoneId")}</Label>
-              <Input
-                value={form.watch("zoneId") ?? ""}
-                onChange={(e) =>
-                  form.setValue("zoneId", e.target.value || null)
-                }
-                placeholder="zone-id"
+              <SelectWithPagination<ZoneWithRelations>
+                fetchFunction={useFetchZones}
+                onSelect={(item) => {
+                  setSelectedZone(item);
+                  form.setValue("zoneId", item?.id || null);
+                }}
+                fields={[
+                  {
+                    key: "name",
+                    label: t("Common.Name"),
+                    type: "relation",
+                  },
+                ]}
+                placeholder={t("CreateDialog.ZoneId")}
+                value={selectedZone?.id}
+                defaultValue={selectedZone || undefined}
+                canClear
               />
             </div>
             <div className="space-y-2">
               <Label>{t("CreateDialog.IconId")}</Label>
-              <Input
-                value={form.watch("iconId") ?? ""}
-                onChange={(e) =>
-                  form.setValue("iconId", e.target.value || null)
-                }
-                placeholder="icon-id"
+              <SelectWithPagination<MapIconWithRelations>
+                fetchFunction={useFetchMapIcons}
+                onSelect={(item) => {
+                  setSelectedIcon(item);
+                  form.setValue("iconId", item?.id || null);
+                }}
+                fields={[
+                  {
+                    key: "name",
+                    label: t("Common.Name"),
+                    type: "relation",
+                  },
+                ]}
+                placeholder={t("CreateDialog.IconId")}
+                value={selectedIcon?.id}
+                defaultValue={selectedIcon || undefined}
+                canClear
               />
             </div>
             <div className="space-y-2">
@@ -279,18 +329,45 @@ export const CreateBusStopDialog: FC<CreateBusStopDialogProps> = ({
             </div>
             <div className="space-y-2">
               <Label>{t("CreateDialog.LaneIds")}</Label>
-              <Input
-                value={laneIdsInput}
-                onChange={(e) => setLaneIdsInput(e.target.value)}
-                placeholder="lane-id-1,lane-id-2"
+              <MultipleSelectWithPagination
+                fetchFunction={useFetchBusLanes}
+                onSelect={(items: BusLaneWithRelations[]) => {
+                  setSelectedLanes(items);
+                }}
+                fields={[
+                  {
+                    key: "name",
+                    label: t("Common.Name"),
+                    type: "relation",
+                  },
+                ]}
+                placeholder={t("CreateDialog.LaneIds")}
+                value={selectedLanes.map((lane) => lane.id)}
+                initialSelectedItems={selectedLanes}
               />
             </div>
             <div className="space-y-2">
               <Label>{t("CreateDialog.RouteIds")}</Label>
-              <Input
-                value={routeIdsInput}
-                onChange={(e) => setRouteIdsInput(e.target.value)}
-                placeholder="route-id-1,route-id-2"
+              <MultipleSelectWithPagination
+                fetchFunction={useFetchBusRoutes}
+                onSelect={(items: BusRouteWithRelations[]) => {
+                  setSelectedRoutes(items);
+                }}
+                fields={[
+                  {
+                    key: "name",
+                    label: t("Common.Name"),
+                    type: "relation",
+                  },
+                  {
+                    key: "routeNumber",
+                    label: t("Table.Route"),
+                    type: "string",
+                  },
+                ]}
+                placeholder={t("CreateDialog.RouteIds")}
+                value={selectedRoutes.map((route) => route.id)}
+                initialSelectedItems={selectedRoutes}
               />
             </div>
           </div>
@@ -306,22 +383,59 @@ export const CreateBusStopDialog: FC<CreateBusStopDialogProps> = ({
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {BOOLEAN_FIELDS.map((key) => (
-              <div
-                key={key.toString()}
-                className="flex items-center justify-between border rounded-lg p-3"
-              >
-                <Label className="text-sm font-medium">
-                  {t(`CreateDialog.${key.toString()}`)}
-                </Label>
-                <Switch
-                  checked={Boolean(form.watch(key))}
-                  onCheckedChange={(checked) => form.setValue(key, checked)}
-                  dir={isRTL ? "rtl" : "ltr"}
-                />
-              </div>
-            ))}
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold text-foreground">
+              {t("CreateDialog.Amenities")}
+            </Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {BOOLEAN_FIELDS.map((key) => {
+                const isChecked = Boolean(form.watch(key));
+                const icons: Record<string, typeof Home> = {
+                  hasShelter: Home,
+                  hasBench: Sofa,
+                  hasLighting: Lightbulb,
+                  isAccessible: Accessibility,
+                  hasRealTimeInfo: Radio,
+                  isActive: ToggleLeft,
+                };
+                const Icon = icons[key] || ToggleLeft;
+
+                return (
+                  <div
+                    key={key.toString()}
+                    onClick={() => form.setValue(key, !isChecked)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg border-2 p-3 cursor-pointer transition-all duration-200",
+                      isChecked
+                        ? "bg-emerald-50 border-emerald-300 shadow-md hover:shadow-lg hover:border-emerald-400"
+                        : "bg-background border-border hover:border-muted-foreground/50 hover:bg-muted/30"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "p-2 rounded-md transition-colors",
+                        isChecked
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1">
+                      <Label className="text-sm font-medium cursor-pointer block">
+                        {t(`CreateDialog.${key.toString()}`)}
+                      </Label>
+                    </div>
+                    <Switch
+                      checked={isChecked}
+                      onCheckedChange={(checked) => form.setValue(key, checked)}
+                      dir={isRTL ? "rtl" : "ltr"}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 

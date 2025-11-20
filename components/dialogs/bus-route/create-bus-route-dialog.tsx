@@ -26,6 +26,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Currency, RouteDirection } from "@prisma/client";
+import SelectWithPagination from "@/components/select-with-pagination";
+import MultipleSelectWithPagination from "@/components/multiple-select-with-pagination";
+import { useFetchTransportServices } from "@/hooks/employee-hooks/use-transport-service";
+import { useFetchBusLanes } from "@/hooks/employee-hooks/use-bus-lane";
+import { useFetchBusStops } from "@/hooks/employee-hooks/use-bus-stop";
+import { TransportServiceWithRelations } from "@/types/models/transport-service";
+import { BusLaneWithRelations } from "@/types/models/bus-lane";
+import { BusStopWithRelations } from "@/types/models/bus-stop";
 
 interface CreateBusRouteDialogProps {
   isOpen: boolean;
@@ -43,8 +51,14 @@ export const CreateBusRouteDialog: FC<CreateBusRouteDialogProps> = ({
   const [activeTab, setActiveTab] = useState<"english" | "arabic" | "kurdish">(
     "english"
   );
-  const [laneIdsInput, setLaneIdsInput] = useState("");
-  const [stopIdsInput, setStopIdsInput] = useState("");
+  const [selectedService, setSelectedService] =
+    useState<TransportServiceWithRelations | null>(null);
+  const [selectedLanes, setSelectedLanes] = useState<BusLaneWithRelations[]>(
+    []
+  );
+  const [selectedStops, setSelectedStops] = useState<BusStopWithRelations[]>(
+    []
+  );
 
   const { mutateAsync: createRoute, isPending: isSubmitting } =
     useCreateBusRoute();
@@ -75,18 +89,9 @@ export const CreateBusRouteDialog: FC<CreateBusRouteDialogProps> = ({
 
   const handleSubmit = async (formData: CreateBusRouteData) => {
     try {
-      const laneIds = laneIdsInput
-        .split(",")
-        .map((id) => id.trim())
-        .filter(Boolean);
-      const stopIds = stopIdsInput
-        .split(",")
-        .map((id) => id.trim())
-        .filter(Boolean);
-
       const dataToSubmit: CreateBusRouteData = {
         ...formData,
-        serviceId: formData.serviceId || null,
+        serviceId: selectedService?.id || null,
         fare:
           formData.fare === undefined || formData.fare === null
             ? undefined
@@ -99,8 +104,14 @@ export const CreateBusRouteDialog: FC<CreateBusRouteDialogProps> = ({
           formData.duration === undefined || formData.duration === null
             ? undefined
             : Number(formData.duration),
-        laneIds: laneIds.length ? laneIds : undefined,
-        stopIds: stopIds.length ? stopIds : undefined,
+        laneIds:
+          selectedLanes.length > 0
+            ? selectedLanes.map((lane) => lane.id)
+            : undefined,
+        stopIds:
+          selectedStops.length > 0
+            ? selectedStops.map((stop) => stop.id)
+            : undefined,
         routeNumber: formData.routeNumber || undefined,
       };
 
@@ -118,8 +129,9 @@ export const CreateBusRouteDialog: FC<CreateBusRouteDialogProps> = ({
 
   const resetForm = () => {
     form.reset();
-    setLaneIdsInput("");
-    setStopIdsInput("");
+    setSelectedService(null);
+    setSelectedLanes([]);
+    setSelectedStops([]);
   };
 
   return (
@@ -160,12 +172,28 @@ export const CreateBusRouteDialog: FC<CreateBusRouteDialogProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>{t("CreateDialog.ServiceId")}</Label>
-              <Input
-                value={form.watch("serviceId") || ""}
-                onChange={(e) =>
-                  form.setValue("serviceId", e.target.value || null)
-                }
-                placeholder="service-id"
+              <SelectWithPagination
+                fetchFunction={useFetchTransportServices}
+                onSelect={(item) => {
+                  setSelectedService(item);
+                  form.setValue("serviceId", item?.id || null);
+                }}
+                fields={[
+                  {
+                    key: "name",
+                    label: t("Common.Name"),
+                    type: "relation",
+                  },
+                  {
+                    key: "type",
+                    label: t("Table.Type"),
+                    type: "string",
+                  },
+                ]}
+                placeholder={t("CreateDialog.ServiceId")}
+                value={selectedService?.id}
+                defaultValue={selectedService || undefined}
+                canClear
               />
             </div>
             <div className="space-y-2">
@@ -263,20 +291,42 @@ export const CreateBusRouteDialog: FC<CreateBusRouteDialogProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label>{t("CreateDialog.LaneIds")}</Label>
-            <Input
-              value={laneIdsInput}
-              onChange={(e) => setLaneIdsInput(e.target.value)}
-              placeholder="lane-id-1,lane-id-2"
+            <Label>{t("CreateDialog.Lane")}</Label>
+            <MultipleSelectWithPagination
+              fetchFunction={useFetchBusLanes}
+              onSelect={(items) => {
+                setSelectedLanes(items);
+              }}
+              fields={[
+                {
+                  key: "name",
+                  label: t("Common.Name"),
+                  type: "relation",
+                },
+              ]}
+              placeholder={t("CreateDialog.LanePlaceholder")}
+              value={selectedLanes.map((lane) => lane.id)}
+              defaultValue={selectedLanes}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>{t("CreateDialog.StopIds")}</Label>
-            <Input
-              value={stopIdsInput}
-              onChange={(e) => setStopIdsInput(e.target.value)}
-              placeholder="stop-id-1,stop-id-2"
+            <Label>{t("CreateDialog.Stop")}</Label>
+            <MultipleSelectWithPagination
+              fetchFunction={useFetchBusStops}
+              onSelect={(items) => {
+                setSelectedStops(items);
+              }}
+              fields={[
+                {
+                  key: "name",
+                  label: t("Common.Name"),
+                  type: "relation",
+                },
+              ]}
+              placeholder={t("CreateDialog.StopPlaceholder")}
+              value={selectedStops.map((stop) => stop.id)}
+              defaultValue={selectedStops}
             />
           </div>
 
@@ -309,5 +359,3 @@ export const CreateBusRouteDialog: FC<CreateBusRouteDialogProps> = ({
     </CustomDialog>
   );
 };
-
-

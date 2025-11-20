@@ -48,10 +48,22 @@ export const { GET, POST, PUT, DELETE } = createEmployeeModelRoutes({
     name: true,
     description: true,
     icon: true,
-    zone: true,
+    zone: {
+      include: {
+        name: true,
+      },
+    },
     images: true,
-    lanes: true,
-    routes: true,
+    lanes: {
+      include: {
+        name: true,
+      },
+    },
+    routes: {
+      include: {
+        name: true,
+      },
+    },
     schedules: true,
   },
   defaultSort: { field: "createdAt", order: "desc" },

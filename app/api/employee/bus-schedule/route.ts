@@ -39,8 +39,16 @@ export const { GET, POST, PUT, DELETE } = createEmployeeModelRoutes({
   },
   fieldConfigs: busScheduleFieldConfigs,
   relations: {
-    route: true,
-    stop: true,
+    route: {
+      include: {
+        name: true,
+      },
+    },
+    stop: {
+      include: {
+        name: true,
+      },
+    },
   },
   defaultSort: { field: "departureTime", order: "asc" },
   customHandlers: {
@@ -91,5 +99,3 @@ export const { GET, POST, PUT, DELETE } = createEmployeeModelRoutes({
     },
   },
 });
-
-

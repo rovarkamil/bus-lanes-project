@@ -13,7 +13,20 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const StatusBadge = ({ isActive }: { isActive: boolean }) => (
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+const RouteInfoCell = ({ route }: { route: BusRouteWithRelations }) => (
+  <div className="flex flex-col">
+    <span className="text-sm font-medium">{route.name?.en ?? "-"}</span>
+    {route.description?.en && (
+      <span className="text-xs text-muted-foreground line-clamp-2">
+        {route.description.en}
+      </span>
+    )}
+  </div>
+);
+
+const StatusBadge = ({ isActive, t }: { isActive: boolean; t: Translate }) => (
   <Badge
     variant="outline"
     className={cn(
@@ -24,54 +37,118 @@ const StatusBadge = ({ isActive }: { isActive: boolean }) => (
     )}
   >
     <ToggleLeft className="w-3 h-3 mr-1" />
-    {isActive ? "Active" : "Inactive"}
+    {isActive ? t("Common.Active") : t("Common.Inactive")}
   </Badge>
 );
 
-const RelationBadge = ({ label, count }: { label: string; count: number }) => (
+const RelationBadge = ({
+  label,
+  count,
+  t,
+}: {
+  label: string;
+  count: number;
+  t: Translate;
+}) => (
   <Badge variant="outline" className="bg-muted text-foreground border-border">
-    {label}: {count}
+    {t(label)}: {count}
   </Badge>
 );
 
 const CurrencyCell = ({
   fare,
   currency,
+  t,
 }: {
   fare?: number | null;
   currency: string;
+  t: Translate;
 }) =>
   fare !== undefined && fare !== null ? (
     <div className="flex items-center gap-2">
       <DollarSign className="w-4 h-4 text-muted-foreground" />
       <span className="text-sm font-medium">{fare.toFixed(2)} </span>
       <Badge variant="outline" className="ml-1">
-        {currency}
+        {t(`Currency.${currency}`)}
       </Badge>
     </div>
   ) : (
-    <span className="text-sm text-muted-foreground">—</span>
+    <span className="text-sm text-muted-foreground">
+      {t("Common.NotAvailable")}
+    </span>
   );
 
-export const busRouteColumns: Column<BusRouteWithRelations>[] = [
+const TimingCell = ({
+  route,
+  t,
+}: {
+  route: BusRouteWithRelations;
+  t: Translate;
+}) => (
+  <div className="flex flex-col gap-1">
+    {route.frequency && (
+      <RelationBadge
+        label="Table.FrequencyLabel"
+        count={route.frequency}
+        t={t}
+      />
+    )}
+    {route.duration && (
+      <RelationBadge label="Table.DurationLabel" count={route.duration} t={t} />
+    )}
+  </div>
+);
+
+const RelationsCell = ({
+  route,
+  t,
+}: {
+  route: BusRouteWithRelations;
+  t: Translate;
+}) => (
+  <div className="flex flex-col gap-1">
+    <RelationBadge label="Table.Lanes" count={route.lanes?.length ?? 0} t={t} />
+    <RelationBadge label="Table.Stops" count={route.stops?.length ?? 0} t={t} />
+    <RelationBadge
+      label="Table.Schedules"
+      count={route.schedules?.length ?? 0}
+      t={t}
+    />
+  </div>
+);
+
+const ServiceCell = ({
+  serviceType,
+  t,
+  tTransportServices,
+}: {
+  serviceType?: string | null;
+  t: Translate;
+  tTransportServices: Translate;
+}) => (
+  <div className="flex items-center gap-2">
+    <RouteIcon className="w-4 h-4 text-muted-foreground" />
+    <span className="text-sm">
+      {serviceType
+        ? tTransportServices(`TransportServiceType.${serviceType}`)
+        : t("Common.NotAvailable")}
+    </span>
+  </div>
+);
+
+export const busRouteColumns = (
+  t: Translate,
+  tTransportServices: Translate
+): Column<BusRouteWithRelations>[] => [
   {
     key: "name",
-    label: "Name",
+    label: t("Table.Name"),
     sortable: true,
-    render: (route) => (
-      <div className="flex flex-col">
-        <span className="text-sm font-medium">{route.name?.en ?? "-"}</span>
-        {route.description?.en && (
-          <span className="text-xs text-muted-foreground line-clamp-2">
-            {route.description.en}
-          </span>
-        )}
-      </div>
-    ),
+    render: (route) => <RouteInfoCell route={route} />,
   },
   {
     key: "routeNumber",
-    label: "Route",
+    label: t("Table.Route"),
     sortable: true,
     render: (route) => (
       <Badge
@@ -85,70 +162,60 @@ export const busRouteColumns: Column<BusRouteWithRelations>[] = [
   },
   {
     key: "direction",
-    label: "Direction",
+    label: t("Table.Direction"),
     sortable: true,
     render: (route) => (
       <Badge variant="secondary">
         <RouteIcon className="w-3 h-3 mr-1" />
-        {route.direction}
+        {t(`RouteDirection.${route.direction}`)}
       </Badge>
     ),
   },
   {
     key: "fare",
-    label: "Fare",
+    label: t("Table.Fare"),
     sortable: true,
     render: (route) => (
-      <CurrencyCell fare={route.fare} currency={route.currency ?? "IQD"} />
+      <CurrencyCell
+        fare={route.fare}
+        currency={route.currency ?? "IQD"}
+        t={t}
+      />
     ),
   },
   {
     key: "duration",
-    label: "Timing",
+    label: t("Table.Timing"),
     sortable: false,
-    render: (route) => (
-      <div className="flex flex-col gap-1">
-        {route.frequency && (
-          <RelationBadge label="Freq (min)" count={route.frequency} />
-        )}
-        {route.duration && (
-          <RelationBadge label="Duration (min)" count={route.duration} />
-        )}
-      </div>
-    ),
+    render: (route) => <TimingCell route={route} t={t} />,
   },
   {
     key: "relations",
-    label: "Relations",
+    label: t("Table.Relations"),
     sortable: false,
-    render: (route) => (
-      <div className="flex flex-col gap-1">
-        <RelationBadge label="Lanes" count={route.lanes?.length ?? 0} />
-        <RelationBadge label="Stops" count={route.stops?.length ?? 0} />
-        <RelationBadge label="Schedules" count={route.schedules?.length ?? 0} />
-      </div>
-    ),
+    render: (route) => <RelationsCell route={route} t={t} />,
   },
   {
     key: "service",
-    label: "Service",
+    label: t("Table.Service"),
     sortable: true,
     render: (route) => (
-      <div className="flex items-center gap-2">
-        <RouteIcon className="w-4 h-4 text-muted-foreground" />
-        <span className="text-sm">{route.service?.type ?? "—"}</span>
-      </div>
+      <ServiceCell
+        serviceType={route.service?.type}
+        t={t}
+        tTransportServices={tTransportServices}
+      />
     ),
   },
   {
     key: "isActive",
-    label: "Status",
+    label: t("Table.Status"),
     sortable: true,
-    render: (route) => <StatusBadge isActive={route.isActive ?? false} />,
+    render: (route) => <StatusBadge isActive={route.isActive ?? false} t={t} />,
   },
   {
     key: "createdAt",
-    label: "Created",
+    label: t("Table.Created"),
     sortable: true,
     render: (route) => (
       <div className="flex items-center gap-2">

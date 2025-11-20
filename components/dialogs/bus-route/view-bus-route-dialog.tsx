@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { LanguageFields } from "@/utils/language-handler";
 
 interface ViewBusRouteDialogProps {
   data: BusRouteWithRelations;
@@ -78,7 +79,8 @@ export const ViewBusRouteDialog: FC<ViewBusRouteDialogProps> = ({
                 {t("Common.Name")}
               </p>
               <p className="text-lg font-semibold">
-                {data.name?.en ?? t("Common.NotAvailable")}
+                {data.name?.[i18n.language as keyof LanguageFields] ??
+                  t("Common.NotAvailable")}
               </p>
             </div>
             {data.description?.en && (
@@ -87,7 +89,8 @@ export const ViewBusRouteDialog: FC<ViewBusRouteDialogProps> = ({
                   {t("Common.Description")}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {data.description.en}
+                  {data.description?.[i18n.language as keyof LanguageFields] ??
+                    t("Common.NotAvailable")}
                 </p>
               </div>
             )}
@@ -177,7 +180,8 @@ export const ViewBusRouteDialog: FC<ViewBusRouteDialogProps> = ({
                     variant="outline"
                     className="text-xs px-2 py-1"
                   >
-                    {stop.id}
+                    {stop.name?.[i18n.language as keyof LanguageFields] ??
+                      t("Common.NotAvailable")}
                   </Badge>
                 ))}
               </div>
@@ -199,7 +203,8 @@ export const ViewBusRouteDialog: FC<ViewBusRouteDialogProps> = ({
                     variant="outline"
                     className="text-xs px-2 py-1"
                   >
-                    {lane.id}
+                    {lane.name?.[i18n.language as keyof LanguageFields] ??
+                      t("Common.NotAvailable")}
                   </Badge>
                 ))}
               </div>

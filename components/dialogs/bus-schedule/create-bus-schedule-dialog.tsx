@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useState } from "react";
 import { useTranslation } from "@/i18n/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +24,11 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Info } from "lucide-react";
+import SelectWithPagination from "@/components/select-with-pagination";
+import { useFetchBusRoutes } from "@/hooks/employee-hooks/use-bus-route";
+import { useFetchBusStops } from "@/hooks/employee-hooks/use-bus-stop";
+import { BusRouteWithRelations } from "@/types/models/bus-route";
+import { BusStopWithRelations } from "@/types/models/bus-stop";
 
 interface CreateBusScheduleDialogProps {
   isOpen: boolean;
@@ -38,6 +43,11 @@ export const CreateBusScheduleDialog: FC<CreateBusScheduleDialogProps> = ({
 }) => {
   const { t, i18n } = useTranslation("BusSchedules");
   const isRTL = i18n.language !== "en";
+  const [selectedRoute, setSelectedRoute] =
+    useState<BusRouteWithRelations | null>(null);
+  const [selectedStop, setSelectedStop] = useState<BusStopWithRelations | null>(
+    null
+  );
 
   const { mutateAsync: createSchedule, isPending: isSubmitting } =
     useCreateBusSchedule();
@@ -57,21 +67,32 @@ export const CreateBusScheduleDialog: FC<CreateBusScheduleDialogProps> = ({
 
   const handleSubmit = async (formData: CreateBusScheduleData) => {
     try {
+      if (!selectedRoute || !selectedStop) {
+        toast.error(t("Error.RouteStopRequired"));
+        return;
+      }
+
       await createSchedule({
         ...formData,
-        routeId: formData.routeId.trim(),
-        stopId: formData.stopId.trim(),
+        routeId: selectedRoute.id,
+        stopId: selectedStop.id,
         notes: formData.notes?.trim() || undefined,
         specificDate: formData.specificDate || undefined,
       });
       toast.success(t("Success.Created"));
       onOpenChange(false);
       onSuccess?.();
-      form.reset();
+      resetForm();
     } catch (error) {
       console.error("Error creating bus schedule:", error);
       toast.error(t("Error.CreateFailed"));
     }
+  };
+
+  const resetForm = () => {
+    form.reset();
+    setSelectedRoute(null);
+    setSelectedStop(null);
   };
 
   return (
@@ -79,7 +100,7 @@ export const CreateBusScheduleDialog: FC<CreateBusScheduleDialogProps> = ({
       isOpen={isOpen}
       onOpenChange={(open) => {
         if (!open) {
-          form.reset();
+          resetForm();
         }
         onOpenChange(open);
       }}
@@ -99,18 +120,49 @@ export const CreateBusScheduleDialog: FC<CreateBusScheduleDialogProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>{t("CreateDialog.RouteId")}</Label>
-              <Input
-                value={form.watch("routeId")}
-                onChange={(e) => form.setValue("routeId", e.target.value)}
-                placeholder="route-id"
+              <SelectWithPagination
+                fetchFunction={useFetchBusRoutes}
+                onSelect={(item) => {
+                  setSelectedRoute(item);
+                  form.setValue("routeId", item?.id || "");
+                }}
+                fields={[
+                  {
+                    key: "name",
+                    label: t("Common.Name"),
+                    type: "relation",
+                  },
+                  {
+                    key: "routeNumber",
+                    label: t("Table.Route"),
+                    type: "string",
+                  },
+                ]}
+                placeholder={t("CreateDialog.RouteId")}
+                value={selectedRoute?.id}
+                defaultValue={selectedRoute || undefined}
+                canClear
               />
             </div>
             <div className="space-y-2">
               <Label>{t("CreateDialog.StopId")}</Label>
-              <Input
-                value={form.watch("stopId")}
-                onChange={(e) => form.setValue("stopId", e.target.value)}
-                placeholder="stop-id"
+              <SelectWithPagination
+                fetchFunction={useFetchBusStops}
+                onSelect={(item) => {
+                  setSelectedStop(item);
+                  form.setValue("stopId", item?.id || "");
+                }}
+                fields={[
+                  {
+                    key: "name",
+                    label: t("Common.Name"),
+                    type: "relation",
+                  },
+                ]}
+                placeholder={t("CreateDialog.StopId")}
+                value={selectedStop?.id}
+                defaultValue={selectedStop || undefined}
+                canClear
               />
             </div>
             <div className="space-y-2">
@@ -192,11 +244,7 @@ export const CreateBusScheduleDialog: FC<CreateBusScheduleDialogProps> = ({
           </Button>
           <Button
             type="submit"
-            disabled={
-              isSubmitting ||
-              !form.watch("routeId").trim() ||
-              !form.watch("stopId").trim()
-            }
+            disabled={isSubmitting || !selectedRoute || !selectedStop}
           >
             {isSubmitting ? t("Common.Creating") : t("Common.Create")}
           </Button>

@@ -27,6 +27,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Currency, RouteDirection } from "@prisma/client";
+import SelectWithPagination from "@/components/select-with-pagination";
+import MultipleSelectWithPagination from "@/components/multiple-select-with-pagination";
+import { useFetchTransportServices } from "@/hooks/employee-hooks/use-transport-service";
+import { useFetchBusLanes } from "@/hooks/employee-hooks/use-bus-lane";
+import { useFetchBusStops } from "@/hooks/employee-hooks/use-bus-stop";
+import { TransportServiceWithRelations } from "@/types/models/transport-service";
+import { BusLaneWithRelations } from "@/types/models/bus-lane";
+import { BusStopWithRelations } from "@/types/models/bus-stop";
 
 interface UpdateBusRouteDialogProps {
   data: BusRouteWithRelations;
@@ -46,11 +54,15 @@ export const UpdateBusRouteDialog: FC<UpdateBusRouteDialogProps> = ({
   const [activeTab, setActiveTab] = useState<"english" | "arabic" | "kurdish">(
     "english"
   );
-  const [laneIdsInput, setLaneIdsInput] = useState(
-    (data.lanes ?? []).map((lane) => lane.id).join(",")
+  const [selectedService, setSelectedService] =
+    useState<TransportServiceWithRelations | null>(
+      (data.service as TransportServiceWithRelations) || null
+    );
+  const [selectedLanes, setSelectedLanes] = useState<BusLaneWithRelations[]>(
+    (data.lanes as BusLaneWithRelations[]) || []
   );
-  const [stopIdsInput, setStopIdsInput] = useState(
-    (data.stops ?? []).map((stop) => stop.id).join(",")
+  const [selectedStops, setSelectedStops] = useState<BusStopWithRelations[]>(
+    (data.stops as BusStopWithRelations[]) || []
   );
 
   const { mutateAsync: updateRoute, isPending: isSubmitting } =
@@ -77,8 +89,6 @@ export const UpdateBusRouteDialog: FC<UpdateBusRouteDialogProps> = ({
       fare: data.fare ?? undefined,
       frequency: data.frequency ?? undefined,
       duration: data.duration ?? undefined,
-      laneIds: (data.lanes ?? []).map((lane) => lane.id),
-      stopIds: (data.stops ?? []).map((stop) => stop.id),
       isActive: data.isActive,
     },
   });
@@ -104,30 +114,22 @@ export const UpdateBusRouteDialog: FC<UpdateBusRouteDialogProps> = ({
         fare: data.fare ?? undefined,
         frequency: data.frequency ?? undefined,
         duration: data.duration ?? undefined,
-        laneIds: (data.lanes ?? []).map((lane) => lane.id),
-        stopIds: (data.stops ?? []).map((stop) => stop.id),
         isActive: data.isActive,
       });
 
-      setLaneIdsInput((data.lanes ?? []).map((lane) => lane.id).join(","));
-      setStopIdsInput((data.stops ?? []).map((stop) => stop.id).join(","));
+      setSelectedService(
+        (data.service as TransportServiceWithRelations) || null
+      );
+      setSelectedLanes((data.lanes as BusLaneWithRelations[]) || []);
+      setSelectedStops((data.stops as BusStopWithRelations[]) || []);
     }
   }, [isOpen, data, form]);
 
   const handleSubmit = async (formData: UpdateBusRouteData) => {
     try {
-      const laneIds = laneIdsInput
-        .split(",")
-        .map((id) => id.trim())
-        .filter(Boolean);
-      const stopIds = stopIdsInput
-        .split(",")
-        .map((id) => id.trim())
-        .filter(Boolean);
-
       const dataToSubmit: UpdateBusRouteData = {
         ...formData,
-        serviceId: formData.serviceId || null,
+        serviceId: selectedService?.id || null,
         fare:
           formData.fare === undefined || formData.fare === null
             ? undefined
@@ -140,8 +142,14 @@ export const UpdateBusRouteDialog: FC<UpdateBusRouteDialogProps> = ({
           formData.duration === undefined || formData.duration === null
             ? undefined
             : Number(formData.duration),
-        laneIds: laneIds.length ? laneIds : undefined,
-        stopIds: stopIds.length ? stopIds : undefined,
+        laneIds:
+          selectedLanes.length > 0
+            ? selectedLanes.map((lane) => lane.id)
+            : undefined,
+        stopIds:
+          selectedStops.length > 0
+            ? selectedStops.map((stop) => stop.id)
+            : undefined,
         routeNumber: formData.routeNumber || undefined,
       };
 
@@ -188,11 +196,29 @@ export const UpdateBusRouteDialog: FC<UpdateBusRouteDialogProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>{t("UpdateDialog.ServiceId")}</Label>
-              <Input
-                value={form.watch("serviceId") || ""}
-                onChange={(e) =>
-                  form.setValue("serviceId", e.target.value || null)
-                }
+              <SelectWithPagination
+                fetchFunction={useFetchTransportServices}
+                onSelect={(item) => {
+                  setSelectedService(item);
+                  form.setValue("serviceId", item?.id || null);
+                }}
+                fields={[
+                  {
+                    key: "name",
+                    label: t("Common.Name"),
+                    type: "relation",
+                  },
+                  {
+                    key: "type",
+                    label: t("Table.Type"),
+                    type: "string",
+                  },
+                ]}
+                placeholder={t("UpdateDialog.ServiceId")}
+                value={selectedService?.id}
+                defaultValue={selectedService || undefined}
+                initialSelectedItem={selectedService || undefined}
+                canClear
               />
             </div>
             <div className="space-y-2">
@@ -289,20 +315,44 @@ export const UpdateBusRouteDialog: FC<UpdateBusRouteDialogProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label>{t("UpdateDialog.LaneIds")}</Label>
-            <Input
-              value={laneIdsInput}
-              onChange={(e) => setLaneIdsInput(e.target.value)}
-              placeholder="lane-id-1,lane-id-2"
+            <Label>{t("UpdateDialog.Lane")}</Label>
+            <MultipleSelectWithPagination
+              fetchFunction={useFetchBusLanes}
+              onSelect={(items) => {
+                setSelectedLanes(items);
+              }}
+              fields={[
+                {
+                  key: "name",
+                  label: t("Common.Name"),
+                  type: "relation",
+                },
+              ]}
+              placeholder={t("UpdateDialog.LanePlaceholder")}
+              value={selectedLanes.map((lane) => lane.id)}
+              defaultValue={selectedLanes}
+              initialSelectedItems={selectedLanes}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>{t("UpdateDialog.StopIds")}</Label>
-            <Input
-              value={stopIdsInput}
-              onChange={(e) => setStopIdsInput(e.target.value)}
-              placeholder="stop-id-1,stop-id-2"
+            <Label>{t("UpdateDialog.Stop")}</Label>
+            <MultipleSelectWithPagination
+              fetchFunction={useFetchBusStops}
+              onSelect={(items) => {
+                setSelectedStops(items);
+              }}
+              fields={[
+                {
+                  key: "name",
+                  label: t("Common.Name"),
+                  type: "relation",
+                },
+              ]}
+              placeholder={t("UpdateDialog.StopPlaceholder")}
+              value={selectedStops.map((stop) => stop.id)}
+              defaultValue={selectedStops}
+              initialSelectedItems={selectedStops}
             />
           </div>
 
@@ -335,5 +385,3 @@ export const UpdateBusRouteDialog: FC<UpdateBusRouteDialogProps> = ({
     </CustomDialog>
   );
 };
-
-

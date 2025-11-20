@@ -5,7 +5,15 @@ import { useTranslation } from "@/i18n/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Info } from "lucide-react";
+import {
+  Info,
+  Home,
+  Sofa,
+  Lightbulb,
+  Accessibility,
+  Radio,
+  ToggleLeft,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomDialog } from "@/components/ui/custom-dialog";
 import { Label } from "@/components/ui/label";
@@ -24,6 +32,17 @@ import {
   uploadMultipleImages,
   type UploadedFile,
 } from "@/utils/supabase-storage-handler";
+import SelectWithPagination from "@/components/select-with-pagination";
+import MultipleSelectWithPagination from "@/components/multiple-select-with-pagination";
+import { useFetchZones } from "@/hooks/employee-hooks/use-zone";
+import { useFetchMapIcons } from "@/hooks/employee-hooks/use-map-icon";
+import { useFetchBusLanes } from "@/hooks/employee-hooks/use-bus-lane";
+import { useFetchBusRoutes } from "@/hooks/employee-hooks/use-bus-route";
+import { ZoneWithRelations } from "@/types/models/zone";
+import { MapIconWithRelations } from "@/types/models/map-icon";
+import { BusLaneWithRelations } from "@/types/models/bus-lane";
+import { BusRouteWithRelations } from "@/types/models/bus-route";
+import { cn } from "@/lib/utils";
 
 type SelectedImage = {
   file: File;
@@ -83,11 +102,17 @@ export const UpdateBusStopDialog: FC<UpdateBusStopDialogProps> = ({
   );
   const [images, setImages] = useState<SelectedImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [laneIdsInput, setLaneIdsInput] = useState(
-    (stop.lanes ?? []).map((lane) => lane.id).join(",")
+  const [selectedZone, setSelectedZone] = useState<ZoneWithRelations | null>(
+    (stop.zone as ZoneWithRelations) || null
   );
-  const [routeIdsInput, setRouteIdsInput] = useState(
-    (stop.routes ?? []).map((route) => route.id).join(",")
+  const [selectedIcon, setSelectedIcon] = useState<MapIconWithRelations | null>(
+    (stop.icon as MapIconWithRelations) || null
+  );
+  const [selectedLanes, setSelectedLanes] = useState<BusLaneWithRelations[]>(
+    (stop.lanes as BusLaneWithRelations[]) || []
+  );
+  const [selectedRoutes, setSelectedRoutes] = useState<BusRouteWithRelations[]>(
+    (stop.routes as BusRouteWithRelations[]) || []
   );
 
   const { mutateAsync: updateBusStop, isPending: isSubmitting } =
@@ -148,8 +173,10 @@ export const UpdateBusStopDialog: FC<UpdateBusStopDialogProps> = ({
         isActive: stop.isActive ?? true,
       });
 
-      setLaneIdsInput((stop.lanes ?? []).map((lane) => lane.id).join(","));
-      setRouteIdsInput((stop.routes ?? []).map((route) => route.id).join(","));
+      setSelectedZone((stop.zone as ZoneWithRelations) || null);
+      setSelectedIcon((stop.icon as MapIconWithRelations) || null);
+      setSelectedLanes((stop.lanes as BusLaneWithRelations[]) || []);
+      setSelectedRoutes((stop.routes as BusRouteWithRelations[]) || []);
 
       setImages(
         stop.images
@@ -206,15 +233,6 @@ export const UpdateBusStopDialog: FC<UpdateBusStopDialogProps> = ({
         })),
       ];
 
-      const parsedLaneIds = laneIdsInput
-        .split(",")
-        .map((value) => value.trim())
-        .filter(Boolean);
-      const parsedRouteIds = routeIdsInput
-        .split(",")
-        .map((value) => value.trim())
-        .filter(Boolean);
-
       await updateBusStop({
         ...formData,
         latitude: Number(formData.latitude),
@@ -223,11 +241,17 @@ export const UpdateBusStopDialog: FC<UpdateBusStopDialogProps> = ({
           formData.order === undefined || formData.order === null
             ? undefined
             : Number(formData.order),
-        iconId: formData.iconId || null,
-        zoneId: formData.zoneId || null,
+        iconId: selectedIcon?.id || null,
+        zoneId: selectedZone?.id || null,
         images: combinedImages,
-        laneIds: parsedLaneIds.length ? parsedLaneIds : undefined,
-        routeIds: parsedRouteIds.length ? parsedRouteIds : undefined,
+        laneIds:
+          selectedLanes.length > 0
+            ? selectedLanes.map((lane) => lane.id)
+            : undefined,
+        routeIds:
+          selectedRoutes.length > 0
+            ? selectedRoutes.map((route) => route.id)
+            : undefined,
       });
 
       toast.success(t("Success.Updated"));
@@ -315,20 +339,46 @@ export const UpdateBusStopDialog: FC<UpdateBusStopDialogProps> = ({
             </div>
             <div className="space-y-2">
               <Label>{t("UpdateDialog.ZoneId")}</Label>
-              <Input
-                value={form.watch("zoneId") ?? ""}
-                onChange={(e) =>
-                  form.setValue("zoneId", e.target.value || null)
-                }
+              <SelectWithPagination<ZoneWithRelations>
+                fetchFunction={useFetchZones}
+                onSelect={(item) => {
+                  setSelectedZone(item);
+                  form.setValue("zoneId", item?.id || null);
+                }}
+                fields={[
+                  {
+                    key: "name",
+                    label: t("Common.Name"),
+                    type: "relation",
+                  },
+                ]}
+                placeholder={t("UpdateDialog.ZoneId")}
+                value={selectedZone?.id}
+                defaultValue={selectedZone || undefined}
+                initialSelectedItem={selectedZone || undefined}
+                canClear
               />
             </div>
             <div className="space-y-2">
               <Label>{t("UpdateDialog.IconId")}</Label>
-              <Input
-                value={form.watch("iconId") ?? ""}
-                onChange={(e) =>
-                  form.setValue("iconId", e.target.value || null)
-                }
+              <SelectWithPagination<MapIconWithRelations>
+                fetchFunction={useFetchMapIcons}
+                onSelect={(item) => {
+                  setSelectedIcon(item);
+                  form.setValue("iconId", item?.id || null);
+                }}
+                fields={[
+                  {
+                    key: "name",
+                    label: t("Common.Name"),
+                    type: "relation",
+                  },
+                ]}
+                placeholder={t("UpdateDialog.IconId")}
+                value={selectedIcon?.id}
+                defaultValue={selectedIcon || undefined}
+                initialSelectedItem={selectedIcon || undefined}
+                canClear
               />
             </div>
             <div className="space-y-2">
@@ -347,18 +397,45 @@ export const UpdateBusStopDialog: FC<UpdateBusStopDialogProps> = ({
             </div>
             <div className="space-y-2">
               <Label>{t("UpdateDialog.LaneIds")}</Label>
-              <Input
-                value={laneIdsInput}
-                onChange={(e) => setLaneIdsInput(e.target.value)}
-                placeholder="lane-id-1,lane-id-2"
+              <MultipleSelectWithPagination
+                fetchFunction={useFetchBusLanes}
+                onSelect={(items: BusLaneWithRelations[]) => {
+                  setSelectedLanes(items);
+                }}
+                fields={[
+                  {
+                    key: "name",
+                    label: t("Common.Name"),
+                    type: "relation",
+                  },
+                ]}
+                placeholder={t("UpdateDialog.LaneIds")}
+                value={selectedLanes.map((lane) => lane.id)}
+                initialSelectedItems={selectedLanes}
               />
             </div>
             <div className="space-y-2">
               <Label>{t("UpdateDialog.RouteIds")}</Label>
-              <Input
-                value={routeIdsInput}
-                onChange={(e) => setRouteIdsInput(e.target.value)}
-                placeholder="route-id-1,route-id-2"
+              <MultipleSelectWithPagination
+                fetchFunction={useFetchBusRoutes}
+                onSelect={(items: BusRouteWithRelations[]) => {
+                  setSelectedRoutes(items);
+                }}
+                fields={[
+                  {
+                    key: "name",
+                    label: t("Common.Name"),
+                    type: "relation",
+                  },
+                  {
+                    key: "routeNumber",
+                    label: t("Table.Route"),
+                    type: "string",
+                  },
+                ]}
+                placeholder={t("UpdateDialog.RouteIds")}
+                value={selectedRoutes.map((route) => route.id)}
+                initialSelectedItems={selectedRoutes}
               />
             </div>
           </div>
@@ -374,22 +451,59 @@ export const UpdateBusStopDialog: FC<UpdateBusStopDialogProps> = ({
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {BOOLEAN_FIELDS.map((key) => (
-              <div
-                key={key}
-                className="flex items-center justify-between border rounded-lg p-3"
-              >
-                <Label className="text-sm font-medium">
-                  {t(`UpdateDialog.${key}`)}
-                </Label>
-                <Switch
-                  checked={Boolean(form.watch(key))}
-                  onCheckedChange={(checked) => form.setValue(key, checked)}
-                  dir={isRTL ? "rtl" : "ltr"}
-                />
-              </div>
-            ))}
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold text-foreground">
+              {t("UpdateDialog.Amenities")}
+            </Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {BOOLEAN_FIELDS.map((key) => {
+                const isChecked = Boolean(form.watch(key));
+                const icons: Record<string, typeof Home> = {
+                  hasShelter: Home,
+                  hasBench: Sofa,
+                  hasLighting: Lightbulb,
+                  isAccessible: Accessibility,
+                  hasRealTimeInfo: Radio,
+                  isActive: ToggleLeft,
+                };
+                const Icon = icons[key] || ToggleLeft;
+
+                return (
+                  <div
+                    key={key}
+                    onClick={() => form.setValue(key, !isChecked)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg border-2 p-3 cursor-pointer transition-all duration-200",
+                      isChecked
+                        ? "bg-emerald-50 border-emerald-300 shadow-md hover:shadow-lg hover:border-emerald-400"
+                        : "bg-background border-border hover:border-muted-foreground/50 hover:bg-muted/30"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "p-2 rounded-md transition-colors",
+                        isChecked
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1">
+                      <Label className="text-sm font-medium cursor-pointer block">
+                        {t(`UpdateDialog.${key}`)}
+                      </Label>
+                    </div>
+                    <Switch
+                      checked={isChecked}
+                      onCheckedChange={(checked) => form.setValue(key, checked)}
+                      dir={isRTL ? "rtl" : "ltr"}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 

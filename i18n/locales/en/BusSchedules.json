@@ -1,0 +1,110 @@
+{
+  "BusSchedulesTitle": "Bus Schedules",
+  "ManageBusSchedules": "Manage bus schedules, departure times, and route stops.",
+  "CreateBusSchedule": "Create Bus Schedule",
+  "LoadingBusSchedules": "Loading bus schedules...",
+  "NoBusSchedulesFound": "No bus schedules found",
+  "Cancel": "Cancel",
+  "TotalItems": "Total Items",
+  "DisplayLimit": "Display Limit",
+  "Rows": "Rows",
+  "ClearFilters": "Clear Filters",
+  "Common": {
+    "Create": "Create",
+    "Creating": "Creating...",
+    "Update": "Update",
+    "Updating": "Updating...",
+    "Apply": "Apply",
+    "Cancel": "Cancel",
+    "Active": "Active",
+    "Inactive": "Inactive",
+    "Name": "Name",
+    "Description": "Description",
+    "NotAvailable": "Not available",
+    "None": "None"
+  },
+  "Success": {
+    "Created": "Bus schedule created successfully",
+    "Updated": "Bus schedule updated successfully"
+  },
+  "Error": {
+    "CreateFailed": "Failed to create bus schedule",
+    "UpdateFailed": "Failed to update bus schedule",
+    "RouteStopRequired": "Route and Stop are required"
+  },
+  "CreateDialog": {
+    "Title": "Create Bus Schedule",
+    "Description": "Define the schedule details, route, stop, and departure time.",
+    "RouteId": "Route",
+    "StopId": "Stop",
+    "DepartureTime": "Departure Time",
+    "DayOfWeek": "Day of Week",
+    "SpecificDate": "Specific Date",
+    "Notes": "Notes",
+    "NotesPlaceholder": "Enter additional notes",
+    "IsActive": "Active status"
+  },
+  "UpdateDialog": {
+    "Title": "Update Bus Schedule",
+    "Description": "Modify the schedule details and operational settings.",
+    "RouteId": "Route",
+    "StopId": "Stop",
+    "DepartureTime": "Departure Time",
+    "DayOfWeek": "Day of Week",
+    "SpecificDate": "Specific Date",
+    "Notes": "Notes",
+    "NotesPlaceholder": "Enter additional notes",
+    "IsActive": "Active status"
+  },
+  "ViewDialog": {
+    "Title": "Schedule Details",
+    "Description": "Review the schedule information and related details.",
+    "Route": "Route",
+    "Stop": "Stop",
+    "DepartureTime": "Departure Time",
+    "Notes": "Notes"
+  },
+  "FilterDialog": {
+    "Title": "Filter Schedules",
+    "Description": "Filter schedules by route, stop, day, or status.",
+    "BasicFilters": "Basic Filters",
+    "RouteId": "Route",
+    "RouteIdPlaceholder": "Enter route ID",
+    "StopId": "Stop",
+    "StopIdPlaceholder": "Enter stop ID",
+    "DayOfWeek": "Day of Week",
+    "IsActive": "Active status",
+    "IsActivePlaceholder": "Select status"
+  },
+  "Table": {
+    "Route": "Route",
+    "Stop": "Stop",
+    "Departure": "Departure",
+    "Day": "Day",
+    "SpecificDate": "Specific Date",
+    "Notes": "Notes",
+    "Status": "Status",
+    "Actions": "Actions"
+  },
+  "Actions": {
+    "View": "View",
+    "Edit": "Edit",
+    "Delete": "Delete",
+    "Deleting": "Deleting...",
+    "DeleteConfirmTitle": "Are you sure?",
+    "DeleteConfirmMessage": "This action cannot be undone."
+  },
+  "DayOfWeek": {
+    "MONDAY": "Monday",
+    "TUESDAY": "Tuesday",
+    "WEDNESDAY": "Wednesday",
+    "THURSDAY": "Thursday",
+    "FRIDAY": "Friday",
+    "SATURDAY": "Saturday",
+    "SUNDAY": "Sunday"
+  },
+  "BasicInformation": "Basic Information",
+  "ViewBusSchedule": "View Bus Schedule",
+  "UpdateBusSchedule": "Update Bus Schedule",
+  "DeleteBusSchedule": "Delete Bus Schedule"
+}

@@ -109,7 +109,7 @@ const BusStopsPage = () => {
   const columns = useMemo(() => {
     const actionColumn: Column<BusStopWithRelations> = {
       key: "actions",
-      label: "Actions",
+      label: t("Table.Actions"),
       sortable: false,
       className: "w-[120px]",
       render: (stop) => {
@@ -134,7 +134,7 @@ const BusStopsPage = () => {
                     <Eye className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>View</TooltipContent>
+                <TooltipContent>{t("Actions.View")}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
@@ -153,16 +153,18 @@ const BusStopsPage = () => {
                     <Pencil className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Edit</TooltipContent>
+                <TooltipContent>{t("Actions.Edit")}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
             <ConfirmationDialog
-              title="Are you sure?"
-              message="This action cannot be undone."
+              title={t("Actions.DeleteConfirmTitle")}
+              message={t("Actions.DeleteConfirmMessage")}
               onConfirm={() => handleDelete(stop.id)}
-              confirmLabel={isDeleting ? "Deleting..." : "Delete"}
-              cancelLabel="Cancel"
+              confirmLabel={
+                isDeleting ? t("Actions.Deleting") : t("Actions.Delete")
+              }
+              cancelLabel={t("Common.Cancel")}
               variant="destructive"
               disabled={!canDelete || isDeleting}
               isRtl={isRTL}
@@ -179,7 +181,7 @@ const BusStopsPage = () => {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Delete</TooltipContent>
+                  <TooltipContent>{t("Actions.Delete")}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </ConfirmationDialog>
@@ -188,8 +190,8 @@ const BusStopsPage = () => {
       },
     };
 
-    return ensureIndexColumn([...busStopColumns, actionColumn]);
-  }, [session, isDeleting, isRTL, handleDelete]);
+    return ensureIndexColumn([...busStopColumns(t), actionColumn]);
+  }, [session, isDeleting, isRTL, handleDelete, t]);
 
   const handleCreateSuccess = () => {
     setIsCreateDialogOpen(false);
@@ -308,10 +310,13 @@ const BusStopsPage = () => {
                                 session,
                                 isDeleting,
                                 handlers: {
-                                  setSelectedItem: (item) =>
-                                    setSelectedStop(item),
+                                  setSelectedItem: (
+                                    item: BusStopWithRelations | null
+                                  ) => setSelectedStop(item),
                                   setIsViewDialogOpen: setIsViewDialogOpen,
-                                  handleOpenUpdateDialog: (item) => {
+                                  handleOpenUpdateDialog: (
+                                    item: BusStopWithRelations
+                                  ) => {
                                     setSelectedStop(item);
                                     setIsUpdateDialogOpen(true);
                                   },

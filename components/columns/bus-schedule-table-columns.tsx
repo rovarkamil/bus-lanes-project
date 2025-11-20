@@ -13,23 +13,27 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+
 const RelationCell = ({
   icon: Icon,
   label,
   value,
+  t,
 }: {
   icon: typeof RouteIcon;
   label: string;
   value?: string;
+  t: Translate;
 }) => (
   <div className="flex items-center gap-2 text-sm">
     <Icon className="w-4 h-4 text-muted-foreground" />
-    <span className="font-medium">{label}</span>
+    <span className="font-medium">{t(label)}</span>
     <span className="text-muted-foreground">{value ?? "—"}</span>
   </div>
 );
 
-const StatusBadge = ({ isActive }: { isActive: boolean }) => (
+const StatusBadge = ({ isActive, t }: { isActive: boolean; t: Translate }) => (
   <Badge
     variant="outline"
     className={cn(
@@ -40,38 +44,42 @@ const StatusBadge = ({ isActive }: { isActive: boolean }) => (
     )}
   >
     <ToggleLeft className="w-3 h-3 mr-1" />
-    {isActive ? "Active" : "Inactive"}
+    {isActive ? t("Common.Active") : t("Common.Inactive")}
   </Badge>
 );
 
-export const busScheduleColumns: Column<BusScheduleWithRelations>[] = [
+export const busScheduleColumns = (
+  t: Translate
+): Column<BusScheduleWithRelations>[] => [
   {
     key: "route",
-    label: "Route",
+    label: t("Table.Route"),
     sortable: true,
     render: (schedule) => (
       <RelationCell
         icon={RouteIcon}
-        label="Route"
+        label="Table.Route"
         value={schedule.route?.routeNumber ?? schedule.route?.id}
+        t={t}
       />
     ),
   },
   {
     key: "stop",
-    label: "Stop",
+    label: t("Table.Stop"),
     sortable: true,
     render: (schedule) => (
       <RelationCell
         icon={MapPin}
-        label="Stop"
-        value={schedule.stop?.id ?? "—"}
+        label="Table.Stop"
+        value={schedule.stop?.name?.en ?? t("Common.NotAvailable")}
+        t={t}
       />
     ),
   },
   {
     key: "departureTime",
-    label: "Departure",
+    label: t("Table.Departure"),
     sortable: true,
     render: (schedule) => (
       <div className="flex items-center gap-2">
@@ -82,15 +90,15 @@ export const busScheduleColumns: Column<BusScheduleWithRelations>[] = [
   },
   {
     key: "dayOfWeek",
-    label: "Day",
+    label: t("Table.Day"),
     sortable: true,
     render: (schedule) => (
-      <Badge variant="secondary">{`DayOfWeek.${schedule.dayOfWeek}`}</Badge>
+      <Badge variant="secondary">{t(`DayOfWeek.${schedule.dayOfWeek}`)}</Badge>
     ),
   },
   {
     key: "specificDate",
-    label: "Specific Date",
+    label: t("Table.SpecificDate"),
     sortable: true,
     render: (schedule) =>
       schedule.specificDate ? (
@@ -99,12 +107,14 @@ export const busScheduleColumns: Column<BusScheduleWithRelations>[] = [
           <span className="text-sm">{formatDate(schedule.specificDate)}</span>
         </div>
       ) : (
-        <span className="text-sm text-muted-foreground">—</span>
+        <span className="text-sm text-muted-foreground">
+          {t("Common.NotAvailable")}
+        </span>
       ),
   },
   {
     key: "notes",
-    label: "Notes",
+    label: t("Table.Notes"),
     sortable: false,
     className: "max-w-[220px]",
     render: (schedule) =>
@@ -113,13 +123,17 @@ export const busScheduleColumns: Column<BusScheduleWithRelations>[] = [
           {schedule.notes}
         </span>
       ) : (
-        <span className="text-sm text-muted-foreground">—</span>
+        <span className="text-sm text-muted-foreground">
+          {t("Common.NotAvailable")}
+        </span>
       ),
   },
   {
     key: "status",
-    label: "Status",
+    label: t("Table.Status"),
     sortable: true,
-    render: (schedule) => <StatusBadge isActive={schedule.isActive ?? false} />,
+    render: (schedule) => (
+      <StatusBadge isActive={schedule.isActive ?? false} t={t} />
+    ),
   },
 ];
