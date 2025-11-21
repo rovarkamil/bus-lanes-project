@@ -44,7 +44,11 @@ export type ZoneWithRelations = Prisma.ZoneGetPayload<{
   include: {
     name: true;
     description: true;
-    stops: true;
+    stops: {
+      include: {
+        name: true;
+      };
+    };
   };
 }>;
 

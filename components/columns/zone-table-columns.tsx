@@ -6,9 +6,19 @@ import { Badge } from "@/components/ui/badge";
 import { ToggleLeft, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const ZoneInfoCell = ({ zone }: { zone: ZoneWithRelations }) => (
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+const ZoneInfoCell = ({
+  zone,
+  t,
+}: {
+  zone: ZoneWithRelations;
+  t: Translate;
+}) => (
   <div className="flex flex-col">
-    <span className="text-sm font-medium">{zone.name?.en ?? "-"}</span>
+    <span className="text-sm font-medium">
+      {zone.name?.en ?? t("Common.NotAvailable")}
+    </span>
     {zone.description?.en && (
       <span className="text-xs text-muted-foreground line-clamp-2">
         {zone.description.en}
@@ -17,7 +27,7 @@ const ZoneInfoCell = ({ zone }: { zone: ZoneWithRelations }) => (
   </div>
 );
 
-const StatusBadge = ({ isActive }: { isActive: boolean }) => (
+const StatusBadge = ({ isActive, t }: { isActive: boolean; t: Translate }) => (
   <Badge
     variant="outline"
     className={cn(
@@ -28,20 +38,20 @@ const StatusBadge = ({ isActive }: { isActive: boolean }) => (
     )}
   >
     <ToggleLeft className="w-3 h-3 mr-1" />
-    {isActive ? "Active" : "Inactive"}
+    {isActive ? t("Common.Active") : t("Common.Inactive")}
   </Badge>
 );
 
-export const zoneColumns: Column<ZoneWithRelations>[] = [
+export const zoneColumns = (t: Translate): Column<ZoneWithRelations>[] => [
   {
     key: "name",
-    label: "Zone",
+    label: t("Table.Zone"),
     sortable: true,
-    render: (zone) => <ZoneInfoCell zone={zone} />,
+    render: (zone) => <ZoneInfoCell zone={zone} t={t} />,
   },
   {
     key: "color",
-    label: "Color",
+    label: t("Table.Color"),
     sortable: false,
     render: (zone) => (
       <div className="flex items-center gap-2">
@@ -49,13 +59,15 @@ export const zoneColumns: Column<ZoneWithRelations>[] = [
           className="h-5 w-5 rounded-full ring-1 ring-border"
           style={{ backgroundColor: zone.color ?? "#0066CC" }}
         />
-        <span className="text-sm">{zone.color}</span>
+        <span className="text-sm">
+          {zone.color ?? t("Common.NotAvailable")}
+        </span>
       </div>
     ),
   },
   {
     key: "stops",
-    label: "Stops",
+    label: t("Table.Stops"),
     sortable: false,
     render: (zone) => (
       <Badge variant="secondary">
@@ -66,8 +78,8 @@ export const zoneColumns: Column<ZoneWithRelations>[] = [
   },
   {
     key: "status",
-    label: "Status",
+    label: t("Table.Status"),
     sortable: true,
-    render: (zone) => <StatusBadge isActive={zone.isActive ?? false} />,
+    render: (zone) => <StatusBadge isActive={zone.isActive ?? false} t={t} />,
   },
 ];

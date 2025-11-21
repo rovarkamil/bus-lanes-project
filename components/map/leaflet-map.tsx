@@ -60,4 +60,3 @@ export function LeafletMap({
 }
 
 export default LeafletMap;
-

@@ -41,7 +41,11 @@ export const { GET, POST, PUT, DELETE } = createEmployeeModelRoutes({
   relations: {
     name: true,
     description: true,
-    stops: true,
+    stops: {
+      include: {
+        name: true,
+      },
+    },
   },
   defaultSort: { field: "createdAt", order: "desc" },
   customHandlers: {

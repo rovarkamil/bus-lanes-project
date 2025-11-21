@@ -1,0 +1,78 @@
+{
+  "ZonesTitle": "Zones",
+  "ManageZones": "Manage service zones, colors, and coverage areas.",
+  "CreateZone": "Create Zone",
+  "LoadingZones": "Loading zones...",
+  "NoZonesFound": "No zones found",
+  "Cancel": "Cancel",
+  "TotalItems": "Total Items",
+  "DisplayLimit": "Display Limit",
+  "Rows": "Rows",
+  "ClearFilters": "Clear Filters",
+  "Common": {
+    "Create": "Create",
+    "Creating": "Creating...",
+    "Update": "Update",
+    "Updating": "Updating...",
+    "Apply": "Apply",
+    "Cancel": "Cancel",
+    "Active": "Active",
+    "Inactive": "Inactive",
+    "Name": "Name",
+    "Description": "Description",
+    "NotAvailable": "Not available"
+  },
+  "Success": {
+    "Created": "Zone created successfully",
+    "Updated": "Zone updated successfully"
+  },
+  "Error": {
+    "CreateFailed": "Failed to create zone",
+    "UpdateFailed": "Failed to update zone"
+  },
+  "CreateDialog": {
+    "Title": "Create Zone",
+    "Description": "Define the zone name, color, and activation state.",
+    "Color": "Zone Color",
+    "IsActive": "Active status"
+  },
+  "UpdateDialog": {
+    "Title": "Update Zone",
+    "Description": "Modify the zone metadata and activation state.",
+    "Color": "Zone Color",
+    "IsActive": "Active status"
+  },
+  "ViewDialog": {
+    "Title": "Zone Details",
+    "Description": "Review the zone color, status, and linked stops.",
+    "Stops": "Stops in this zone",
+    "NoStops": "No stops assigned yet"
+  },
+  "FilterDialog": {
+    "Title": "Filter Zones",
+    "Description": "Filter zones by status or color.",
+    "BasicFilters": "Basic Filters",
+    "IsActive": "Active status",
+    "Color": "Color",
+    "ColorPlaceholder": "Enter hex color"
+  },
+  "Table": {
+    "Zone": "Zone",
+    "Color": "Color",
+    "Stops": "Stops",
+    "Status": "Status",
+    "Actions": "Actions"
+  },
+  "Actions": {
+    "View": "View",
+    "Edit": "Edit",
+    "Delete": "Delete",
+    "Deleting": "Deleting...",
+    "DeleteConfirmTitle": "Are you sure?",
+    "DeleteConfirmMessage": "This action cannot be undone."
+  },
+  "BasicInformation": "Basic Information",
+  "ViewZone": "View Zone",
+  "UpdateZone": "Update Zone",
+  "DeleteZone": "Delete Zone"
+}

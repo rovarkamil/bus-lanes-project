@@ -108,6 +108,7 @@ export async function updateBusStopWithBusinessLogic({
     routeIds,
     iconId,
     zoneId,
+    isActive, // Remove isActive as it's not a valid BusStop field
     ...rest
   } = data;
 
@@ -153,9 +154,18 @@ export async function updateBusStopWithBusinessLogic({
     uploadedById,
   });
 
-  const updateData: Prisma.BusStopUpdateInput = {
-    ...rest,
-  };
+  // Only include valid BusStop fields in updateData
+  // Filter out any invalid fields like 'isActive' which doesn't exist on BusStop
+  const updateData: Prisma.BusStopUpdateInput = {};
+  
+  if (rest.latitude !== undefined) updateData.latitude = rest.latitude;
+  if (rest.longitude !== undefined) updateData.longitude = rest.longitude;
+  if (rest.hasShelter !== undefined) updateData.hasShelter = rest.hasShelter;
+  if (rest.hasBench !== undefined) updateData.hasBench = rest.hasBench;
+  if (rest.hasLighting !== undefined) updateData.hasLighting = rest.hasLighting;
+  if (rest.isAccessible !== undefined) updateData.isAccessible = rest.isAccessible;
+  if (rest.hasRealTimeInfo !== undefined) updateData.hasRealTimeInfo = rest.hasRealTimeInfo;
+  if (rest.order !== undefined) updateData.order = rest.order;
 
   if (iconId !== undefined) {
     updateData.icon =

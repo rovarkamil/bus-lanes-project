@@ -37,6 +37,10 @@ import {
   EyeOff,
 } from "lucide-react";
 import { useTranslation } from "@/i18n/client";
+import {
+  createDefaultMarkerIcon,
+  createStopMarkerIcon,
+} from "@/lib/map/marker-icons";
 
 const DEFAULT_CENTER: LatLngExpression = [36.1911, 44.0092];
 const DEFAULT_ZOOM = 13;
@@ -117,14 +121,26 @@ const LayerToggleGroup = ({
   const { t, i18n } = useTranslation("Map");
   const isRTL = i18n.language !== "en";
   const config: { key: LayerToggle; label: string; icon: ReactNode }[] = [
-    { key: "stops", label: t("Stops"), icon: <MapPin className="h-3.5 w-3.5" /> },
-    { key: "lanes", label: t("Lanes"), icon: <Layers className="h-3.5 w-3.5" /> },
+    {
+      key: "stops",
+      label: t("Stops"),
+      icon: <MapPin className="h-3.5 w-3.5" />,
+    },
+    {
+      key: "lanes",
+      label: t("Lanes"),
+      icon: <Layers className="h-3.5 w-3.5" />,
+    },
     {
       key: "routes",
       label: t("Routes"),
       icon: <RouteIcon className="h-3.5 w-3.5" />,
     },
-    { key: "zones", label: t("Zones"), icon: <Layers className="h-3.5 w-3.5" /> },
+    {
+      key: "zones",
+      label: t("Zones"),
+      icon: <Layers className="h-3.5 w-3.5" />,
+    },
   ];
 
   return (
@@ -224,6 +240,8 @@ export const InteractiveBusMap = ({
   const { t, i18n } = useTranslation("Map");
   const isRTL = i18n.language !== "en";
   const locale = useLocale();
+  const stopMarkerIcon = useMemo(() => createStopMarkerIcon(), []);
+  const defaultMarkerIcon = useMemo(() => createDefaultMarkerIcon(), []);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeServiceIds, setActiveServiceIds] = useState<string[]>([]);
   const [layers, setLayers] =
@@ -338,7 +356,11 @@ export const InteractiveBusMap = ({
     return filteredStops.map((stop) => {
       const localizedName =
         getLocalizedValue(stop.name, locale) ?? `Stop ${stop.id}`;
-      const icon = createCustomIcon(stop.icon);
+      const icon =
+        createCustomIcon(stop.icon) ??
+        stopMarkerIcon ??
+        defaultMarkerIcon ??
+        new L.Icon.Default();
       return (
         <Marker
           key={stop.id}
@@ -437,7 +459,10 @@ export const InteractiveBusMap = ({
   };
 
   return (
-    <div className={cn("w-full space-y-4", className)} dir={isRTL ? "rtl" : "ltr"}>
+    <div
+      className={cn("w-full space-y-4", className)}
+      dir={isRTL ? "rtl" : "ltr"}
+    >
       <div className="flex flex-col gap-4 lg:flex-row">
         <div className="flex-1 space-y-4">
           <SearchControl value={searchTerm} onChange={setSearchTerm} />

@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { Permission } from "@prisma/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { useMapEditorData } from "@/hooks/employee-hooks/use-map";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,12 +18,21 @@ const MapEditorPage = () => {
   const isRTL = i18n.language !== "en";
   const { data: session } = useSession();
   const canEdit = hasPermission(session, Permission.EDIT_MAP);
+  const queryClient = useQueryClient();
   const { data, isPending, error, refetch } = useMapEditorData({
     enabled: canEdit,
   });
 
   const payload = data?.data;
 
+  const handleRefetch = useMemo(() => {
+    return () => {
+      queryClient.invalidateQueries({ queryKey: ["employee-map-data"] });
+      refetch();
+    };
+  }, [queryClient, refetch]);
+
+  // Use a stable reference to prevent MapEditor from remounting
   const MapEditorClient = useMemo(
     () =>
       dynamic(() => import("@/components/map/map-editor"), {
@@ -96,13 +106,25 @@ const MapEditorPage = () => {
 
     return (
       <MapEditorClient
+        key="map-editor-instance"
         data={payload}
         onSave={(submission) => {
           console.log("Map editor submission", submission);
         }}
+        onRefetch={handleRefetch}
       />
     );
-  }, [MapEditorClient, canEdit, error, isPending, isRTL, payload, refetch, t]);
+  }, [
+    MapEditorClient,
+    canEdit,
+    error,
+    isPending,
+    isRTL,
+    payload,
+    handleRefetch,
+    refetch,
+    t,
+  ]);
 
   return (
     <main className="space-y-6 px-4 py-8 md:px-8" dir={isRTL ? "rtl" : "ltr"}>

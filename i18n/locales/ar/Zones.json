@@ -1,0 +1,78 @@
+{
+  "ZonesTitle": "المناطق",
+  "ManageZones": "إدارة مناطق الخدمة والألوان ومناطق التغطية.",
+  "CreateZone": "إنشاء منطقة",
+  "LoadingZones": "جاري تحميل المناطق...",
+  "NoZonesFound": "لم يتم العثور على مناطق",
+  "Cancel": "إلغاء",
+  "TotalItems": "إجمالي العناصر",
+  "DisplayLimit": "حد العرض",
+  "Rows": "صفوف",
+  "ClearFilters": "مسح المرشحات",
+  "Common": {
+    "Create": "إنشاء",
+    "Creating": "جاري الإنشاء...",
+    "Update": "تحديث",
+    "Updating": "جاري التحديث...",
+    "Apply": "تطبيق",
+    "Cancel": "إلغاء",
+    "Active": "نشط",
+    "Inactive": "غير نشط",
+    "Name": "الاسم",
+    "Description": "الوصف",
+    "NotAvailable": "غير متاح"
+  },
+  "Success": {
+    "Created": "تم إنشاء المنطقة بنجاح",
+    "Updated": "تم تحديث المنطقة بنجاح"
+  },
+  "Error": {
+    "CreateFailed": "فشل إنشاء المنطقة",
+    "UpdateFailed": "فشل تحديث المنطقة"
+  },
+  "CreateDialog": {
+    "Title": "إنشاء منطقة",
+    "Description": "تحديد اسم المنطقة ولونها وحالة التفعيل.",
+    "Color": "لون المنطقة",
+    "IsActive": "حالة النشاط"
+  },
+  "UpdateDialog": {
+    "Title": "تحديث المنطقة",
+    "Description": "تعديل بيانات المنطقة وحالة التفعيل.",
+    "Color": "لون المنطقة",
+    "IsActive": "حالة النشاط"
+  },
+  "ViewDialog": {
+    "Title": "تفاصيل المنطقة",
+    "Description": "مراجعة لون المنطقة وحالتها والمحطات المرتبطة.",
+    "Stops": "المحطات في هذه المنطقة",
+    "NoStops": "لا توجد محطات مضافة بعد"
+  },
+  "FilterDialog": {
+    "Title": "تصفية المناطق",
+    "Description": "تصفية المناطق حسب الحالة أو اللون.",
+    "BasicFilters": "المرشحات الأساسية",
+    "IsActive": "حالة النشاط",
+    "Color": "اللون",
+    "ColorPlaceholder": "أدخل اللون (HEX)"
+  },
+  "Table": {
+    "Zone": "المنطقة",
+    "Color": "اللون",
+    "Stops": "المحطات",
+    "Status": "الحالة",
+    "Actions": "الإجراءات"
+  },
+  "Actions": {
+    "View": "عرض",
+    "Edit": "تعديل",
+    "Delete": "حذف",
+    "Deleting": "جاري الحذف...",
+    "DeleteConfirmTitle": "هل أنت متأكد؟",
+    "DeleteConfirmMessage": "لا يمكن التراجع عن هذا الإجراء."
+  },
+  "BasicInformation": "المعلومات الأساسية",
+  "ViewZone": "عرض المنطقة",
+  "UpdateZone": "تحديث المنطقة",
+  "DeleteZone": "حذف المنطقة"
+}

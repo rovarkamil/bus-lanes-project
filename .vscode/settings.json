@@ -1,5 +1,7 @@
 {
   "i18n-ally.localesPaths": ["i18n", "i18n/locales"],
   "postman.settings.dotenv-detection-notification-visibility": false,
-  "prisma.pinToPrisma6": true
+  "prisma.pinToPrisma6": true,
+  "WillLuke.nextjs.addTypesOnSave": true,
+  "WillLuke.nextjs.hasPrompted": true
 }

@@ -123,11 +123,19 @@ export const UpdateZoneDialog: FC<UpdateZoneDialogProps> = ({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>{t("UpdateDialog.Color")}</Label>
-            <Input
-              type="color"
-              value={form.watch("color") ?? "#FF6B6B"}
-              onChange={(e) => form.setValue("color", e.target.value)}
-            />
+            <div className="flex items-center gap-3">
+              <Input
+                type="color"
+                value={form.watch("color") ?? "#FF6B6B"}
+                onChange={(e) => form.setValue("color", e.target.value)}
+                className="h-10 w-16 rounded-md border"
+              />
+              <Input
+                value={form.watch("color") ?? "#FF6B6B"}
+                onChange={(e) => form.setValue("color", e.target.value)}
+                className="flex-1"
+              />
+            </div>
           </div>
 
           <div className="flex items-center justify-between rounded-lg border p-3">

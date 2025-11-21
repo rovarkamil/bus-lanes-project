@@ -109,7 +109,7 @@ const ZonesPage = () => {
   const columns = useMemo(() => {
     const actionColumn: Column<ZoneWithRelations> = {
       key: "actions",
-      label: "Actions",
+      label: t("Table.Actions"),
       sortable: false,
       className: "w-[120px]",
       render: (zone) => {
@@ -134,7 +134,7 @@ const ZonesPage = () => {
                     <Eye className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>View</TooltipContent>
+                <TooltipContent>{t("Actions.View")}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
@@ -153,16 +153,18 @@ const ZonesPage = () => {
                     <Pencil className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Edit</TooltipContent>
+                <TooltipContent>{t("Actions.Edit")}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
             <ConfirmationDialog
-              title="Are you sure?"
-              message="This action cannot be undone."
+              title={t("Actions.DeleteConfirmTitle")}
+              message={t("Actions.DeleteConfirmMessage")}
               onConfirm={() => handleDelete(zone.id)}
-              confirmLabel={isDeleting ? "Deleting..." : "Delete"}
-              cancelLabel="Cancel"
+              confirmLabel={
+                isDeleting ? t("Actions.Deleting") : t("Actions.Delete")
+              }
+              cancelLabel={t("Common.Cancel")}
               variant="destructive"
               disabled={!canDelete || isDeleting}
               isRtl={isRTL}
@@ -188,8 +190,8 @@ const ZonesPage = () => {
       },
     };
 
-    return ensureIndexColumn([...zoneColumns, actionColumn]);
-  }, [session, isDeleting, isRTL, handleDelete]);
+    return ensureIndexColumn([...zoneColumns(t), actionColumn]);
+  }, [session, isDeleting, isRTL, handleDelete, t]);
 
   const handleCreateSuccess = () => {
     setIsCreateDialogOpen(false);
@@ -308,8 +310,9 @@ const ZonesPage = () => {
                                 session,
                                 isDeleting,
                                 handlers: {
-                                  setSelectedItem: (item) =>
-                                    setSelectedZone(item),
+                                  setSelectedItem: (
+                                    item: ZoneWithRelations | null
+                                  ) => setSelectedZone(item),
                                   setIsViewDialogOpen: setIsViewDialogOpen,
                                   handleOpenUpdateDialog: (item) => {
                                     setSelectedZone(item);
