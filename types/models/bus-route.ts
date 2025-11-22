@@ -96,6 +96,126 @@ export type CreateBusRouteData = z.infer<typeof createBusRouteSchema>;
 export type UpdateBusRouteData = z.infer<typeof updateBusRouteSchema>;
 export type DeleteBusRouteData = z.infer<typeof deleteBusRouteSchema>;
 
+// Map Editor Types
+export interface MapEditorRouteDraft {
+  name?: {
+    en: string;
+    ar?: string | null;
+    ckb?: string | null;
+  };
+  description?: {
+    en?: string | null;
+    ar?: string | null;
+    ckb?: string | null;
+  };
+  serviceId?: string | null;
+  routeNumber?: string;
+  direction?: RouteDirection;
+  fare?: number;
+  currency?: Currency;
+  frequency?: number;
+  duration?: number;
+  laneIds?: string[];
+  stopIds?: string[];
+  isActive?: boolean;
+}
+
+export interface CreateBusRoutesMapEditorData {
+  routes: MapEditorRouteDraft[];
+}
+
+export interface UpdateBusRoutesMapEditorData {
+  routes: Array<{
+    id: string;
+    nameFields?: {
+      en: string;
+      ar?: string | null;
+      ckb?: string | null;
+    };
+    descriptionFields?: {
+      en?: string | null;
+      ar?: string | null;
+      ckb?: string | null;
+    };
+    serviceId?: string | null;
+    routeNumber?: string;
+    direction?: RouteDirection;
+    fare?: number;
+    currency?: Currency;
+    frequency?: number;
+    duration?: number;
+    laneIds?: string[];
+    stopIds?: string[];
+    isActive?: boolean;
+  }>;
+}
+
+// Map Editor Zod Schemas
+export const mapEditorRouteDraftSchema = z.object({
+  name: z
+    .object({
+      en: z.string().min(1),
+      ar: z.string().nullable().optional(),
+      ckb: z.string().nullable().optional(),
+    })
+    .optional(),
+  description: z
+    .object({
+      en: z.string().nullable().optional(),
+      ar: z.string().nullable().optional(),
+      ckb: z.string().nullable().optional(),
+    })
+    .optional(),
+  serviceId: uuidSchema.nullable().optional(),
+  routeNumber: z.string().max(50).optional(),
+  direction: z.nativeEnum(RouteDirection).optional(),
+  fare: z.number().min(0).optional(),
+  currency: z.nativeEnum(Currency).optional(),
+  frequency: positiveIntSchema.optional(),
+  duration: positiveIntSchema.optional(),
+  laneIds: z.array(uuidSchema).optional(),
+  stopIds: z.array(uuidSchema).optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const createBusRoutesMapEditorSchema = z.object({
+  routes: z.array(mapEditorRouteDraftSchema).min(1),
+});
+
+export const updateBusRoutesMapEditorSchema = z.object({
+  routes: z
+    .array(
+      z.object({
+        id: uuidSchema,
+        nameFields: z
+          .object({
+            en: z.string().min(1),
+            ar: z.string().nullable().optional(),
+            ckb: z.string().nullable().optional(),
+          })
+          .optional(),
+        descriptionFields: z
+          .object({
+            en: z.string().nullable().optional(),
+            ar: z.string().nullable().optional(),
+            ckb: z.string().nullable().optional(),
+          })
+          .optional(),
+        serviceId: uuidSchema.nullable().optional(),
+        routeNumber: z.string().max(50).optional(),
+        direction: z.nativeEnum(RouteDirection).optional(),
+        fare: z.number().min(0).optional(),
+        currency: z.nativeEnum(Currency).optional(),
+        frequency: positiveIntSchema.optional(),
+        duration: positiveIntSchema.optional(),
+        laneIds: z.array(uuidSchema).optional(),
+        stopIds: z.array(uuidSchema).optional(),
+        isActive: z.boolean().optional(),
+      })
+    )
+    .min(1),
+});
+
 // Filter Types
 export interface BusRouteFilterParams extends FilterParams {
   serviceId?: string;

@@ -35,6 +35,8 @@ type MapIconWithFile = PrismaMapIcon & {
 type BusLaneRecord = Prisma.BusLaneGetPayload<{
   include: {
     name: true;
+    description: true;
+
     service: {
       include: { name: true };
     };
@@ -44,14 +46,20 @@ type BusLaneRecord = Prisma.BusLaneGetPayload<{
 type BusRouteRecord = Prisma.BusRouteGetPayload<{
   include: {
     name: true;
+    description: true;
     service: {
       include: { name: true };
     };
     lanes: {
-      select: { id: true };
+      include: {
+        name: true;
+        description: true;
+      };
     };
     stops: {
-      select: { id: true };
+      include: {
+        name: true;
+      };
     };
   };
 }>;
@@ -70,6 +78,7 @@ type BusStopRecord = Prisma.BusStopGetPayload<{
     lanes: {
       include: {
         name: true;
+        description: true;
         service: { include: { name: true } };
       };
     };
@@ -283,6 +292,7 @@ export async function GET() {
             lanes: {
               include: {
                 name: true,
+                description: true,
                 service: { include: { name: true } },
               },
             },
@@ -302,6 +312,7 @@ export async function GET() {
           },
           include: {
             name: true,
+            description: true,
             service: { include: { name: true } },
           },
           orderBy: { createdAt: "asc" },
@@ -313,12 +324,18 @@ export async function GET() {
           },
           include: {
             name: true,
+            description: true,
             service: { include: { name: true } },
             lanes: {
-              select: { id: true },
+              include: {
+                name: true,
+                description: true,
+              },
             },
             stops: {
-              select: { id: true },
+              include: {
+                name: true,
+              },
             },
           },
           orderBy: { createdAt: "asc" },

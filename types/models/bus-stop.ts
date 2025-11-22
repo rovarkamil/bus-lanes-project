@@ -113,6 +113,149 @@ export type CreateBusStopData = z.infer<typeof createBusStopSchema>;
 export type UpdateBusStopData = z.infer<typeof updateBusStopSchema>;
 export type DeleteBusStopData = z.infer<typeof deleteBusStopSchema>;
 
+// Map Editor Types
+export interface MapEditorStopDraft {
+  latitude: number;
+  longitude: number;
+  name?: {
+    en: string;
+    ar?: string | null;
+    ckb?: string | null;
+  };
+  description?: {
+    en?: string | null;
+    ar?: string | null;
+    ckb?: string | null;
+  };
+  images?: unknown[];
+  laneIds?: string[];
+  routeIds?: string[];
+  iconId?: string | null;
+  zoneId?: string | null;
+  hasShelter?: boolean;
+  hasBench?: boolean;
+  hasLighting?: boolean;
+  isAccessible?: boolean;
+  hasRealTimeInfo?: boolean;
+  order?: number;
+  isActive?: boolean;
+}
+
+export interface CreateBusStopsMapEditorData {
+  stops: MapEditorStopDraft[];
+}
+
+export interface UpdateBusStopsMapEditorData {
+  stops: Array<{
+    id: string;
+    latitude?: number;
+    longitude?: number;
+    nameFields?: {
+      en: string;
+      ar?: string | null;
+      ckb?: string | null;
+    };
+    descriptionFields?: {
+      en?: string | null;
+      ar?: string | null;
+      ckb?: string | null;
+    };
+    images?: unknown[];
+    laneIds?: string[];
+    routeIds?: string[];
+    iconId?: string | null;
+    zoneId?: string | null;
+    hasShelter?: boolean;
+    hasBench?: boolean;
+    hasLighting?: boolean;
+    isAccessible?: boolean;
+    hasRealTimeInfo?: boolean;
+    order?: number;
+    isActive?: boolean;
+  }>;
+}
+
+// Map Editor Zod Schemas
+export const mapEditorStopDraftSchema = z.object({
+  latitude: z
+    .number()
+    .min(-90, "Latitude|Validation.Errors.Min")
+    .max(90, "Latitude|Validation.Errors.Max"),
+  longitude: coordinateSchema,
+  name: z
+    .object({
+      en: z.string().min(1),
+      ar: z.string().nullable().optional(),
+      ckb: z.string().nullable().optional(),
+    })
+    .optional(),
+  description: z
+    .object({
+      en: z.string().nullable().optional(),
+      ar: z.string().nullable().optional(),
+      ckb: z.string().nullable().optional(),
+    })
+    .optional(),
+  images: z.array(z.any()).optional(),
+  laneIds: z.array(uuidSchema).optional(),
+  routeIds: z.array(uuidSchema).optional(),
+  iconId: uuidSchema.nullable().optional(),
+  zoneId: uuidSchema.nullable().optional(),
+  hasShelter: z.boolean().optional(),
+  hasBench: z.boolean().optional(),
+  hasLighting: z.boolean().optional(),
+  isAccessible: z.boolean().optional(),
+  hasRealTimeInfo: z.boolean().optional(),
+  order: positiveIntSchema.optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const createBusStopsMapEditorSchema = z.object({
+  stops: z.array(mapEditorStopDraftSchema).min(1),
+});
+
+export const updateBusStopsMapEditorSchema = z.object({
+  stops: z
+    .array(
+      z.object({
+        id: uuidSchema,
+        latitude: z
+          .number()
+          .min(-90, "Latitude|Validation.Errors.Min")
+          .max(90, "Latitude|Validation.Errors.Max")
+          .optional(),
+        longitude: coordinateSchema.optional(),
+        nameFields: z
+          .object({
+            en: z.string().min(1),
+            ar: z.string().nullable().optional(),
+            ckb: z.string().nullable().optional(),
+          })
+          .optional(),
+        descriptionFields: z
+          .object({
+            en: z.string().nullable().optional(),
+            ar: z.string().nullable().optional(),
+            ckb: z.string().nullable().optional(),
+          })
+          .optional(),
+        images: z.array(z.any()).optional(),
+        laneIds: z.array(uuidSchema).optional(),
+        routeIds: z.array(uuidSchema).optional(),
+        iconId: uuidSchema.nullable().optional(),
+        zoneId: uuidSchema.nullable().optional(),
+        hasShelter: z.boolean().optional(),
+        hasBench: z.boolean().optional(),
+        hasLighting: z.boolean().optional(),
+        isAccessible: z.boolean().optional(),
+        hasRealTimeInfo: z.boolean().optional(),
+        order: positiveIntSchema.optional(),
+        isActive: z.boolean().optional(),
+      })
+    )
+    .min(1),
+});
+
 // Filter Types
 export interface BusStopFilterParams extends FilterParams {
   zoneId?: string;

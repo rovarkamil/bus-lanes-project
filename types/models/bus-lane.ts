@@ -42,6 +42,7 @@ import {
   positiveIntSchema,
   percentageSchema,
 } from "./shared-schemas";
+import { CoordinateTuple } from "@/types/map";
 
 // Response Types
 export type BusLaneResponse = ResponseWithRelations<BusLaneWithRelations>;
@@ -99,6 +100,131 @@ export type CreateBusLaneData = z.infer<typeof createBusLaneSchema>;
 export type UpdateBusLaneData = z.infer<typeof updateBusLaneSchema>;
 export type DeleteBusLaneData = z.infer<typeof deleteBusLaneSchema>;
 export type LaneDraftStopInput = z.infer<typeof laneDraftStopSchema>;
+
+// Map Editor Types
+export interface MapEditorLaneDraft {
+  path: CoordinateTuple[];
+  color?: string;
+  weight?: number;
+  opacity?: number;
+  name?: {
+    en: string;
+    ar?: string | null;
+    ckb?: string | null;
+  };
+  description?: {
+    en?: string | null;
+    ar?: string | null;
+    ckb?: string | null;
+  };
+  serviceId?: string | null;
+  routeIds?: string[];
+  draftStops?: Array<{
+    latitude: number;
+    longitude: number;
+    name?: string;
+  }>;
+  isActive?: boolean;
+}
+
+export interface CreateBusLanesMapEditorData {
+  lanes: MapEditorLaneDraft[];
+}
+
+export interface UpdateBusLanesMapEditorData {
+  lanes: Array<{
+    id: string;
+    path?: CoordinateTuple[];
+    color?: string;
+    weight?: number;
+    opacity?: number;
+    nameFields?: {
+      en: string;
+      ar?: string | null;
+      ckb?: string | null;
+    };
+    descriptionFields?: {
+      en?: string | null;
+      ar?: string | null;
+      ckb?: string | null;
+    };
+    serviceId?: string | null;
+    routeIds?: string[];
+    isActive?: boolean;
+  }>;
+}
+
+// Map Editor Zod Schemas
+export const mapEditorLaneDraftSchema = z.object({
+  path: z.array(z.tuple([z.number(), z.number()])).min(2),
+  color: hexColorSchema.optional(),
+  weight: positiveIntSchema.min(1).max(20).optional(),
+  opacity: percentageSchema.optional(),
+  name: z
+    .object({
+      en: z.string().min(1),
+      ar: z.string().nullable().optional(),
+      ckb: z.string().nullable().optional(),
+    })
+    .optional(),
+  description: z
+    .object({
+      en: z.string().nullable().optional(),
+      ar: z.string().nullable().optional(),
+      ckb: z.string().nullable().optional(),
+    })
+    .optional(),
+  serviceId: uuidSchema.nullable().optional(),
+  routeIds: z.array(uuidSchema).optional(),
+  draftStops: z
+    .array(
+      z.object({
+        latitude: z.number().min(-90).max(90),
+        longitude: z.number().min(-180).max(180),
+        name: z.string().max(120).optional(),
+      })
+    )
+    .optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const createBusLanesMapEditorSchema = z.object({
+  lanes: z.array(mapEditorLaneDraftSchema).min(1),
+});
+
+export const updateBusLanesMapEditorSchema = z.object({
+  lanes: z
+    .array(
+      z.object({
+        id: uuidSchema,
+        path: z
+          .array(z.tuple([z.number(), z.number()]))
+          .min(2)
+          .optional(),
+        color: hexColorSchema.optional(),
+        weight: positiveIntSchema.min(1).max(20).optional(),
+        opacity: percentageSchema.optional(),
+        nameFields: z
+          .object({
+            en: z.string().min(1),
+            ar: z.string().nullable().optional(),
+            ckb: z.string().nullable().optional(),
+          })
+          .optional(),
+        descriptionFields: z
+          .object({
+            en: z.string().nullable().optional(),
+            ar: z.string().nullable().optional(),
+            ckb: z.string().nullable().optional(),
+          })
+          .optional(),
+        serviceId: uuidSchema.nullable().optional(),
+        routeIds: z.array(uuidSchema).optional(),
+        isActive: z.boolean().optional(),
+      })
+    )
+    .min(1),
+});
 
 // Filter Types
 export interface BusLaneFilterParams extends FilterParams {

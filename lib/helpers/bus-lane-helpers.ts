@@ -17,6 +17,7 @@ import {
 } from "@/lib/helpers/file-utils";
 import { normalizeLanguageFields } from "@/lib/helpers/language-utils";
 import { createBusStopWithBusinessLogic } from "@/lib/helpers/bus-stop-helpers";
+import { CoordinateTuple } from "@/types/map";
 
 type PrismaTransaction = Prisma.TransactionClient;
 
@@ -303,4 +304,388 @@ export async function deleteBusLaneWithBusinessLogic({
     where: { id },
     data: { deletedAt: new Date() },
   });
+}
+
+/**
+ * Create multiple bus lanes efficiently using createMany
+ * Optimized for bulk operations from map editor
+ */
+export async function createBusLanesBulkWithBusinessLogic({
+  lanes,
+  tx,
+}: {
+  lanes: Array<{
+    nameFields: {
+      en: string;
+      ar?: string | null;
+      ckb?: string | null;
+    };
+    descriptionFields?: {
+      en?: string | null;
+      ar?: string | null;
+      ckb?: string | null;
+    };
+    color?: string;
+    weight?: number;
+    opacity?: number;
+    serviceId?: string | null;
+    path: CoordinateTuple[];
+    draftStops?: Array<{
+      latitude: number;
+      longitude: number;
+      name?: string;
+    }>;
+    routeIds?: string[];
+    isActive?: boolean;
+  }>;
+  tx: PrismaTransaction;
+  uploadedById?: string | null;
+}) {
+  // Step 1: Create all language records in parallel
+  const languagePromises = lanes.map(async (lane) => {
+    const nameLang = await tx.language.create({
+      data: {
+        en: lane.nameFields.en,
+        ar: lane.nameFields.ar ?? null,
+        ckb: lane.nameFields.ckb ?? null,
+      },
+    });
+
+    let descriptionId: string | null = null;
+    if (lane.descriptionFields) {
+      const descLang = await tx.language.create({
+        data: {
+          en: lane.descriptionFields.en ?? "",
+          ar: lane.descriptionFields.ar ?? null,
+          ckb: lane.descriptionFields.ckb ?? null,
+        },
+      });
+      descriptionId = descLang.id;
+    }
+
+    return { nameId: nameLang.id, descriptionId };
+  });
+
+  const languageRecords = await Promise.all(languagePromises);
+
+  // Step 2: Create all lanes using createMany (optimized)
+  const lanesToCreate = lanes.map((lane, index) => ({
+    nameId: languageRecords[index].nameId,
+    descriptionId: languageRecords[index].descriptionId,
+    color: lane.color ?? "#0066CC",
+    weight: lane.weight ?? 5,
+    opacity: lane.opacity ?? 0.8,
+    serviceId: lane.serviceId ?? null,
+    path: lane.path as Prisma.InputJsonValue,
+    isActive: lane.isActive ?? true,
+  }));
+
+  await tx.busLane.createMany({
+    data: lanesToCreate,
+  });
+
+  // Step 3: Fetch created lanes (createMany doesn't return records)
+  const createdLanes = await tx.busLane.findMany({
+    where: {
+      nameId: { in: languageRecords.map((r) => r.nameId) },
+    },
+    include: {
+      name: true,
+      description: true,
+      service: { include: { name: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: lanes.length,
+  });
+
+  // Step 4: Handle relationships in parallel
+  const relationshipPromises = createdLanes.map(async (lane, index) => {
+    const laneData = lanes[index];
+
+    // Connect routes if provided
+    if (laneData.routeIds && laneData.routeIds.length > 0) {
+      await tx.busLane.update({
+        where: { id: lane.id },
+        data: {
+          routes: {
+            connect: laneData.routeIds.map((routeId) => ({ id: routeId })),
+          },
+        },
+      });
+    }
+
+    // Handle draft stops
+    if (laneData.draftStops && laneData.draftStops.length > 0) {
+      // Create stop language records
+      const stopNameLangs = await Promise.all(
+        laneData.draftStops.map((stop) =>
+          tx.language.create({
+            data: {
+              en: stop.name ?? `Stop ${Date.now()}-${Math.random()}`,
+              ar: null,
+              ckb: null,
+            },
+          })
+        )
+      );
+
+      // Create stops using createMany
+      const stopsToCreate = laneData.draftStops.map((stop, idx) => ({
+        latitude: stop.latitude,
+        longitude: stop.longitude,
+        nameId: stopNameLangs[idx].id,
+        descriptionId: null,
+        hasShelter: false,
+        hasBench: false,
+        hasLighting: false,
+        isAccessible: false,
+        hasRealTimeInfo: false,
+      }));
+
+      await tx.busStop.createMany({
+        data: stopsToCreate,
+      });
+
+      // Fetch created stops
+      const createdStops = await tx.busStop.findMany({
+        where: {
+          nameId: { in: stopNameLangs.map((lang) => lang.id) },
+        },
+        orderBy: { createdAt: "desc" },
+        take: laneData.draftStops.length,
+      });
+
+      // Connect stops to lane
+      await tx.busLane.update({
+        where: { id: lane.id },
+        data: {
+          stops: {
+            connect: createdStops.map((stop) => ({ id: stop.id })),
+          },
+        },
+      });
+    }
+  });
+
+  await Promise.all(relationshipPromises);
+
+  // Step 5: Fetch final lanes with all relations
+  const finalLanes = await tx.busLane.findMany({
+    where: {
+      id: { in: createdLanes.map((l) => l.id) },
+    },
+    include: {
+      name: true,
+      description: true,
+      service: { include: { name: true } },
+      routes: { select: { id: true } },
+      stops: { select: { id: true } },
+    },
+  });
+
+  return finalLanes;
+}
+
+/**
+ * Update multiple bus lanes efficiently using updateMany where possible
+ * Optimized for bulk operations from map editor
+ */
+export async function updateBusLanesBulkWithBusinessLogic({
+  lanes,
+  tx,
+}: {
+  lanes: Array<{
+    id: string;
+    path?: CoordinateTuple[];
+    color?: string;
+    weight?: number;
+    opacity?: number;
+    nameFields?: {
+      en: string;
+      ar?: string | null;
+      ckb?: string | null;
+    };
+    descriptionFields?: {
+      en?: string | null;
+      ar?: string | null;
+      ckb?: string | null;
+    };
+    serviceId?: string | null;
+    routeIds?: string[];
+    isActive?: boolean;
+  }>;
+  tx: PrismaTransaction;
+  uploadedById?: string | null;
+}) {
+  const laneIds = lanes.map((l) => l.id);
+
+  // Step 1: Fetch existing lanes with relations
+  const existingLanes = await tx.busLane.findMany({
+    where: { id: { in: laneIds } },
+    include: {
+      name: true,
+      description: true,
+      routes: { select: { id: true } },
+    },
+  });
+
+  // Step 2: Update language records in parallel
+  const languageUpdates = existingLanes.map(async (existingLane) => {
+    const laneData = lanes.find((l) => l.id === existingLane.id);
+    if (!laneData) return;
+
+    if (laneData.nameFields && existingLane.nameId) {
+      await tx.language.update({
+        where: { id: existingLane.nameId },
+        data: {
+          en: laneData.nameFields.en,
+          ar: laneData.nameFields.ar ?? null,
+          ckb: laneData.nameFields.ckb ?? null,
+        },
+      });
+    }
+
+    if (laneData.descriptionFields) {
+      if (existingLane.descriptionId) {
+        await tx.language.update({
+          where: { id: existingLane.descriptionId },
+          data: {
+            en: laneData.descriptionFields.en ?? "",
+            ar: laneData.descriptionFields.ar ?? null,
+            ckb: laneData.descriptionFields.ckb ?? null,
+          },
+        });
+      } else if (laneData.descriptionFields.en) {
+        const descLang = await tx.language.create({
+          data: {
+            en: laneData.descriptionFields.en,
+            ar: laneData.descriptionFields.ar ?? null,
+            ckb: laneData.descriptionFields.ckb ?? null,
+          },
+        });
+        await tx.busLane.update({
+          where: { id: existingLane.id },
+          data: { descriptionId: descLang.id },
+        });
+      }
+    }
+  });
+
+  await Promise.all(languageUpdates);
+
+  // Step 3: Group lanes by update values for bulk updateMany operations
+  const updateGroups = new Map<
+    string,
+    { laneIds: string[]; data: Prisma.BusLaneUpdateInput }
+  >();
+
+  lanes.forEach((laneData) => {
+    // Create a key for grouping lanes with same update values
+    const updateKey = JSON.stringify({
+      color: laneData.color,
+      weight: laneData.weight,
+      opacity: laneData.opacity,
+      serviceId: laneData.serviceId,
+      isActive: laneData.isActive,
+    });
+
+    if (!updateGroups.has(updateKey)) {
+      updateGroups.set(updateKey, {
+        laneIds: [],
+        data: {
+          ...(laneData.color !== undefined && { color: laneData.color }),
+          ...(laneData.weight !== undefined && { weight: laneData.weight }),
+          ...(laneData.opacity !== undefined && { opacity: laneData.opacity }),
+          ...(laneData.serviceId !== undefined && {
+            serviceId: laneData.serviceId,
+          }),
+          ...(laneData.isActive !== undefined && {
+            isActive: laneData.isActive,
+          }),
+        },
+      });
+    }
+
+    updateGroups.get(updateKey)!.laneIds.push(laneData.id);
+  });
+
+  // Step 4: Execute bulk updates
+  const bulkUpdates = Array.from(updateGroups.values()).map(async (group) => {
+    if (group.laneIds.length > 1) {
+      // Use updateMany for multiple lanes with same values
+      await tx.busLane.updateMany({
+        where: { id: { in: group.laneIds } },
+        data: group.data as Prisma.BusLaneUpdateInput,
+      });
+    } else {
+      // Single update
+      await tx.busLane.update({
+        where: { id: group.laneIds[0] },
+        data: group.data,
+      });
+    }
+  });
+
+  await Promise.all(bulkUpdates);
+
+  // Step 5: Update paths individually (since they're unique JSON per lane)
+  const pathUpdates = lanes
+    .filter((l) => l.path)
+    .map((laneData) =>
+      tx.busLane.update({
+        where: { id: laneData.id },
+        data: {
+          path: laneData.path as Prisma.InputJsonValue,
+        },
+      })
+    );
+
+  await Promise.all(pathUpdates);
+
+  // Step 6: Handle route connections (many-to-many)
+  const routeUpdates = existingLanes.map(async (existingLane) => {
+    const laneData = lanes.find((l) => l.id === existingLane.id);
+    if (!laneData || laneData.routeIds === undefined) return;
+
+    const currentRouteIds = existingLane.routes.map((r) => r.id);
+    const newRouteIds = laneData.routeIds;
+
+    const routesToRemove = currentRouteIds.filter(
+      (id) => !newRouteIds.includes(id)
+    );
+    const routesToAdd = newRouteIds.filter(
+      (id) => !currentRouteIds.includes(id)
+    );
+
+    if (routesToRemove.length > 0 || routesToAdd.length > 0) {
+      await tx.busLane.update({
+        where: { id: existingLane.id },
+        data: {
+          routes: {
+            ...(routesToRemove.length > 0 && {
+              disconnect: routesToRemove.map((id) => ({ id })),
+            }),
+            ...(routesToAdd.length > 0 && {
+              connect: routesToAdd.map((id) => ({ id })),
+            }),
+          },
+        },
+      });
+    }
+  });
+
+  await Promise.all(routeUpdates);
+
+  // Step 7: Fetch updated lanes with all relations
+  const updatedLanes = await tx.busLane.findMany({
+    where: { id: { in: laneIds } },
+    include: {
+      name: true,
+      description: true,
+      service: { include: { name: true } },
+      routes: { select: { id: true } },
+    },
+  });
+
+  return updatedLanes;
 }
