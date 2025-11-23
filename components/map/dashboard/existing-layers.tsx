@@ -11,6 +11,7 @@ interface ExistingLayersProps {
   selectedLaneId?: string | null;
   onLaneClick?: (laneId: string) => void;
   editingStopId?: string | null;
+  editingStopNewPosition?: { latitude: number; longitude: number } | null;
   onStopPositionUpdate?: (stopId: string, position: [number, number]) => void;
 }
 
@@ -21,6 +22,7 @@ export function ExistingLayers({
   selectedLaneId,
   onLaneClick,
   editingStopId,
+  editingStopNewPosition,
   onStopPositionUpdate,
 }: ExistingLayersProps) {
   return (
@@ -114,10 +116,19 @@ export function ExistingLayers({
         // Make marker draggable if this stop is being edited
         const isDraggable = editingStopId === stop.id;
 
+        // Use new position if stop is being edited, otherwise use original position
+        const stopPosition =
+          isDraggable && editingStopNewPosition
+            ? [
+                editingStopNewPosition.latitude,
+                editingStopNewPosition.longitude,
+              ]
+            : [stop.latitude, stop.longitude];
+
         return (
           <Marker
             key={`stop-${stop.id}`}
-            position={[stop.latitude, stop.longitude]}
+            position={stopPosition as [number, number]}
             {...markerProps}
             draggable={isDraggable}
             eventHandlers={{

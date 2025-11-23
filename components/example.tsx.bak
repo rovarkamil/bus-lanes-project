@@ -7,7 +7,6 @@ import {
   X,
   Plus,
 } from "lucide-react";
-import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -37,6 +36,7 @@ import { Loader } from "./loader-table";
 import Image from "next/image";
 import { useTranslation } from "@/i18n/client";
 import { cn } from "@/lib/utils";
+import React from "react"; // Added for React.cloneElement
 
 interface Field {
   key: string;
@@ -77,10 +77,10 @@ interface SelectWithPaginationProps<
   userProvince?: string;
   branchProvince?: string;
   error?: string;
-  showAddButton?: boolean;
-  addButtonLabel?: string;
-  addDialog?: React.ReactNode;
-  onAddSuccess?: (newItem: TItem) => void;
+  showAddButton?: boolean; // Added prop
+  addButtonLabel?: string; // Added prop
+  addDialog?: React.ReactNode; // Added prop
+  onAddSuccess?: (newItem: TItem) => void; // Added prop
   className?: string;
 }
 
@@ -105,10 +105,10 @@ const SelectWithPagination = <
   userProvince,
   branchProvince,
   error,
-  showAddButton = false,
-  addButtonLabel = "Add New",
-  addDialog,
-  onAddSuccess,
+  showAddButton = false, // Added prop
+  addButtonLabel = "Add New", // Added prop
+  addDialog, // Added prop
+  onAddSuccess, // Added prop
   className,
 }: SelectWithPaginationProps<TItem, TParams, TError>) => {
   const { t, i18n } = useTranslation("Dashboard");
@@ -120,8 +120,8 @@ const SelectWithPagination = <
   const [currentSearch, setCurrentSearch] = useState("");
   const [searchField, setSearchField] = useState(fields[0].key);
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const isRTL = i18n.language !== "en";
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false); // Added state for add dialog
 
   const {
     data: items,
@@ -137,34 +137,6 @@ const SelectWithPagination = <
   } as TParams);
 
   // Update the getDisplayValue function to better handle different value types
-  const normalizeValue = useCallback(
-    (value: any): string | number | undefined => {
-      if (value === null || value === undefined) return undefined;
-      if (typeof value === "string" || typeof value === "number") return value;
-      if (typeof value === "object") {
-        const preferredOrder = [
-          i18n.language,
-          "en",
-          "ar",
-          "ckb",
-          "name",
-          "title",
-        ];
-        for (const key of preferredOrder) {
-          if (value[key] && typeof value[key] === "string") {
-            return value[key];
-          }
-        }
-        const firstString = Object.values(value).find(
-          (val) => typeof val === "string"
-        );
-        if (typeof firstString === "string") return firstString;
-      }
-      return undefined;
-    },
-    [i18n.language]
-  );
-
   const getDisplayValue = useCallback(
     (item: TItem | null) => {
       if (!item) return placeholder;
@@ -174,35 +146,40 @@ const SelectWithPagination = <
         return placeholder;
       }
 
-      const itemAsAny = item as any;
+      // Handle cases where the item is a full object with relations
+      const itemAsAny = item as any; // Use type assertion for dynamic property access
+      if (itemAsAny.name) return itemAsAny.name;
+      if (itemAsAny.province?.name) return itemAsAny.province.name;
+      if (itemAsAny.branch?.name) return itemAsAny.branch.name;
+      if (itemAsAny.user?.name) return itemAsAny.user.name;
 
-      const directName = normalizeValue(itemAsAny.name);
-      if (directName) return directName;
-
-      const provinceName = normalizeValue(itemAsAny.province?.name);
-      if (provinceName) return provinceName;
-
-      const branchName = normalizeValue(itemAsAny.branch?.name);
-      if (branchName) return branchName;
-
-      const userName = normalizeValue(itemAsAny.user?.name);
-      if (userName) return userName;
-
+      // For objects with nested properties (e.g., "user.name")
       for (const field of fields) {
-        if (field.type === "relation" && field.relationKey) {
-          const value = normalizeValue(
-            itemAsAny[field.key]?.[field.relationKey]
-          );
+        if (field.key.includes(".")) {
+          const keys = field.key.split(".");
+          let value: any = itemAsAny;
+          for (const key of keys) {
+            if (value && typeof value === "object" && key in value) {
+              value = value[key];
+            } else {
+              value = null;
+              break;
+            }
+          }
           if (value) return value;
-        } else {
-          const value = normalizeValue(itemAsAny[field.key]);
+        }
+        if (field.type === "relation" && field.relationKey) {
+          const value = itemAsAny[field.key]?.[field.relationKey];
           if (value) return value;
         }
       }
 
-      return placeholder;
+      // If no name is found, try to get the first field value
+      const firstField = fields[0];
+      const value = itemAsAny[firstField.key];
+      return value || placeholder;
     },
-    [fields, placeholder, normalizeValue]
+    [fields, placeholder]
   );
 
   // Update the initialization effect to properly set initial values
@@ -252,6 +229,13 @@ const SelectWithPagination = <
     initializeValue();
   }, [defaultValue, initialSelectedItem, value, getItemById]);
 
+  // Additional effect to handle defaultValue changes more reliably
+  useEffect(() => {
+    if (defaultValue && typeof defaultValue === "object" && defaultValue.id) {
+      setSelectedItem(defaultValue);
+    }
+  }, [defaultValue]);
+
   const response = fetchFunctionById
     ? fetchFunctionById(value as string | number)
     : null;
@@ -299,8 +283,7 @@ const SelectWithPagination = <
         refetch();
       }, 100);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [refetch]
+    [onAddSuccess, refetch]
   );
 
   // Update the search handling to use debouncing
@@ -344,10 +327,23 @@ const SelectWithPagination = <
       );
     }
 
+    // Special handling for nested relation fields (e.g., "user.name")
+    if (field.key.includes(".")) {
+      const keys = field.key.split(".");
+      let value: any = item;
+      for (const key of keys) {
+        if (value && typeof value === "object" && key in value) {
+          value = value[key];
+        } else {
+          value = "N/A";
+          break;
+        }
+      }
+      return value || "N/A";
+    }
+
     // Special handling for name fields with language support
     if (field.key === "name") {
-      const localized = normalizeValue(item.name);
-      if (localized) return localized;
       if (i18n.language === "en" && item.englishName) {
         return item.englishName;
       }
@@ -365,9 +361,9 @@ const SelectWithPagination = <
     // Get the base value for other fields
     let value;
     if (field.type === "relation" && field.relationKey) {
-      value = normalizeValue(item[field.key]?.[field.relationKey]) || "N/A";
+      value = item[field.key]?.[field.relationKey] || "N/A";
     } else {
-      value = normalizeValue(item[field.key]) ?? item[field.key];
+      value = item[field.key];
     }
 
     // Format the value if a format function is provided
@@ -470,7 +466,7 @@ const SelectWithPagination = <
   );
 
   return (
-    <div className={cn("w-full space-y-1", className)}>
+    <div className={cn("w-full space-y-1")}>
       <div className="flex gap-2">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
@@ -479,9 +475,10 @@ const SelectWithPagination = <
               role="combobox"
               aria-expanded={open}
               className={cn(
-                "flex-1 min-w-40 justify-between relative",
+                "flex-1 min-w-40 justify-between relative ",
                 error &&
-                  "border-destructive focus-visible:ring-destructive/50 hover:bg-destructive/10"
+                  "border-destructive focus-visible:ring-destructive/50 hover:bg-destructive/10",
+                className
               )}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -505,13 +502,13 @@ const SelectWithPagination = <
                     variant="ghost"
                     size="icon"
                     className="h-5 w-5 p-0 rounded-full hover:bg-destructive/10 hover:text-destructive transition-colors duration-200 
-                    focus:outline-none focus:ring-2 focus:ring-destructive/20 focus:ring-offset-1"
+                      focus:outline-none focus:ring-2 focus:ring-destructive/20 focus:ring-offset-1"
                     onClick={handleClear}
                     type="button"
                     title="Clear selection"
                   >
                     <X className="h-3.5 w-3.5" />
-                    <span className="sr-only">Clear selection</span>
+                    <span className="sr-only">{t("ClearSelection")}</span>
                   </Button>
                 )}
                 <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
@@ -585,7 +582,7 @@ const SelectWithPagination = <
                             <TableCell className="text-left">
                               <Image
                                 src={item[imageField] || "/images/no-image.jpg"}
-                                alt={(getDisplayValue(item) as string) ?? ""}
+                                alt={getDisplayValue(item)}
                                 fill
                                 className="rounded-sm"
                               />

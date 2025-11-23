@@ -112,6 +112,7 @@
   "Common": {
     "Open": "فتح",
     "Close": "إغلاق",
+    "PleaseWait": "يرجى الانتظار...",
     "Theme": {
       "Light": "فاتح",
       "Dark": "داكن"
@@ -274,6 +275,7 @@
   "Settings": {
     "UsdPrice": "سعر الدولار",
     "Updated": "تم تحديث الإعدادات بنجاح",
+    "UpdateFailed": "فشل تحديث الإعدادات",
     "Saving": "جاري الحفظ...",
     "Save": "حفظ"
   },
@@ -309,5 +311,6 @@
   "EnableAutoHover": "تفعيل التمرير التلقائي",
   "DisableAutoHover": "إلغاء التمرير التلقائي",
   "AutoOn": "التلقائي مفعل",
-  "AutoOff": "التلقائي معطل"
+  "AutoOff": "التلقائي معطل",
+  "StartingLocation": "الموقع الابتدائي"
 }

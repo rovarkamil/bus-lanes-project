@@ -118,6 +118,9 @@
   "ClickStopToSelectDragToMove": "Click a stop to select it, drag to move it",
   "Selected": "Selected",
   "Undo": "Undo",
+  "Redo": "Redo",
+  "DeleteSelectedPoint": "Delete Selected Point",
+  "Error.CannotDeleteLastPoint": "Cannot delete the last point",
   "Clear": "Clear",
   "SaveLane": "Save Lane",
   "DrawAndEditBusLanesOnTheMap": "Draw and edit bus lanes on the map",
@@ -147,5 +150,22 @@
   "ResetView": "Reset View",
   "PositionChanged": "Position Changed",
   "Saving": "Saving...",
-  "Success.PositionUpdated": "Position updated successfully"
+  "Success.PositionUpdated": "Position updated successfully",
+  "StartingLocationDialog": {
+    "Title": "Select Starting Location",
+    "Description": "Click on the map or enter coordinates to set the starting location",
+    "Coordinates": "Coordinates",
+    "Latitude": "Latitude",
+    "Longitude": "Longitude",
+    "SelectedLocation": "Selected Location",
+    "Instructions": "Click on the map to select a location, or enter coordinates manually.",
+    "MarkerTooltip": "Starting Location",
+    "Loading": "Loading map...",
+    "ClickToSelect": "Click on the map to select location",
+    "Apply": "Apply"
+  },
+  "Common": {
+    "Cancel": "Cancel",
+    "Updating": "Updating..."
+  }
 }

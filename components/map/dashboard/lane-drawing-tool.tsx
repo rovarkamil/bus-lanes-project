@@ -5,6 +5,7 @@ import { useMapEvents, Marker, Polyline, Tooltip } from "react-leaflet";
 import { LatLng } from "leaflet";
 import { CoordinateTuple } from "@/types/map";
 import { MapEditorLaneDraft } from "@/types/models/bus-lane";
+// import { MapIconWithRelations } from "@/types/models/map-icon";
 import L from "leaflet";
 
 interface LaneDrawingToolProps {
@@ -15,6 +16,12 @@ interface LaneDrawingToolProps {
   isDrawingMode: boolean;
   editorMode?: "lane" | "stop";
   onAddDraftStop?: (position: CoordinateTuple) => void;
+  selectedPoint?: { laneIndex: number; pointIndex: number } | null;
+  onSelectedPointChange?: (
+    point: { laneIndex: number; pointIndex: number } | null
+  ) => void;
+  // selectedIcon?: MapIconWithRelations | null;
+  // onIconPlace?: (icon: MapIconWithRelations, position: CoordinateTuple) => void;
 }
 
 // Create a custom marker icon - memoize it
@@ -42,9 +49,19 @@ export function LaneDrawingTool({
   isDrawingMode,
   editorMode = "lane",
   onAddDraftStop,
+  selectedPoint,
+  onSelectedPointChange,
+  // selectedIcon,
+  // onIconPlace,
 }: LaneDrawingToolProps) {
   const handleMapClick = (event: { latlng: LatLng }) => {
     const point: CoordinateTuple = [event.latlng.lat, event.latlng.lng];
+
+    // Icon placement - COMMENTED OUT FOR NOW
+    // if (selectedIcon && onIconPlace) {
+    //   onIconPlace(selectedIcon, point);
+    //   return;
+    // }
 
     // If in stop mode, add draft stop
     if (editorMode === "stop" && onAddDraftStop) {
@@ -116,34 +133,63 @@ export function LaneDrawingTool({
             )}
 
             {/* Render markers for each point */}
-            {lane.path.map((point, pointIndex) => (
-              <Marker
-                key={`${laneId}-point-${pointIndex}`}
-                position={point}
-                icon={defaultIcon}
-                draggable={isDrawingMode}
-                eventHandlers={{
-                  dragend: (e) => {
-                    const marker = e.target;
-                    const newPosition = marker.getLatLng();
-                    const updatedLanes = draftLanes.map((l, idx) => {
-                      if (idx === laneIndex) {
-                        const updatedPath = [...l.path];
-                        updatedPath[pointIndex] = [
-                          newPosition.lat,
-                          newPosition.lng,
-                        ];
-                        return { ...l, path: updatedPath };
+            {lane.path.map((point, pointIndex) => {
+              const isPointSelected =
+                selectedPoint?.laneIndex === laneIndex &&
+                selectedPoint?.pointIndex === pointIndex;
+
+              // Create a highlighted icon for selected point
+              const selectedIcon =
+                isPointSelected && typeof window !== "undefined"
+                  ? L.icon({
+                      iconUrl: "/markers/marker.png",
+                      iconSize: [40, 40],
+                      iconAnchor: [20, 40],
+                      popupAnchor: [0, -40],
+                    })
+                  : defaultIcon;
+
+              return (
+                <Marker
+                  key={`${laneId}-point-${pointIndex}`}
+                  position={point}
+                  icon={selectedIcon || defaultIcon}
+                  draggable={isDrawingMode}
+                  eventHandlers={{
+                    click: (e) => {
+                      e.originalEvent.stopPropagation();
+                      if (onSelectedPointChange) {
+                        onSelectedPointChange({
+                          laneIndex,
+                          pointIndex,
+                        });
                       }
-                      return l;
-                    });
-                    onDraftLanesChange(updatedLanes);
-                  },
-                }}
-              >
-                <Tooltip sticky>Point {pointIndex + 1}</Tooltip>
-              </Marker>
-            ))}
+                    },
+                    dragend: (e) => {
+                      const marker = e.target;
+                      const newPosition = marker.getLatLng();
+                      const updatedLanes = draftLanes.map((l, idx) => {
+                        if (idx === laneIndex) {
+                          const updatedPath = [...l.path];
+                          updatedPath[pointIndex] = [
+                            newPosition.lat,
+                            newPosition.lng,
+                          ];
+                          return { ...l, path: updatedPath };
+                        }
+                        return l;
+                      });
+                      onDraftLanesChange(updatedLanes);
+                    },
+                  }}
+                >
+                  <Tooltip sticky>
+                    Point {pointIndex + 1}
+                    {isPointSelected && " (Selected)"}
+                  </Tooltip>
+                </Marker>
+              );
+            })}
           </React.Fragment>
         );
       })}

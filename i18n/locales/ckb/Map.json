@@ -118,6 +118,9 @@
   "ClickStopToSelectDragToMove": "کرتە لەسەر وەستانە بکە بۆ هەڵبژاردن، ڕاکێشە بۆ جولاندن",
   "Selected": "هەڵبژێردراو",
   "Undo": "گەڕانەوە",
+  "Redo": "دووبارەکردنەوە",
+  "DeleteSelectedPoint": "سڕینەوەی خاڵی هەڵبژێردراو",
+  "Error.CannotDeleteLastPoint": "ناتوانیت کۆتا خاڵ بسڕیتەوە",
   "Clear": "سڕینەوە",
   "SaveLane": "پاشەکەوتکردنی ڕێدەر",
   "DrawAndEditBusLanesOnTheMap": "ڕێدەرەکانی بۆس لەسەر نەخشە وێنە بکە و دەستکاری بکە",
@@ -147,5 +150,22 @@
   "ResetView": "دووبارە ڕێکخستنەوەی بینین",
   "PositionChanged": "شوێن گۆڕدرا",
   "Saving": "دەپاشەکەوت دەکرێت...",
-  "Success.PositionUpdated": "شوێن بە سەرکەوتوویی نوێ کرایەوە"
+  "Success.PositionUpdated": "شوێن بە سەرکەوتوویی نوێ کرایەوە",
+  "StartingLocationDialog": {
+    "Title": "شوێنی دەستپێکردن هەڵبژێرە",
+    "Description": "کرتە لەسەر نەخشە بکە یان پانی و درێژی بنووسە بۆ دانانی شوێنی دەستپێکردن",
+    "Coordinates": "پانی و درێژی",
+    "Latitude": "پانی",
+    "Longitude": "درێژی",
+    "SelectedLocation": "شوێنی هەڵبژێردراو",
+    "Instructions": "کرتە لەسەر نەخشە بکە بۆ هەڵبژاردنی شوێن، یان پانی و درێژی دەستکاری بکە.",
+    "MarkerTooltip": "شوێنی دەستپێکردن",
+    "Loading": "نەخشە دەبارێت...",
+    "ClickToSelect": "کرتە لەسەر نەخشە بکە بۆ هەڵبژاردنی شوێن",
+    "Apply": "جێبەجێکردن"
+  },
+  "Common": {
+    "Cancel": "هەڵوەشاندن",
+    "Updating": "نوێ دەکرێتەوە..."
+  }
 }

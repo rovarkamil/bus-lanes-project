@@ -18,6 +18,7 @@ export const settingsMap = {
   THEME_MUTED_COLOR: "THEME_MUTED_COLOR",
   THEME_ACCENT_COLOR: "THEME_ACCENT_COLOR",
   THEME_DESTRUCTIVE_COLOR: "THEME_DESTRUCTIVE_COLOR",
+  STARTING_POSITION: "STARTING_POSITION",
 };
 
 export const getSetting = (key: string): string => {

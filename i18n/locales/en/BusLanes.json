@@ -5,6 +5,8 @@
   "LoadingBusLanes": "Loading bus lanes...",
   "NoBusLanesFound": "No bus lanes found",
   "Cancel": "Cancel",
+  "SelectTransportService": "Select transport service",
+  "SelectRoutes": "Select routes",
   "TotalItems": "Total Items",
   "DisplayLimit": "Display Limit",
   "Rows": "Rows",
@@ -48,7 +50,10 @@
   "CreateDialog": {
     "Title": "Create Bus Lane",
     "Description": "Define the geometry, styling, and relations for this lane.",
-    "PathRequired": "Path JSON is required.",
+    "BulkTitle": "Create {{count}} Bus Lanes",
+    "BulkDescription": "Configure multiple bus lanes at once. Each lane requires a name and path.",
+    "NameRequired": "Name is required for lane {{laneNumber}}.",
+    "PathRequired": "Path is required for lane {{laneNumber}}.",
     "InvalidPath": "Path JSON must be a valid array of coordinates.",
     "PathJSON": "Path coordinates (JSON)",
     "Color": "Line color",
@@ -59,13 +64,18 @@
     "Stops": "Stops",
     "Routes": "Routes",
     "Images": "Lane imagery",
-
-    "IsActive": "Active status"
+    "LaneNumber": "Lane {{number}}",
+    "Points": "points",
+    "IsActive": "Active status",
+    "BulkCreate": "Create {{count}} Lanes"
   },
   "UpdateDialog": {
     "Title": "Update Bus Lane",
     "Description": "Modify the lane geometry, styling, and linked assets.",
-    "PathRequired": "Path JSON is required.",
+    "BulkTitle": "Update {{count}} Bus Lanes",
+    "BulkDescription": "Modify multiple bus lanes at once. Each lane requires a name and path.",
+    "NameRequired": "Name is required for lane {{laneNumber}}.",
+    "PathRequired": "Path is required for lane {{laneNumber}}.",
     "InvalidPath": "Path JSON must be a valid array of coordinates.",
     "PathJSON": "Path coordinates (JSON)",
     "Color": "Line color",
@@ -76,8 +86,10 @@
     "Stops": "Stops",
     "Routes": "Routes",
     "Images": "Lane imagery",
-
-    "IsActive": "Active status"
+    "LaneNumber": "Lane {{number}}",
+    "Points": "points",
+    "IsActive": "Active status",
+    "BulkUpdate": "Update {{count}} Lanes"
   },
   "ViewDialog": {
     "Title": "Lane Details",

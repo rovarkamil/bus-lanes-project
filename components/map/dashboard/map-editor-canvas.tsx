@@ -14,7 +14,7 @@ import { MapDataPayload, CoordinateTuple } from "@/types/map";
 import { LaneDrawingTool } from "./lane-drawing-tool";
 import { MapEditorControls } from "./map-editor-controls";
 import { ExistingLayers } from "./existing-layers";
-import { MapIconWithRelations } from "@/types/models/map-icon";
+// import { MapIconWithRelations } from "@/types/models/map-icon";
 import { MapEditorLaneDraft } from "@/types/models/bus-lane";
 import { Marker, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -67,15 +67,16 @@ interface MapEditorCanvasProps {
   isPending?: boolean;
   error?: Error | null;
   className?: string;
-  selectedIcon?: MapIconWithRelations | null;
-  onIconPlace?: (icon: MapIconWithRelations, position: CoordinateTuple) => void;
-  placedIcons?: Array<{
-    id: string;
-    icon: MapIconWithRelations;
-    position: CoordinateTuple;
-  }>;
-  onPlacedIconUpdate?: (iconId: string, position: CoordinateTuple) => void;
-  onPlacedIconRemove?: (iconId: string) => void;
+  initialCenter?: CoordinateTuple | null;
+  // selectedIcon?: MapIconWithRelations | null;
+  // onIconPlace?: (icon: MapIconWithRelations, position: CoordinateTuple) => void;
+  // placedIcons?: Array<{
+  //   id: string;
+  //   icon: MapIconWithRelations;
+  //   position: CoordinateTuple;
+  // }>;
+  // onPlacedIconUpdate?: (iconId: string, position: CoordinateTuple) => void;
+  // onPlacedIconRemove?: (iconId: string) => void;
   draftLanes: MapEditorLaneDraft[];
   onDraftLanesChange: (lanes: MapEditorLaneDraft[]) => void;
   draftStops?: DraftStop[];
@@ -84,8 +85,13 @@ interface MapEditorCanvasProps {
   selectedLaneId?: string | null;
   onLaneSelect?: (laneId: string) => void;
   editingStopId?: string | null;
+  editingStopNewPosition?: { latitude: number; longitude: number } | null;
   onStopPositionUpdate?: (stopId: string, position: CoordinateTuple) => void;
   mapControllerRef?: React.RefObject<MapControllerHandle>;
+  selectedPoint?: { laneIndex: number; pointIndex: number } | null;
+  onSelectedPointChange?: (
+    point: { laneIndex: number; pointIndex: number } | null
+  ) => void;
 }
 
 export type { MapControllerHandle };
@@ -95,8 +101,11 @@ export function MapEditorCanvas({
   isPending,
   error,
   className,
-  placedIcons,
-  onPlacedIconUpdate,
+  initialCenter: propInitialCenter,
+  // selectedIcon,
+  // onIconPlace,
+  // placedIcons,
+  // onPlacedIconUpdate,
   draftLanes,
   onDraftLanesChange,
   draftStops = [],
@@ -105,8 +114,11 @@ export function MapEditorCanvas({
   selectedLaneId: propSelectedLaneId,
   onLaneSelect,
   editingStopId,
+  editingStopNewPosition,
   onStopPositionUpdate,
   mapControllerRef,
+  selectedPoint,
+  onSelectedPointChange,
 }: MapEditorCanvasProps) {
   const [selectedLaneId, setSelectedLaneId] = useState<string | null>(null);
   const [isLeafletReady, setIsLeafletReady] = useState(false);
@@ -133,39 +145,43 @@ export function MapEditorCanvas({
   }, []);
 
   const center = useMemo(() => {
+    // Use initial center from settings if provided
+    if (propInitialCenter) {
+      return propInitialCenter as LatLngExpression;
+    }
     // Calculate center from data or use default
     if (data?.stops?.length) {
       const firstStop = data.stops[0];
       return [firstStop.latitude, firstStop.longitude] as LatLngExpression;
     }
     return DEFAULT_CENTER;
-  }, [data]);
+  }, [propInitialCenter, data]);
 
-  // Helper to create Leaflet icon from MapIcon
-  const createIconFromMapIcon = (
-    mapIcon: MapIconWithRelations
-  ): L.Icon | null => {
-    if (!mapIcon.file?.url || typeof window === "undefined") return null;
+  // Helper to create Leaflet icon from MapIcon - COMMENTED OUT FOR NOW
+  // const createIconFromMapIcon = (
+  //   mapIcon: MapIconWithRelations
+  // ): L.Icon | null => {
+  //   if (!mapIcon.file?.url || typeof window === "undefined") return null;
 
-    try {
-      const size = mapIcon.iconSize ?? 32;
-      return L.icon({
-        iconUrl: mapIcon.file.url,
-        iconSize: [size, size],
-        iconAnchor: [
-          mapIcon.iconAnchorX ?? size / 2,
-          mapIcon.iconAnchorY ?? size,
-        ],
-        popupAnchor: [
-          mapIcon.popupAnchorX ?? 0,
-          mapIcon.popupAnchorY ?? -size / 2,
-        ],
-      });
-    } catch (error) {
-      console.warn(`Failed to create icon for ${mapIcon.id}:`, error);
-      return null;
-    }
-  };
+  //   try {
+  //     const size = mapIcon.iconSize ?? 32;
+  //     return L.icon({
+  //       iconUrl: mapIcon.file.url,
+  //       iconSize: [size, size],
+  //       iconAnchor: [
+  //         mapIcon.iconAnchorX ?? size / 2,
+  //         mapIcon.iconAnchorY ?? size,
+  //       ],
+  //       popupAnchor: [
+  //         mapIcon.popupAnchorX ?? 0,
+  //         mapIcon.popupAnchorY ?? -size / 2,
+  //       ],
+  //     });
+  //   } catch (error) {
+  //     console.warn(`Failed to create icon for ${mapIcon.id}:`, error);
+  //     return null;
+  //   }
+  // };
 
   if (error) {
     return (
@@ -213,6 +229,7 @@ export function MapEditorCanvas({
             }
           }}
           editingStopId={editingStopId}
+          editingStopNewPosition={editingStopNewPosition}
           onStopPositionUpdate={onStopPositionUpdate}
         />
 
@@ -234,6 +251,10 @@ export function MapEditorCanvas({
           isDrawingMode={isDrawingMode}
           editorMode={editorMode}
           onAddDraftStop={onAddDraftStop}
+          selectedPoint={selectedPoint}
+          onSelectedPointChange={onSelectedPointChange}
+          // selectedIcon={selectedIcon}
+          // onIconPlace={onIconPlace}
         />
 
         {/* Render draft stops */}
@@ -261,8 +282,8 @@ export function MapEditorCanvas({
           );
         })}
 
-        {/* Render placed icons */}
-        {placedIcons
+        {/* Render placed icons - COMMENTED OUT FOR NOW */}
+        {/* {placedIcons
           ?.map((placedIcon) => {
             const customIcon = createIconFromMapIcon(placedIcon.icon);
             if (!customIcon) return null;
@@ -292,7 +313,7 @@ export function MapEditorCanvas({
             >
               <Tooltip sticky>{item.icon.name?.en ?? item.icon.id}</Tooltip>
             </Marker>
-          ))}
+          ))} */}
 
         <MapEditorControls />
       </MapContainer>

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapDataPayload } from "@/types/map";
 import { MapEditorLaneDraft } from "@/types/models/bus-lane";
 import { useTranslation } from "@/i18n/client";
-import { Edit, Trash2, Save, X, Check } from "lucide-react";
+import { Edit, Trash2, Save, X, Check, Undo2, Redo2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CreateBusLanesMapEditorDialog } from "@/components/dialogs/bus-lane/create-bus-lanes-map-editor-dialog";
 import { UpdateBusLanesMapEditorDialog } from "@/components/dialogs/bus-lane/update-bus-lanes-map-editor-dialog";
@@ -41,6 +42,17 @@ interface MapEditorSidebarProps {
   editingStopNewPosition?: { latitude: number; longitude: number } | null;
   onCancelStopEdit?: () => void;
   onRefetch?: () => void;
+  onDeletePoint?: () => void;
+  onDeleteStop?: () => void;
+  selectedPoint?: { laneIndex: number; pointIndex: number } | null;
+  canUndoLanes?: boolean;
+  canRedoLanes?: boolean;
+  onUndoLanes?: () => void;
+  onRedoLanes?: () => void;
+  canUndoStops?: boolean;
+  canRedoStops?: boolean;
+  onUndoStops?: () => void;
+  onRedoStops?: () => void;
   className?: string;
 }
 
@@ -60,9 +72,21 @@ export function MapEditorSidebar({
   editingStopNewPosition,
   onCancelStopEdit,
   onRefetch,
+  onDeletePoint,
+  onDeleteStop,
+  selectedPoint,
+  canUndoLanes = false,
+  canRedoLanes = false,
+  onUndoLanes,
+  onRedoLanes,
+  canUndoStops = false,
+  canRedoStops = false,
+  onUndoStops,
+  onRedoStops,
   className,
 }: MapEditorSidebarProps) {
   const { t } = useTranslation("Map");
+  const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isUpdateLanesDialogOpen, setIsUpdateLanesDialogOpen] = useState(false);
   const [isUpdateStopDialogOpen, setIsUpdateStopDialogOpen] = useState(false);
@@ -156,7 +180,13 @@ export function MapEditorSidebar({
 
       toast.success(t("Success.PositionUpdated"));
 
-      // Clear editing state
+      // The useUpdateBusStop hook already invalidates queries, but we need to
+      // wait for the refetch to complete to ensure fresh data is loaded
+      await queryClient.refetchQueries({
+        queryKey: ["employee-map-data"],
+      });
+
+      // Clear editing state after refetch completes
       if (onEditingStopChange) {
         onEditingStopChange(null);
       }
@@ -164,7 +194,7 @@ export function MapEditorSidebar({
         onCancelStopEdit();
       }
 
-      // Refresh map data
+      // Also call the onRefetch callback if provided
       onRefetch?.();
     } catch (error) {
       console.error("Error updating stop position:", error);
@@ -201,6 +231,90 @@ export function MapEditorSidebar({
                 >
                   {t("StopMode")}
                 </Button>
+              </div>
+            )}
+
+            {/* Undo/Redo Controls */}
+            {editorMode === "lane" && (
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onUndoLanes}
+                  disabled={!canUndoLanes}
+                  className="flex-1"
+                  title="Undo (Ctrl+Z)"
+                >
+                  <Undo2 className="h-3.5 w-3.5 mr-1" />
+                  {t("Undo")}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onRedoLanes}
+                  disabled={!canRedoLanes}
+                  className="flex-1"
+                  title="Redo (Ctrl+Shift+Z)"
+                >
+                  <Redo2 className="h-3.5 w-3.5 mr-1" />
+                  {t("Redo")}
+                </Button>
+                {selectedPoint && onDeletePoint && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={onDeletePoint}
+                    title={
+                      t("DeleteSelectedPoint") ||
+                      "Delete Selected Point (Delete or Ctrl+D)"
+                    }
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {editorMode === "stop" && (
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onUndoStops}
+                  disabled={!canUndoStops}
+                  className="flex-1"
+                  title="Undo (Ctrl+Z)"
+                >
+                  <Undo2 className="h-3.5 w-3.5 mr-1" />
+                  {t("Undo")}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onRedoStops}
+                  disabled={!canRedoStops}
+                  className="flex-1"
+                  title="Redo (Ctrl+Shift+Z)"
+                >
+                  <Redo2 className="h-3.5 w-3.5 mr-1" />
+                  {t("Redo")}
+                </Button>
+                {(editingStopId || draftStops.length > 0) && onDeleteStop && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={onDeleteStop}
+                    title="Delete (Delete or Ctrl+D)"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
               </div>
             )}
 
@@ -424,6 +538,25 @@ export function MapEditorSidebar({
                             // Highlight the lane on map
                             if (onSelectedLaneChange) {
                               onSelectedLaneChange(lane.id);
+                            }
+                            // Pan map to lane center
+                            if (
+                              onPanToLocation &&
+                              lane.path &&
+                              lane.path.length > 0
+                            ) {
+                              // Calculate center of lane path
+                              const latSum = lane.path.reduce(
+                                (sum, point) => sum + point[0],
+                                0
+                              );
+                              const lngSum = lane.path.reduce(
+                                (sum, point) => sum + point[1],
+                                0
+                              );
+                              const centerLat = latSum / lane.path.length;
+                              const centerLng = lngSum / lane.path.length;
+                              onPanToLocation(centerLat, centerLng, 15);
                             }
                           }}
                         >

@@ -1,11 +1,32 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { Permission, UserType } from "@prisma/client";
+import { Permission, UserType, Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
 import { createError } from "@/lib/custom-error-handler";
 
 const DAYS_RANGE = 30;
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
+
+async function retryDatabaseOperation<T>(
+  operation: () => Promise<T>,
+  retries = MAX_RETRIES
+): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P1001" &&
+      retries > 0
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+      return retryDatabaseOperation(operation, retries - 1);
+    }
+    throw error;
+  }
+}
 
 const calculateTrend = (current: number, previous: number) => {
   if (previous === 0) {
@@ -60,61 +81,91 @@ export async function GET() {
       zoneStopGroups,
       laneServiceGroups,
     ] = await Promise.all([
-      prisma.transportService.count({ where: { deletedAt: null } }),
-      prisma.busRoute.count({ where: { deletedAt: null } }),
-      prisma.busStop.count({ where: { deletedAt: null } }),
-      prisma.busLane.count({ where: { deletedAt: null } }),
-      prisma.transportService.count({
-        where: { deletedAt: null, createdAt: { gte: thirtyDaysAgo } },
-      }),
-      prisma.transportService.count({
-        where: {
-          deletedAt: null,
-          createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
-        },
-      }),
-      prisma.busRoute.count({
-        where: { deletedAt: null, createdAt: { gte: thirtyDaysAgo } },
-      }),
-      prisma.busRoute.count({
-        where: {
-          deletedAt: null,
-          createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
-        },
-      }),
-      prisma.busStop.count({
-        where: { deletedAt: null, createdAt: { gte: thirtyDaysAgo } },
-      }),
-      prisma.busStop.count({
-        where: {
-          deletedAt: null,
-          createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
-        },
-      }),
-      prisma.busLane.count({
-        where: { deletedAt: null, createdAt: { gte: thirtyDaysAgo } },
-      }),
-      prisma.busLane.count({
-        where: {
-          deletedAt: null,
-          createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
-        },
-      }),
-      prisma.transportService.groupBy({
-        by: ["type"],
-        _count: { _all: true },
-        where: { deletedAt: null },
-      }),
-      prisma.busStop.groupBy({
-        by: ["zoneId"],
-        _count: { _all: true },
-        where: { deletedAt: null },
-      }),
-      prisma.busLane.groupBy({
-        by: ["serviceId"],
-        _count: { _all: true },
-        where: { deletedAt: null },
-      }),
+      retryDatabaseOperation(() =>
+        prisma.transportService.count({ where: { deletedAt: null } })
+      ),
+      retryDatabaseOperation(() =>
+        prisma.busRoute.count({ where: { deletedAt: null } })
+      ),
+      retryDatabaseOperation(() =>
+        prisma.busStop.count({ where: { deletedAt: null } })
+      ),
+      retryDatabaseOperation(() =>
+        prisma.busLane.count({ where: { deletedAt: null } })
+      ),
+      retryDatabaseOperation(() =>
+        prisma.transportService.count({
+          where: { deletedAt: null, createdAt: { gte: thirtyDaysAgo } },
+        })
+      ),
+      retryDatabaseOperation(() =>
+        prisma.transportService.count({
+          where: {
+            deletedAt: null,
+            createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
+          },
+        })
+      ),
+      retryDatabaseOperation(() =>
+        prisma.busRoute.count({
+          where: { deletedAt: null, createdAt: { gte: thirtyDaysAgo } },
+        })
+      ),
+      retryDatabaseOperation(() =>
+        prisma.busRoute.count({
+          where: {
+            deletedAt: null,
+            createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
+          },
+        })
+      ),
+      retryDatabaseOperation(() =>
+        prisma.busStop.count({
+          where: { deletedAt: null, createdAt: { gte: thirtyDaysAgo } },
+        })
+      ),
+      retryDatabaseOperation(() =>
+        prisma.busStop.count({
+          where: {
+            deletedAt: null,
+            createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
+          },
+        })
+      ),
+      retryDatabaseOperation(() =>
+        prisma.busLane.count({
+          where: { deletedAt: null, createdAt: { gte: thirtyDaysAgo } },
+        })
+      ),
+      retryDatabaseOperation(() =>
+        prisma.busLane.count({
+          where: {
+            deletedAt: null,
+            createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
+          },
+        })
+      ),
+      retryDatabaseOperation(() =>
+        prisma.transportService.groupBy({
+          by: ["type"],
+          _count: { _all: true },
+          where: { deletedAt: null },
+        })
+      ),
+      retryDatabaseOperation(() =>
+        prisma.busStop.groupBy({
+          by: ["zoneId"],
+          _count: { _all: true },
+          where: { deletedAt: null },
+        })
+      ),
+      retryDatabaseOperation(() =>
+        prisma.busLane.groupBy({
+          by: ["serviceId"],
+          _count: { _all: true },
+          where: { deletedAt: null },
+        })
+      ),
     ]);
 
     const totals = {
@@ -143,10 +194,12 @@ export async function GET() {
       .map((group) => group.zoneId)
       .filter((id): id is string => Boolean(id));
 
-    const zones = await prisma.zone.findMany({
-      where: { id: { in: zoneIds } },
-      include: { name: true },
-    });
+    const zones = await retryDatabaseOperation(() =>
+      prisma.zone.findMany({
+        where: { id: { in: zoneIds } },
+        include: { name: true },
+      })
+    );
     const zoneMap = new Map(zones.map((zone) => [zone.id, zone]));
 
     const zoneStopDistribution = zoneStopGroups.map((group) => {
@@ -163,10 +216,12 @@ export async function GET() {
       .map((group) => group.serviceId)
       .filter((id): id is string => Boolean(id));
 
-    const laneServices = await prisma.transportService.findMany({
-      where: { id: { in: laneServiceIds } },
-      select: { id: true, type: true, color: true },
-    });
+    const laneServices = await retryDatabaseOperation(() =>
+      prisma.transportService.findMany({
+        where: { id: { in: laneServiceIds } },
+        select: { id: true, type: true, color: true },
+      })
+    );
     const laneServiceMap = new Map(
       laneServices.map((service) => [service.id, service])
     );
@@ -183,7 +238,9 @@ export async function GET() {
       };
     });
 
-    const recentActivity = await getRecentActivity();
+    const recentActivity = await retryDatabaseOperation(() =>
+      getRecentActivity()
+    );
 
     return NextResponse.json({
       success: true,
@@ -198,8 +255,51 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Dashboard fetch error:", error);
+
+    // Handle database connection errors specifically
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P1001"
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Database connection failed. Please try again later.",
+          code: "DATABASE_CONNECTION_ERROR",
+        },
+        { status: 503 }
+      );
+    }
+
+    // Handle other Prisma errors
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Database error occurred. Please try again later.",
+          code: "DATABASE_ERROR",
+        },
+        { status: 500 }
+      );
+    }
+
+    // Handle custom errors
+    if (error && typeof error === "object" && "status" in error) {
+      const customError = error as { status: number; message?: string };
+      return NextResponse.json(
+        {
+          success: false,
+          error: customError.message || "An error occurred",
+        },
+        { status: customError.status }
+      );
+    }
+
     return NextResponse.json(
-      { success: false, error: "Failed to fetch dashboard data" },
+      {
+        success: false,
+        error: "Failed to fetch dashboard data. Please try again later.",
+      },
       { status: 500 }
     );
   }
@@ -207,30 +307,38 @@ export async function GET() {
 
 async function getRecentActivity() {
   const [services, routes, lanes, stops] = await Promise.all([
-    prisma.transportService.findMany({
-      where: { deletedAt: null },
-      include: { name: true },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
-    prisma.busRoute.findMany({
-      where: { deletedAt: null },
-      include: { name: true, service: true },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
-    prisma.busLane.findMany({
-      where: { deletedAt: null },
-      include: { name: true, service: true },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
-    prisma.busStop.findMany({
-      where: { deletedAt: null },
-      include: { name: true, zone: { include: { name: true } } },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
+    retryDatabaseOperation(() =>
+      prisma.transportService.findMany({
+        where: { deletedAt: null },
+        include: { name: true },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      })
+    ),
+    retryDatabaseOperation(() =>
+      prisma.busRoute.findMany({
+        where: { deletedAt: null },
+        include: { name: true, service: true },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      })
+    ),
+    retryDatabaseOperation(() =>
+      prisma.busLane.findMany({
+        where: { deletedAt: null },
+        include: { name: true, service: true },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      })
+    ),
+    retryDatabaseOperation(() =>
+      prisma.busStop.findMany({
+        where: { deletedAt: null },
+        include: { name: true, zone: { include: { name: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      })
+    ),
   ]);
 
   const activity = [

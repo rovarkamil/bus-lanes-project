@@ -47,7 +47,10 @@
   "CreateDialog": {
     "Title": "إنشاء مسار حافلة",
     "Description": "حدد المسار، التنسيق، والعلاقات لهذا المسار.",
-    "PathRequired": "مطلوب إدخال مسار بصيغة JSON.",
+    "BulkTitle": "إنشاء {{count}} مسارات حافلات",
+    "BulkDescription": "قم بتكوين عدة مسارات حافلات دفعة واحدة. يتطلب كل مسار اسمًا ومسارًا.",
+    "NameRequired": "الاسم مطلوب للمسار {{laneNumber}}.",
+    "PathRequired": "المسار مطلوب للمسار {{laneNumber}}.",
     "InvalidPath": "يجب أن يكون المسار مصفوفة إحداثيات صحيحة.",
     "PathJSON": "إحداثيات المسار (JSON)",
     "Color": "لون الخط",
@@ -58,12 +61,18 @@
     "Stops": "المحطات",
     "Routes": "الخطوط",
     "Images": "صور المسار",
-    "IsActive": "الحالة النشطة"
+    "LaneNumber": "المسار {{number}}",
+    "Points": "نقاط",
+    "IsActive": "الحالة النشطة",
+    "BulkCreate": "إنشاء {{count}} مسارات"
   },
   "UpdateDialog": {
     "Title": "تحديث مسار حافلة",
     "Description": "عدّل المسار، التنسيق، والعناصر المرتبطة.",
-    "PathRequired": "مطلوب إدخال مسار بصيغة JSON.",
+    "BulkTitle": "تحديث {{count}} مسارات حافلات",
+    "BulkDescription": "قم بتعديل عدة مسارات حافلات دفعة واحدة. يتطلب كل مسار اسمًا ومسارًا.",
+    "NameRequired": "الاسم مطلوب للمسار {{laneNumber}}.",
+    "PathRequired": "المسار مطلوب للمسار {{laneNumber}}.",
     "InvalidPath": "يجب أن يكون المسار مصفوفة إحداثيات صحيحة.",
     "PathJSON": "إحداثيات المسار (JSON)",
     "Color": "لون الخط",
@@ -74,7 +83,10 @@
     "Stops": "المحطات",
     "Routes": "الخطوط",
     "Images": "صور المسار",
-    "IsActive": "الحالة النشطة"
+    "LaneNumber": "المسار {{number}}",
+    "Points": "نقاط",
+    "IsActive": "الحالة النشطة",
+    "BulkUpdate": "تحديث {{count}} مسارات"
   },
   "ViewDialog": {
     "Title": "تفاصيل المسار",

@@ -118,6 +118,9 @@
   "ClickStopToSelectDragToMove": "انقر على محطة لتحديدها، اسحبها للتحريك",
   "Selected": "محدد",
   "Undo": "تراجع",
+  "Redo": "إعادة",
+  "DeleteSelectedPoint": "حذف النقطة المحددة",
+  "Error.CannotDeleteLastPoint": "لا يمكن حذف النقطة الأخيرة",
   "Clear": "مسح",
   "SaveLane": "حفظ المسار",
   "DrawAndEditBusLanesOnTheMap": "رسم وتحرير مسارات الحافلات على الخريطة",
@@ -147,5 +150,22 @@
   "ResetView": "إعادة تعيين العرض",
   "PositionChanged": "تم تغيير الموقع",
   "Saving": "جاري الحفظ...",
-  "Success.PositionUpdated": "تم تحديث الموقع بنجاح"
+  "Success.PositionUpdated": "تم تحديث الموقع بنجاح",
+  "StartingLocationDialog": {
+    "Title": "اختر الموقع الابتدائي",
+    "Description": "انقر على الخريطة أو أدخل الإحداثيات لتعيين الموقع الابتدائي",
+    "Coordinates": "الإحداثيات",
+    "Latitude": "خط العرض",
+    "Longitude": "خط الطول",
+    "SelectedLocation": "الموقع المحدد",
+    "Instructions": "انقر على الخريطة لتحديد موقع، أو أدخل الإحداثيات يدويًا.",
+    "MarkerTooltip": "الموقع الابتدائي",
+    "Loading": "جاري تحميل الخريطة...",
+    "ClickToSelect": "انقر على الخريطة لتحديد الموقع",
+    "Apply": "تطبيق"
+  },
+  "Common": {
+    "Cancel": "إلغاء",
+    "Updating": "جاري التحديث..."
+  }
 }

@@ -47,7 +47,10 @@
   "CreateDialog": {
     "Title": "دروستکردنی ڕێدەری بۆس",
     "Description": "ڕێگای نەخشە، ڕەنگ و پەیوەندیەکان دیاری بکە.",
-    "PathRequired": "پێویستە نەخشەکە بە جەی ئەلی نیوەکان تۆمار بکرێت.",
+    "BulkTitle": "دروستکردنی {{count}} ڕێدەری بۆس",
+    "BulkDescription": "چەندین ڕێدەری بۆس بە جارێک ڕێکبخە. پێویستە هەر ڕێدەرێک ناو و ڕێگای هەبێت.",
+    "NameRequired": "ناو پێویستە بۆ ڕێدەری {{laneNumber}}.",
+    "PathRequired": "ڕێگا پێویستە بۆ ڕێدەری {{laneNumber}}.",
     "InvalidPath": "پێویستە نەخشەکە مۆڵگەی دروست بێت.",
     "PathJSON": "کۆردیناتەکان (JSON)",
     "Color": "ڕەنگی هێڵ",
@@ -58,12 +61,18 @@
     "Stops": "وەستانەکان",
     "Routes": "ڕێگاکان",
     "Images": "وێنەکانی ڕێدەر",
-    "IsActive": "دۆخی چالاکی"
+    "LaneNumber": "ڕێدەر {{number}}",
+    "Points": "خاڵ",
+    "IsActive": "دۆخی چالاکی",
+    "BulkCreate": "دروستکردنی {{count}} ڕێدەر"
   },
   "UpdateDialog": {
     "Title": "نوێکردنەوەی ڕێدەری بۆس",
     "Description": "ڕێگاکە، ڕەنگ و پەیوەندیەکان نوێ بکە.",
-    "PathRequired": "پێویستە نەخشەکە بە JSON بنووسرێت.",
+    "BulkTitle": "نوێکردنەوەی {{count}} ڕێدەری بۆس",
+    "BulkDescription": "چەندین ڕێدەری بۆس بە جارێک دەستکاری بکە. پێویستە هەر ڕێدەرێک ناو و ڕێگای هەبێت.",
+    "NameRequired": "ناو پێویستە بۆ ڕێدەری {{laneNumber}}.",
+    "PathRequired": "ڕێگا پێویستە بۆ ڕێدەری {{laneNumber}}.",
     "InvalidPath": "پێویستە نەخشەکە مۆڵگەی درست بێت.",
     "PathJSON": "کۆردیناتەکان (JSON)",
     "Color": "ڕەنگی هێڵ",
@@ -74,7 +83,10 @@
     "Stops": "وەستانەکان",
     "Routes": "ڕێگاکان",
     "Images": "وێنەکانی ڕێدەر",
-    "IsActive": "دۆخی چالاکی"
+    "LaneNumber": "ڕێدەر {{number}}",
+    "Points": "خاڵ",
+    "IsActive": "دۆخی چالاکی",
+    "BulkUpdate": "نوێکردنەوەی {{count}} ڕێدەر"
   },
   "ViewDialog": {
     "Title": "وردەکاریی ڕێدەر",

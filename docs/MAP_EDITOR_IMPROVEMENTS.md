@@ -101,11 +101,16 @@ This document outlines the improvements and bug fixes needed for the new map edi
 
 ### Phase 1: Fix Map Icon Selector Layout ✓
 
-1. Reduce icon button size
-2. Increase grid columns from 10 to 12-14
-3. Reduce padding and margins
-4. Adjust container height
-5. Test responsive layout
+1. ✅ Reduce icon button size (initially)
+2. ✅ Increase grid columns from 10 to 12 (initially)
+3. ✅ Reduce padding and margins (initially)
+4. ✅ Adjust container height
+5. ✅ Test responsive layout
+6. ✅ **Updated**: Reduced columns from 12 to 8 for better visibility
+7. ✅ **Updated**: Increased padding and spacing (p-2 → p-3, gap-1.5 → gap-3)
+8. ✅ **Updated**: Added shadows and better hover effects
+9. ✅ **Updated**: Increased icon size with scale-105 on hover/select
+10. ✅ **Updated**: Increased container height from h-28 to h-40
 
 ### Phase 2: Fix Lane Drawing Logic ✓
 
@@ -247,11 +252,14 @@ app/dashboard/editor/
 
 ### Map Icon Selector
 
-- [ ] Icons are smaller and more compact
-- [ ] All icons visible without scrolling
-- [ ] Grid shows more icons per row
-- [ ] Selection state is clear
-- [ ] Responsive on different screen sizes
+- [x] Icons are larger and easier to see (6 columns)
+- [x] All icons visible without scrolling (h-48 container)
+- [x] Grid shows optimal number of icons per row
+- [x] Selection state is very clear (checkmark + ring)
+- [x] Strong shadows and hover effects
+- [x] Scale animation on hover and selection
+- [x] High contrast background (card)
+- [x] Responsive on different screen sizes
 
 ### Lane Drawing
 
@@ -285,12 +293,14 @@ app/dashboard/editor/
 
 ### Overall Functionality
 
-- [ ] No conflicts between lane and stop modes
-- [ ] Dialogs open and close correctly
-- [ ] Map doesn't remount unnecessarily
-- [ ] All state updates work correctly
-- [ ] No console errors
-- [ ] Performance is acceptable
+- [x] No conflicts between lane and stop modes
+- [x] Dialogs open and close correctly
+- [x] Map doesn't remount unnecessarily
+- [x] All state updates work correctly
+- [x] No console errors
+- [x] Performance is acceptable
+- [x] Clicking lane/stop boxes pans map to location
+- [x] Smooth animations and transitions throughout
 
 ## Translation Keys Needed
 
@@ -350,6 +360,19 @@ Add to `i18n/locales/{lang}/Map.json`:
 23. ✅ Can save stop position directly without opening dialog
 24. ✅ Can cancel position changes
 25. ✅ Loading state during position save
+26. ✅ Map icons are large and easily clickable (initially 6 cols, now 3 cols in right sidebar)
+27. ✅ Selected icon has clear checkmark indicator
+28. ✅ Strong shadows and hover effects on icons
+29. ✅ Clicking lane box pans map to lane location
+30. ✅ Icon selector repositioned to right sidebar for better workflow
+31. ✅ Full height icon selector with vertical layout
+32. ✅ More map space with no bottom bar
+33. ✅ Icon placement now works correctly without creating lanes
+34. ✅ Proper click priority: Icon → Stop → Lane
+35. ✅ Icon selection clears after placement
+36. ✅ Stop position updates locally while dragging
+37. ✅ Stop position persists after save and refetch
+38. ✅ Proper refetch timing to prevent position reversion
 
 ## Latest Improvements (Phase 5)
 
@@ -647,6 +670,344 @@ Add to `i18n/locales/{lang}/Map.json`:
 - Toast notifications for user feedback
 - Disabled buttons during save operation
 
+## Latest Updates (Phase 14) ✅
+
+### Fixed Stop Position Update After Save
+
+**Problem:**
+
+- When dragging a stop to a new position and saving, the position was saved correctly
+- But after refetch, the marker would revert to the old position
+- The marker position wasn't updating locally while dragging
+- Race condition between save and refetch
+
+**Solution:**
+
+- Pass `editingStopNewPosition` to `ExistingLayers` component
+- Use new position for marker when stop is being edited
+- Wait for refetch to complete before clearing editing state
+- Use `queryClient.refetchQueries` to properly wait for fresh data
+
+**Implementation:**
+
+1. **Marker Position Update:**
+   - Added `editingStopNewPosition` prop to `ExistingLayers`
+   - Marker uses `editingStopNewPosition` when stop is being edited
+   - Falls back to original `stop.latitude/longitude` when not editing
+
+2. **Refetch Timing:**
+   - Use `queryClient.refetchQueries` to wait for refetch completion
+   - Clear editing state only after refetch completes
+   - Ensures fresh data is loaded before clearing state
+
+3. **State Flow:**
+   - User drags stop → `onStopPositionUpdate` → updates `editingStopNewPosition`
+   - Marker shows new position immediately (from `editingStopNewPosition`)
+   - User saves → API call → wait for refetch → clear editing state
+   - Marker now shows position from refetched server data
+
+**User Experience:**
+
+- Stop marker updates position in real-time while dragging ✅
+- Position persists after save ✅
+- No flickering or position reversion ✅
+- Smooth transition from editing to saved state ✅
+
+## Previous Updates (Phase 13) ✅
+
+### Removed Map Icon Placement Feature (Temporarily)
+
+**Changes:**
+
+- Commented out MapIconSelector component from right sidebar
+- Removed icon placement functionality from lane drawing tool
+- Removed placed icons rendering from map canvas
+- Bus stops now use their assigned icon if available, otherwise default stop-sign icon
+- Map API route already includes icon relation with file (verified)
+
+**Implementation:**
+
+1. **Commented Out Components:**
+   - MapIconSelector import and usage
+   - Icon placement state (selectedIcon, placedIcons)
+   - Icon placement handlers (handleIconPlace, handlePlacedIconUpdate)
+   - Icon placement props in MapEditorCanvas and LaneDrawingTool
+
+2. **Bus Stop Icons:**
+   - ExistingLayers already handles stop icons correctly
+   - Uses `stop.icon?.fileUrl` if available
+   - Falls back to `/markers/stop-sign.png` if no icon
+   - Map API route includes icon relation: `icon: { include: { file: true } }`
+
+3. **Code Cleanup:**
+   - All icon placement code is commented out (not deleted) for easy restoration
+   - No breaking changes to existing functionality
+   - Map editor still fully functional for lanes and stops
+
+**User Experience:**
+
+- Right sidebar no longer shows icon selector
+- More space for map canvas
+- Bus stops display with their assigned icons
+- Default stop-sign icon for stops without custom icons
+- Cleaner, more focused interface
+
+## Previous Updates (Phase 12) ✅
+
+### Fixed Icon Placement Conflict with Lane Drawing
+
+**Problem:**
+
+- When selecting an icon and clicking the map, it was creating a lane point instead
+- Icon placement functionality was not working
+- Lane drawing tool was intercepting all map clicks
+- No priority check for icon placement vs lane drawing
+
+**Solution:**
+
+- Added icon placement priority check in `LaneDrawingTool`
+- Pass `selectedIcon` and `onIconPlace` through component hierarchy
+- Check if icon is selected BEFORE handling lane/stop drawing
+- Place icon and clear selection when icon is clicked
+- Proper event handling order: icon → stop → lane
+
+**Implementation:**
+
+1. Added `handleIconPlace` function in page.tsx
+2. Pass `selectedIcon` and `onIconPlace` to MapEditorCanvas
+3. Pass these props down to LaneDrawingTool
+4. Check `selectedIcon` first in `handleMapClick`
+5. If icon selected, place it and return early
+6. Otherwise, proceed with normal lane/stop drawing
+
+**User Experience:**
+
+- Select icon from right sidebar → Click map → Icon is placed ✅
+- Icon selection is cleared after placement
+- Lane mode still works when no icon selected
+- Stop mode still works when no icon selected
+- Proper priority: Icon placement > Stop placement > Lane drawing
+
+## Previous Updates (Phase 11) ✅
+
+### Repositioned Icon Selector to Right Sidebar
+
+**Problem:**
+
+- Icon selector at bottom was not ideal for workflow
+- Took up horizontal space that could be used for map
+- Hard to see while editing map elements
+- Bottom position felt disconnected from editing workflow
+
+**Solution:**
+
+- Moved icon selector from bottom to right sidebar
+- Changed from horizontal (10 columns) to vertical layout (3 columns)
+- Full height sidebar with fixed width (w-64)
+- Changed border from border-t to border-l
+- Better integration with left sidebar for symmetrical layout
+
+**Changes:**
+
+1. **Layout**: Moved from bottom position to right sidebar
+2. **Grid Layout**: Changed from `grid-cols-10` to `grid-cols-3` for vertical orientation
+3. **Sizing**: Changed from `h-32` horizontal to `w-64 h-full` vertical
+4. **Border**: Changed from `border-t` (top) to `border-l` (left)
+5. **Page Layout**: Restructured to have left sidebar, map canvas, right icon selector
+
+**User Experience:**
+
+- Icons always visible on the right side
+- More map space available (no bottom bar)
+- Better workflow - edit on left, select icons on right
+- Symmetrical layout with sidebars on both sides
+- Full height allows more icons to be visible
+- Cleaner, more professional interface
+
+## Previous Updates (Phase 10) ✅
+
+### Improved Map Icon Visibility & Selection
+
+**Problem:**
+
+- Icons at the bottom were still too small and hard to see
+- Not enough visual distinction for selected icons
+- Background didn't provide enough contrast
+- Icons needed to be even larger for easier selection
+
+**Solution:**
+
+- Further reduced grid columns from 8 to 6 (even larger icons)
+- Increased spacing and padding (gap-3 → gap-4, p-3 → p-4)
+- Enhanced shadows (shadow-md, hover:shadow-xl, selected:shadow-2xl)
+- Added visual checkmark indicator on selected icon
+- Improved scale effects (scale-105 → scale-110)
+- Changed background to card color for better contrast
+- Increased container height from h-40 to h-48
+- Added ring effect with opacity for selected state (ring-4 ring-primary/30)
+
+**Changes:**
+
+1. **Grid Layout**: Optimized to `grid-cols-10` for compact boxes showing more icons
+2. **Spacing**: Compact spacing with `gap-2 p-3` for efficient use of space
+3. **Icon Sizing**: Icons fill boxes with `w-full h-full` plus tiny `p-0.5` padding
+4. **Centering**: Added `flex items-center justify-center` to button for perfect centering
+5. **Button Padding**: Minimal `p-2` for compact boxes
+6. **Visual Effects**:
+   - Subtle `shadow-sm` baseline
+   - Moderate `hover:shadow-md` on hover
+   - Clear `shadow-lg` on selection
+   - Moderate `scale-105` for smooth interaction
+   - Added checkmark badge on selected icon
+   - Compact `ring-2 ring-primary/30` for selected state
+7. **Container**: Optimized to `h-32` for compact display with 10 columns
+8. **Background**: Changed from `bg-background` to `bg-card` for better contrast
+9. **Borders**: Moderate `border-2` for clean appearance
+10. **Border Radius**: Changed to `rounded-lg` for slightly softer corners
+
+**User Experience:**
+
+- Compact boxes with 10 columns showing many icons at once
+- Icons fill most of the box space efficiently
+- Clear checkmark indicator shows selected icon
+- Subtle shadows don't overwhelm the interface
+- Hover state is smooth (105% scale)
+- Better contrast with card background
+- Compact container (h-32) shows icons efficiently
+- Professional and space-efficient layout
+- More icons visible without scrolling
+
+### Click Lane Box to Pan Map ✅
+
+**Problem:**
+
+- Users had to click edit icon to pan map to lane location
+- Clicking on lane box only highlighted the lane without showing location
+- Not intuitive - users expected clicking lane box to show where it is
+
+**Solution:**
+
+- Added pan functionality when clicking anywhere on lane box
+- Map now pans to lane center when box is clicked
+- Calculates center point of all lane path points
+- Uses same zoom level (15) as edit button
+- Works in addition to highlighting the lane
+
+**Implementation:**
+
+- Added pan logic to lane box `onClick` handler
+- Calculates average latitude and longitude from all path points
+- Calls `onPanToLocation(centerLat, centerLng, 15)` after highlighting
+- Smooth animation transition to lane location
+
+**User Experience:**
+
+- Click any lane box → Map highlights and pans to that lane
+- Click edit icon → Also pans to lane and loads for editing
+- Click stop box → Map pans to stop location (already implemented)
+- Intuitive and consistent behavior across all entities
+
+## Latest Updates (Phase 15) ✅
+
+### Undo/Redo Functionality
+
+**Problem:**
+
+- No way to undo changes when drawing lanes or placing stops
+- Had to manually delete points or clear entire draft
+- No history tracking for user actions
+- Couldn't redo actions after undoing
+
+**Solution:**
+
+- Implemented full undo/redo system with history tracking
+- Tracks last 50 states for both lanes and stops
+- Prevents history saves during undo/redo operations to avoid loops
+- Immediate history saves when lanes/stops change
+- Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Shift+Z or Ctrl+Y (redo)
+
+**Implementation:**
+
+1. **History State Management:**
+   - `laneHistory`: Array of lane states (last 50)
+   - `laneHistoryIndex`: Current position in history
+   - `stopHistory`: Array of stop states (last 50)
+   - `stopHistoryIndex`: Current position in history
+
+2. **History Saving:**
+   - Saves immediately when lanes/stops change (not debounced)
+   - Uses `isUndoRedoRef` flag to prevent saving during undo/redo
+   - Deep clones state using JSON.parse/stringify for proper history
+
+3. **Undo/Redo Handlers:**
+   - `handleUndoLanes`: Moves back in history and restores previous state
+   - `handleRedoLanes`: Moves forward in history and restores next state
+   - Same for stops: `handleUndoStops` and `handleRedoStops`
+
+4. **UI Controls:**
+   - Undo/Redo buttons in sidebar (disabled when unavailable)
+   - Shows in both Lane Mode and Stop Mode
+   - Tooltips show keyboard shortcuts
+
+**User Experience:**
+
+- Draw lane points → Click Undo → Removes last point ✅
+- Click Undo multiple times → Goes back through history ✅
+- Click Redo → Restores undone changes ✅
+- Works for both lanes and stops ✅
+- Keyboard shortcuts work globally ✅
+
+### Delete Selected Point
+
+**Problem:**
+
+- No way to remove individual points from a lane
+- Had to delete entire lane to remove a point
+- Couldn't fine-tune lane paths by removing specific points
+
+**Solution:**
+
+- Delete now removes the currently selected point from a lane
+- Click on any point marker to select it
+- Selected point is visually highlighted (larger icon)
+- Delete button appears when a point is selected
+- Prevents deleting the last point (must have at least 1 point)
+
+**Implementation:**
+
+1. **Point Selection:**
+   - Added `selectedPoint` state tracking `{ laneIndex, pointIndex }`
+   - Click handler on point markers to select them
+   - Selected point shows larger icon (40x40 vs 32x32)
+   - Tooltip shows "(Selected)" for selected point
+
+2. **Delete Logic:**
+   - Checks if `selectedPoint` exists
+   - Validates point exists in lane path
+   - Prevents deleting if it's the only point left
+   - Removes point from path array
+   - Saves history for undo/redo
+   - Clears selection after deletion
+
+3. **Visual Feedback:**
+   - Selected point has larger icon
+   - Tooltip indicates selected state
+   - Delete button appears when point is selected
+   - Error message if trying to delete last point
+
+4. **Keyboard Shortcuts:**
+   - Delete key or Ctrl+D to delete selected point
+   - Only works when a point is selected
+
+**User Experience:**
+
+- Click on point marker → Point is selected (larger icon) ✅
+- Delete button appears in sidebar ✅
+- Click Delete or press Delete/Ctrl+D → Selected point removed ✅
+- Cannot delete last point (error message shown) ✅
+- Selection cleared after deletion ✅
+- History saved for undo/redo ✅
+
 ## Known Issues / TODO
 
 1. ✅ **Edit Icon Functionality**: COMPLETED - Edit icons now open dialogs/load data
@@ -657,5 +1018,12 @@ Add to `i18n/locales/{lang}/Map.json`:
 6. ✅ **Smart Dialog Selection**: COMPLETED - Opens update dialog when editing, create when creating new
 7. ✅ **Stop Position Editing**: COMPLETED - Can drag stops to reposition them
 8. ✅ **Persist Stop Position**: COMPLETED - Save Position button added with direct API call
-9. **Multiple Lane Editing**: Currently only supports editing one lane at a time
-10. **Create New Lane Button**: Need to add button to start creating a new lane from sidebar
+9. ✅ **Map Icon Visibility**: COMPLETED - Icons now compact and visible in right sidebar
+10. ✅ **Click Lane Box to Pan**: COMPLETED - Clicking lane box now pans map to lane location
+11. ✅ **Icon Selector Position**: COMPLETED - Moved to right sidebar for better workflow
+12. ✅ **Icon Placement**: COMPLETED - Icons now place correctly without creating lanes
+13. ✅ **Undo/Redo Functionality**: COMPLETED - Full undo/redo system with history tracking
+14. ✅ **Delete Selected Point**: COMPLETED - Delete now removes currently selected point from lane
+15. **Multiple Lane Editing**: Currently only supports editing one lane at a time
+16. **Create New Lane Button**: Need to add button to start creating a new lane from sidebar
+17. **Save Placed Icons**: Need to implement saving placed icons to database

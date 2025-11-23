@@ -23,6 +23,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useSession } from "next-auth/react";
 import { Loader } from "@/components/loader-table";
 import { DashboardRoute, DashboardRouteGroup } from "@/types/dashboard-routes";
+import { StartingLocationButton } from "@/components/starting-location-button";
 
 interface SidebarHeaderProps {
   isSidebarOpen: boolean;
@@ -371,6 +372,7 @@ const DashboardLayout: FC<{ children: React.ReactNode }> = ({ children }) => {
               >
                 <Home />
               </Button>
+              <StartingLocationButton />
               <div className="md:flex hidden items-center gap-1 sm:gap-2">
                 <ThemeToggleButton isExpanded={false} />
                 <LanguageSwitcherDropdown />

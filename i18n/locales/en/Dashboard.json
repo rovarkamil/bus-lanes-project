@@ -112,6 +112,7 @@
   "Common": {
     "Open": "Open",
     "Close": "Close",
+    "PleaseWait": "Please wait...",
     "Theme": {
       "Light": "Light",
       "Dark": "Dark"
@@ -274,6 +275,7 @@
   "Settings": {
     "UsdPrice": "USD Price",
     "Updated": "Settings updated successfully",
+    "UpdateFailed": "Failed to update settings",
     "Saving": "Saving...",
     "Save": "Save"
   },
@@ -309,5 +311,6 @@
   "EnableAutoHover": "Enable Auto Hover",
   "DisableAutoHover": "Disable Auto Hover",
   "AutoOn": "Auto On",
-  "AutoOff": "Auto Off"
+  "AutoOff": "Auto Off",
+  "StartingLocation": "Starting Location"
 }

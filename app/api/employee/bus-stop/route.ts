@@ -47,7 +47,11 @@ export const { GET, POST, PUT, DELETE } = createEmployeeModelRoutes({
   relations: {
     name: true,
     description: true,
-    icon: true,
+    icon: {
+      include: {
+        file: true,
+      },
+    },
     zone: {
       include: {
         name: true,
@@ -117,5 +121,3 @@ export const { GET, POST, PUT, DELETE } = createEmployeeModelRoutes({
     },
   },
 });
-
-
