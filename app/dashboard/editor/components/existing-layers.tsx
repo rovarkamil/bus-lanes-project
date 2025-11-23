@@ -1,0 +1,142 @@
+"use client";
+
+import { Polyline, Marker, Tooltip } from "react-leaflet";
+import { MapLane, MapStop, MapRoute } from "@/types/map";
+import L from "leaflet";
+
+interface ExistingLayersProps {
+  lanes: MapLane[];
+  stops: MapStop[];
+  routes: MapRoute[];
+  selectedLaneId?: string | null;
+  onLaneClick?: (laneId: string) => void;
+  editingStopId?: string | null;
+  onStopPositionUpdate?: (stopId: string, position: [number, number]) => void;
+}
+
+export function ExistingLayers({
+  lanes,
+  stops,
+  routes,
+  selectedLaneId,
+  onLaneClick,
+  editingStopId,
+  onStopPositionUpdate,
+}: ExistingLayersProps) {
+  return (
+    <>
+      {/* Render existing lanes */}
+      {lanes.map((lane) =>
+        lane.path?.length ? (
+          <Polyline
+            key={`lane-${lane.id}`}
+            positions={lane.path}
+            pathOptions={{
+              color: lane.color ?? lane.service?.color ?? "#0066CC",
+              weight: selectedLaneId === lane.id ? 8 : (lane.weight ?? 5),
+              opacity: selectedLaneId === lane.id ? 1 : (lane.opacity ?? 0.7),
+            }}
+            eventHandlers={{
+              click: () => onLaneClick?.(lane.id),
+            }}
+          >
+            <Tooltip sticky>
+              {lane.name?.en ?? lane.id}
+              {selectedLaneId === lane.id && " (Selected)"}
+            </Tooltip>
+          </Polyline>
+        ) : null
+      )}
+
+      {/* Render existing routes */}
+      {routes.map((route) =>
+        route.path?.length ? (
+          <Polyline
+            key={`route-${route.id}`}
+            positions={route.path}
+            pathOptions={{
+              color: route.color ?? route.service?.color ?? "#f97316",
+              weight: 3,
+              opacity: 0.6,
+              dashArray: "8 4",
+            }}
+          >
+            <Tooltip sticky>
+              {route.routeNumber
+                ? `Route ${route.routeNumber}`
+                : (route.name?.en ?? route.id)}
+            </Tooltip>
+          </Polyline>
+        ) : null
+      )}
+
+      {/* Render existing stops */}
+      {stops.map((stop) => {
+        // Create custom icon if available, otherwise use stop-sign
+        let icon: L.Icon | undefined;
+        if (stop.icon?.fileUrl) {
+          try {
+            const size = stop.icon.iconSize ?? 32;
+            icon = L.icon({
+              iconUrl: stop.icon.fileUrl,
+              iconSize: [size, size],
+              iconAnchor: [
+                stop.icon.iconAnchorX ?? size / 2,
+                stop.icon.iconAnchorY ?? size,
+              ],
+              popupAnchor: [
+                stop.icon.popupAnchorX ?? 0,
+                stop.icon.popupAnchorY ?? -size / 2,
+              ],
+            });
+          } catch (error) {
+            console.warn(`Failed to create icon for stop ${stop.id}:`, error);
+          }
+        }
+
+        // If no custom icon, use the stop-sign icon
+        if (!icon && typeof window !== "undefined") {
+          try {
+            icon = L.icon({
+              iconUrl: "/markers/stop-sign.png",
+              iconSize: [32, 32],
+              iconAnchor: [16, 32],
+              popupAnchor: [0, -32],
+            });
+          } catch (error) {
+            console.warn(`Failed to create default stop icon:`, error);
+          }
+        }
+
+        // Only pass icon prop if it exists
+        const markerProps = icon ? { icon } : {};
+
+        // Make marker draggable if this stop is being edited
+        const isDraggable = editingStopId === stop.id;
+
+        return (
+          <Marker
+            key={`stop-${stop.id}`}
+            position={[stop.latitude, stop.longitude]}
+            {...markerProps}
+            draggable={isDraggable}
+            eventHandlers={{
+              dragend: (event) => {
+                if (isDraggable && onStopPositionUpdate) {
+                  const marker = event.target;
+                  const position = marker.getLatLng();
+                  onStopPositionUpdate(stop.id, [position.lat, position.lng]);
+                }
+              },
+            }}
+          >
+            <Tooltip sticky>
+              {stop.name?.en ?? stop.id}
+              {isDraggable && " (Drag to reposition)"}
+            </Tooltip>
+          </Marker>
+        );
+      })}
+    </>
+  );
+}

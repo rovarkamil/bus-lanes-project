@@ -103,6 +103,7 @@ export type LaneDraftStopInput = z.infer<typeof laneDraftStopSchema>;
 
 // Map Editor Types
 export interface MapEditorLaneDraft {
+  id?: string; // Optional ID for editing existing lanes
   path: CoordinateTuple[];
   color?: string;
   weight?: number;
