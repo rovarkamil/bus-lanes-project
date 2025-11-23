@@ -56,8 +56,16 @@ export type BusLaneWithRelations = Prisma.BusLaneGetPayload<{
     description: true;
     images: true;
     stops: true;
-    routes: true;
-    service: true;
+    routes: {
+      include: {
+        name: true;
+      };
+    };
+    service: {
+      include: {
+        name: true;
+      };
+    };
   };
 }>;
 

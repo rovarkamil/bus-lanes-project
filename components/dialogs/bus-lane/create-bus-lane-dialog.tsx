@@ -343,11 +343,6 @@ export const CreateBusLaneDialog: FC<CreateBusLaneDialogProps> = ({
                 maxSize={5 * 1024 * 1024}
                 label={t("CreateDialog.Images")}
               />
-              {images.length === 0 && (
-                <p className="text-sm text-destructive">
-                  {t("Error.ImagesRequired")}
-                </p>
-              )}
             </div>
 
             <div className="flex items-center justify-between">
@@ -373,10 +368,7 @@ export const CreateBusLaneDialog: FC<CreateBusLaneDialogProps> = ({
             <Button
               type="submit"
               disabled={
-                isSubmitting ||
-                isUploading ||
-                !form.watch("nameFields.en") ||
-                images.length === 0
+                isSubmitting || isUploading || !form.watch("nameFields.en")
               }
             >
               {isUploading

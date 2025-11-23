@@ -4,18 +4,23 @@ import { useSession } from "next-auth/react";
 import { Permission } from "@prisma/client";
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { useMapEditorData } from "@/hooks/employee-hooks/use-map";
 import { hasPermission } from "@/lib/utils";
 import { useTranslation } from "@/i18n/client";
 import { PageHeader } from "@/components/page-header";
 // import { MapIconWithRelations } from "@/types/models/map-icon";
-import { CoordinateTuple } from "@/types/map";
+import { CoordinateTuple, MapDataPayload } from "@/types/map";
 import { MapEditorLaneDraft } from "@/types/models/bus-lane";
 import type { MapControllerHandle } from "@/components/map/dashboard/map-editor-canvas";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { settingsMap } from "@/lib/settings";
 import { useDeleteBusStop } from "@/hooks/employee-hooks/use-bus-stop";
 import { toast } from "sonner";
+import { useFetchBusLanes } from "@/hooks/employee-hooks/use-bus-lane";
+import { useFetchBusRoutes } from "@/hooks/employee-hooks/use-bus-route";
+import { useFetchBusStops } from "@/hooks/employee-hooks/use-bus-stop";
+import { useFetchTransportServices } from "@/hooks/employee-hooks/use-transport-service";
+import { useFetchZones } from "@/hooks/employee-hooks/use-zone";
+import { transformToMapDataPayload } from "@/lib/utils/map-data-transform";
 
 // Dynamically import all components that depend on Leaflet with no SSR
 const MapEditorCanvas = dynamic(
@@ -67,13 +72,145 @@ export default function MapEditorPage() {
   const isRTL = i18n.language !== "en";
   const { data: session } = useSession();
   const canEdit = hasPermission(session, Permission.EDIT_MAP);
-  const { data, isPending, error, refetch } = useMapEditorData({
-    enabled: canEdit,
-  });
   const { getSetting } = useSettingsStore();
 
-  // Get starting location from settings
+  // Fetch all data using individual hooks
+  const {
+    data: lanesData,
+    isPending: isLanesPending,
+    error: lanesError,
+    refetch: refetchLanes,
+  } = useFetchBusLanes({
+    page: 1,
+    limit: 1000, // Fetch all lanes
+    enabled: canEdit,
+  });
+
+  const {
+    data: stopsData,
+    isPending: isStopsPending,
+    error: stopsError,
+    refetch: refetchStops,
+  } = useFetchBusStops({
+    page: 1,
+    limit: 1000, // Fetch all stops
+    enabled: canEdit,
+  });
+
+  const {
+    data: routesData,
+    isPending: isRoutesPending,
+    error: routesError,
+    refetch: refetchRoutes,
+  } = useFetchBusRoutes({
+    page: 1,
+    limit: 1000, // Fetch all routes
+    enabled: canEdit,
+  });
+
+  const {
+    data: servicesData,
+    isPending: isServicesPending,
+    error: servicesError,
+    refetch: refetchServices,
+  } = useFetchTransportServices({
+    page: 1,
+    limit: 1000, // Fetch all services
+    enabled: canEdit,
+  });
+
+  const {
+    data: zonesData,
+    isPending: isZonesPending,
+    error: zonesError,
+    refetch: refetchZones,
+  } = useFetchZones({
+    page: 1,
+    limit: 1000, // Fetch all zones
+    enabled: canEdit,
+  });
+
+  // Combine all data into MapDataPayload format
+  const mapData: MapDataPayload | undefined = useMemo(() => {
+    if (
+      !lanesData?.items ||
+      !stopsData?.items ||
+      !routesData?.items ||
+      !servicesData?.items ||
+      !zonesData?.items
+    ) {
+      return undefined;
+    }
+
+    return transformToMapDataPayload(
+      lanesData.items,
+      stopsData.items,
+      routesData.items,
+      servicesData.items,
+      zonesData.items
+    );
+  }, [
+    lanesData?.items,
+    stopsData?.items,
+    routesData?.items,
+    servicesData?.items,
+    zonesData?.items,
+  ]);
+
+  // Combined loading and error states
+  const isPending =
+    isLanesPending ||
+    isStopsPending ||
+    isRoutesPending ||
+    isServicesPending ||
+    isZonesPending;
+
+  const error =
+    lanesError || stopsError || routesError || servicesError || zonesError;
+
+  // Combined refetch function
+  const refetch = useCallback(async () => {
+    await Promise.all([
+      refetchLanes(),
+      refetchStops(),
+      refetchRoutes(),
+      refetchServices(),
+      refetchZones(),
+    ]);
+  }, [
+    refetchLanes,
+    refetchStops,
+    refetchRoutes,
+    refetchServices,
+    refetchZones,
+  ]);
+
+  // Cache key for localStorage
+  const STARTING_POSITION_CACHE_KEY = "map-editor-starting-position";
+
+  // Get starting location from localStorage first, then settings
   const initialCenter = useMemo(() => {
+    // Try to get from localStorage first (faster)
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem(STARTING_POSITION_CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached) as { lat: number; lng: number };
+          if (
+            typeof parsed.lat === "number" &&
+            typeof parsed.lng === "number" &&
+            !isNaN(parsed.lat) &&
+            !isNaN(parsed.lng)
+          ) {
+            return [parsed.lat, parsed.lng] as CoordinateTuple;
+          }
+        }
+      } catch {
+        // Invalid cached data, continue to settings
+      }
+    }
+
+    // Fallback to settings
     const value = getSetting(settingsMap.STARTING_POSITION);
     if (!value) return null;
     try {
@@ -84,12 +221,46 @@ export default function MapEditorPage() {
         !isNaN(parsed.lat) &&
         !isNaN(parsed.lng)
       ) {
+        // Save to localStorage for next time
+        if (typeof window !== "undefined") {
+          localStorage.setItem(
+            STARTING_POSITION_CACHE_KEY,
+            JSON.stringify(parsed)
+          );
+        }
         return [parsed.lat, parsed.lng] as CoordinateTuple;
       }
     } catch {
       // Invalid JSON
     }
     return null;
+  }, [getSetting]);
+
+  // Sync localStorage when settings change
+  useEffect(() => {
+    const value = getSetting(settingsMap.STARTING_POSITION);
+    if (value && typeof window !== "undefined") {
+      try {
+        const parsed = JSON.parse(value) as { lat: number; lng: number };
+        if (
+          typeof parsed.lat === "number" &&
+          typeof parsed.lng === "number" &&
+          !isNaN(parsed.lat) &&
+          !isNaN(parsed.lng)
+        ) {
+          localStorage.setItem(
+            STARTING_POSITION_CACHE_KEY,
+            JSON.stringify(parsed)
+          );
+        }
+      } catch {
+        // Invalid JSON, clear cache
+        localStorage.removeItem(STARTING_POSITION_CACHE_KEY);
+      }
+    } else if (typeof window !== "undefined") {
+      // Clear cache if setting is empty
+      localStorage.removeItem(STARTING_POSITION_CACHE_KEY);
+    }
   }, [getSetting]);
 
   // Icon placement state - COMMENTED OUT FOR NOW
@@ -171,7 +342,7 @@ export default function MapEditorPage() {
   const handleLaneSelect = (laneId: string) => {
     setSelectedLaneId(laneId);
     // Find the lane and set it as draft for editing
-    const lane = data?.data?.lanes.find((l) => l.id === laneId);
+    const lane = mapData?.lanes.find((l) => l.id === laneId);
     if (lane) {
       setDraftLanes([
         {
@@ -332,8 +503,8 @@ export default function MapEditorPage() {
   }, [selectedPoint, draftLanes, saveLaneHistory, t]);
 
   const handleDeleteStop = useCallback(async () => {
-    if (editingStopId && data?.data) {
-      const stop = data.data.stops.find((s) => s.id === editingStopId);
+    if (editingStopId && mapData) {
+      const stop = mapData.stops.find((s) => s.id === editingStopId);
       if (stop) {
         // Delete existing stop
         try {
@@ -355,7 +526,7 @@ export default function MapEditorPage() {
     }
   }, [
     editingStopId,
-    data,
+    mapData,
     draftStops,
     deleteBusStop,
     refetch,
@@ -457,7 +628,8 @@ export default function MapEditorPage() {
       />
       <div className="flex flex-1 overflow-hidden">
         <MapEditorSidebar
-          data={data?.data}
+          data={mapData}
+          originalLanes={lanesData?.items || []}
           draftLanes={draftLanes}
           onDraftLanesChange={(lanes) => {
             setDraftLanes(lanes);
@@ -501,7 +673,7 @@ export default function MapEditorPage() {
         />
         <div className="flex-1 overflow-hidden">
           <MapEditorCanvas
-            data={data?.data}
+            data={mapData}
             isPending={isPending}
             error={error}
             className="h-full"

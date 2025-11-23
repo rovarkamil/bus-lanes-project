@@ -31,6 +31,7 @@ export interface MapTransportService {
   color?: string | null;
   name?: LanguageContent | null;
   isActive?: boolean;
+  icon?: MapIconData | null;
 }
 
 export interface MapZone {

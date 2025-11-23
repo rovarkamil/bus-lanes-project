@@ -186,6 +186,9 @@ export async function updateBusLaneWithBusinessLogic({
       deletedAt: true,
       nameId: true,
       descriptionId: true,
+      serviceId: true,
+      routes: { select: { id: true } },
+      stops: { select: { id: true } },
     },
   });
 
@@ -222,31 +225,34 @@ export async function updateBusLaneWithBusinessLogic({
   };
 
   if (serviceId !== undefined) {
-    updateData.service =
-      serviceId === null || serviceId === ""
-        ? { disconnect: true }
-        : { connect: { id: serviceId } };
+    const currentServiceId = existing.serviceId;
+    const newServiceId =
+      serviceId === null || serviceId === "" ? null : serviceId;
+
+    if (currentServiceId !== newServiceId) {
+      if (newServiceId === null) {
+        // Disconnect if setting to null
+        updateData.service = { disconnect: true };
+      } else {
+        // Connect new service (Prisma will automatically disconnect old one)
+        updateData.service = { connect: { id: newServiceId } };
+      }
+    }
   }
 
   if (imagesUpdate) {
     updateData.images = imagesUpdate;
   }
 
-  if (stopIds) {
+  if (stopIds !== undefined) {
     updateData.stops = {
-      set: [],
-      ...(stopIds.length
-        ? { connect: stopIds.map((stopId) => ({ id: stopId })) }
-        : {}),
+      set: stopIds.map((stopId) => ({ id: stopId })),
     };
   }
 
-  if (routeIds) {
+  if (routeIds !== undefined) {
     updateData.routes = {
-      set: [],
-      ...(routeIds.length
-        ? { connect: routeIds.map((routeId) => ({ id: routeId })) }
-        : {}),
+      set: routeIds.map((routeId) => ({ id: routeId })),
     };
   }
 

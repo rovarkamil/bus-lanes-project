@@ -253,6 +253,19 @@ export function MapEditorCanvas({
           onAddDraftStop={onAddDraftStop}
           selectedPoint={selectedPoint}
           onSelectedPointChange={onSelectedPointChange}
+          services={data?.services?.map((s) => ({
+            id: s.id,
+            icon: s.icon
+              ? {
+                  fileUrl: s.icon.fileUrl,
+                  iconSize: s.icon.iconSize ?? undefined,
+                  iconAnchorX: s.icon.iconAnchorX ?? undefined,
+                  iconAnchorY: s.icon.iconAnchorY ?? undefined,
+                  popupAnchorX: s.icon.popupAnchorX ?? undefined,
+                  popupAnchorY: s.icon.popupAnchorY ?? undefined,
+                }
+              : undefined,
+          }))}
           // selectedIcon={selectedIcon}
           // onIconPlace={onIconPlace}
         />

@@ -33,6 +33,7 @@ import {
   MapLinesDialog,
   type MapLinesDialogResult,
 } from "@/components/dialogs/map/map-lines-dialog";
+import { TransportServiceWithRelations } from "@/types/models/transport-service";
 
 type UploadedImage = {
   file: File;
@@ -80,6 +81,10 @@ export const UpdateBusLaneDialog: FC<UpdateBusLaneDialogProps> = ({
   const [selectedRoutes, setSelectedRoutes] = useState<SelectableEntity[]>(
     data.routes ?? []
   );
+  const [selectedService, setSelectedService] =
+    useState<TransportServiceWithRelations | null>(
+      data.service as TransportServiceWithRelations | null
+    );
 
   const { mutateAsync: updateBusLane, isPending: isSubmitting } =
     useUpdateBusLane();
@@ -360,12 +365,16 @@ export const UpdateBusLaneDialog: FC<UpdateBusLaneDialogProps> = ({
                       label: t("Table.ServiceType"),
                     },
                   ]}
-                  onSelect={(item) =>
-                    form.setValue("serviceId", (item?.id as string) ?? null)
-                  }
+                  onSelect={(item) => {
+                    setSelectedService(
+                      item as TransportServiceWithRelations | null
+                    );
+                    form.setValue("serviceId", (item?.id as string) ?? null);
+                  }}
                   placeholder={t("SelectTransportService")}
                   canClear
-                  value={form.watch("serviceId") ?? ""}
+                  defaultValue={selectedService || undefined}
+                  value={selectedService?.id ?? ""}
                 />
               </div>
             </div>
@@ -401,11 +410,6 @@ export const UpdateBusLaneDialog: FC<UpdateBusLaneDialogProps> = ({
                 maxSize={5 * 1024 * 1024}
                 label={t("UpdateDialog.Images")}
               />
-              {images.length === 0 && (
-                <p className="text-sm text-destructive">
-                  {t("Error.ImagesRequired")}
-                </p>
-              )}
             </div>
 
             <div className="flex items-center justify-between">
@@ -431,10 +435,7 @@ export const UpdateBusLaneDialog: FC<UpdateBusLaneDialogProps> = ({
             <Button
               type="submit"
               disabled={
-                isSubmitting ||
-                isUploading ||
-                !form.watch("nameFields.en") ||
-                images.length === 0
+                isSubmitting || isUploading || !form.watch("nameFields.en")
               }
             >
               {isUploading

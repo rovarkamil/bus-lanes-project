@@ -25,6 +25,7 @@ import {
   type MapLinesDialogResult,
 } from "@/components/dialogs/map/map-lines-dialog";
 import { CoordinateTuple } from "@/types/map";
+import { TransportServiceWithRelations } from "@/types/models/transport-service";
 
 interface UpdateBusLanesMapEditorDialogProps {
   isOpen: boolean;
@@ -67,35 +68,61 @@ export const UpdateBusLanesMapEditorDialog: FC<
   >([]);
   const [editingLaneIndex, setEditingLaneIndex] = useState<number | null>(null);
   const [isMapDialogOpen, setIsMapDialogOpen] = useState(false);
+  // Store selected services and routes per lane (by lane ID)
+  const [selectedServices, setSelectedServices] = useState<
+    Record<string, TransportServiceWithRelations | null>
+  >({});
+  const [selectedRoutes, setSelectedRoutes] = useState<
+    Record<string, SelectableEntity[]>
+  >({});
 
   const { mutateAsync: updateLanes, isPending: isUpdating } =
     useUpdateBusLanesMapEditor();
 
   useEffect(() => {
     if (isOpen && lanes.length > 0) {
-      setLaneForms(
-        lanes.map((lane) => ({
-          id: lane.id,
-          nameFields: {
-            en: lane.name?.en || "",
-            ar: lane.name?.ar || null,
-            ckb: lane.name?.ckb || null,
-          },
-          descriptionFields: {
-            en: lane.description?.en || "",
-            ar: lane.description?.ar || null,
-            ckb: lane.description?.ckb || null,
-          },
-          color: lane.color ?? "#0066CC",
-          weight: lane.weight ?? 5,
-          opacity: lane.opacity ?? 0.8,
-          serviceId: lane.serviceId,
-          routeIds: lane.routes?.map((r) => r.id) || [],
-          isActive: lane.isActive ?? true,
-          path: parsePathPoints(lane.path),
-          draftStops: [],
-        }))
-      );
+      const forms = lanes.map((lane) => ({
+        id: lane.id,
+        nameFields: {
+          en: lane.name?.en || "",
+          ar: lane.name?.ar || null,
+          ckb: lane.name?.ckb || null,
+        },
+        descriptionFields: lane.description
+          ? {
+              en: lane.description.en || "",
+              ar: lane.description.ar || null,
+              ckb: lane.description.ckb || null,
+            }
+          : {
+              en: "",
+              ar: null,
+              ckb: null,
+            },
+        color: lane.color ?? "#0066CC",
+        weight: lane.weight ?? 5,
+        opacity: lane.opacity ?? 0.8,
+        serviceId: lane.serviceId,
+        routeIds: lane.routes?.map((r) => r.id) || [],
+        isActive: lane.isActive ?? true,
+        path: parsePathPoints(lane.path),
+        draftStops: [],
+      }));
+
+      setLaneForms(forms);
+
+      // Initialize selected services and routes per lane
+      const services: Record<string, TransportServiceWithRelations | null> = {};
+      const routes: Record<string, SelectableEntity[]> = {};
+
+      lanes.forEach((lane) => {
+        services[lane.id] =
+          (lane.service as TransportServiceWithRelations | null) || null;
+        routes[lane.id] = (lane.routes as SelectableEntity[]) || [];
+      });
+
+      setSelectedServices(services);
+      setSelectedRoutes(routes);
     }
   }, [isOpen, lanes]);
 
@@ -105,15 +132,11 @@ export const UpdateBusLanesMapEditorDialog: FC<
       for (let i = 0; i < laneForms.length; i++) {
         const form = laneForms[i];
         if (!form.nameFields.en.trim()) {
-          toast.error(
-            t("UpdateDialog.NameRequired", { laneNumber: i + 1 })
-          );
+          toast.error(t("UpdateDialog.NameRequired", { laneNumber: i + 1 }));
           return;
         }
         if (form.path && form.path.length < 2) {
-          toast.error(
-            t("UpdateDialog.PathRequired", { laneNumber: i + 1 })
-          );
+          toast.error(t("UpdateDialog.PathRequired", { laneNumber: i + 1 }));
           return;
         }
       }
@@ -126,8 +149,8 @@ export const UpdateBusLanesMapEditorDialog: FC<
           color: form.color,
           weight: form.weight,
           opacity: form.opacity,
-          serviceId: form.serviceId,
-          routeIds: form.routeIds,
+          serviceId: form.serviceId || null,
+          routeIds: form.routeIds || [],
           path: form.path,
           isActive: form.isActive,
         })),
@@ -209,7 +232,13 @@ export const UpdateBusLanesMapEditorDialog: FC<
                 onTitleChange={(fields) => {
                   handleLaneFormChange(index, { nameFields: fields });
                 }}
-                descriptionFields={form.descriptionFields as LanguageFields}
+                descriptionFields={
+                  (form.descriptionFields || {
+                    en: "",
+                    ar: null,
+                    ckb: null,
+                  }) as LanguageFields
+                }
                 onDescriptionChange={(fields) => {
                   handleLaneFormChange(index, { descriptionFields: fields });
                 }}
@@ -301,6 +330,7 @@ export const UpdateBusLanesMapEditorDialog: FC<
                 <div className="space-y-2">
                   <Label>{t("UpdateDialog.TransportService")}</Label>
                   <SelectWithPagination
+                    key={`service-${form.id}-${form.serviceId || ""}`}
                     fetchFunction={useFetchTransportServices}
                     fields={[
                       {
@@ -314,14 +344,19 @@ export const UpdateBusLanesMapEditorDialog: FC<
                         label: t("Table.ServiceType"),
                       },
                     ]}
-                    onSelect={(item) =>
+                    onSelect={(item) => {
+                      setSelectedServices((prev) => ({
+                        ...prev,
+                        [form.id]: item as TransportServiceWithRelations | null,
+                      }));
                       handleLaneFormChange(index, {
                         serviceId: item?.id || null,
-                      })
-                    }
+                      });
+                    }}
                     placeholder={t("SelectTransportService")}
                     canClear
-                    value={form.serviceId || ""}
+                    defaultValue={selectedServices[form.id] || undefined}
+                    value={selectedServices[form.id]?.id ?? ""}
                   />
                 </div>
               </div>
@@ -329,6 +364,7 @@ export const UpdateBusLanesMapEditorDialog: FC<
               <div className="space-y-2">
                 <Label>{t("UpdateDialog.Routes")}</Label>
                 <MultipleSelectWithPagination
+                  key={`routes-${form.id}-${form.routeIds?.join(",") || ""}`}
                   fetchFunction={useFetchBusRoutes}
                   fields={[
                     {
@@ -338,15 +374,17 @@ export const UpdateBusLanesMapEditorDialog: FC<
                       relationKey: "en",
                     },
                   ]}
-                  onSelect={(items: SelectableEntity[]) =>
+                  onSelect={(items: SelectableEntity[]) => {
+                    setSelectedRoutes((prev) => ({
+                      ...prev,
+                      [form.id]: items,
+                    }));
                     handleLaneFormChange(index, {
                       routeIds: items.map((item) => item.id),
-                    })
-                  }
+                    });
+                  }}
                   placeholder={t("SelectRoutes")}
-                  defaultValue={
-                    form.routeIds?.map((id) => ({ id })) as SelectableEntity[]
-                  }
+                  defaultValue={selectedRoutes[form.id] || []}
                 />
               </div>
 
@@ -371,11 +409,7 @@ export const UpdateBusLanesMapEditorDialog: FC<
             >
               {t("Cancel")}
             </Button>
-            <Button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isUpdating}
-            >
+            <Button type="button" onClick={handleSubmit} disabled={isUpdating}>
               {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t("UpdateDialog.BulkUpdate", { count: lanes.length })}
             </Button>
@@ -405,4 +439,3 @@ export const UpdateBusLanesMapEditorDialog: FC<
     </>
   );
 };
-

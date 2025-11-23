@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapDataPayload } from "@/types/map";
+import { MapDataPayload, CoordinateTuple } from "@/types/map";
 import { MapEditorLaneDraft } from "@/types/models/bus-lane";
 import { useTranslation } from "@/i18n/client";
 import { Edit, Trash2, Save, X, Check, Undo2, Redo2 } from "lucide-react";
@@ -28,6 +28,7 @@ interface DraftStop {
 
 interface MapEditorSidebarProps {
   data?: MapDataPayload;
+  originalLanes?: BusLaneWithRelations[];
   draftLanes: MapEditorLaneDraft[];
   onDraftLanesChange: (lanes: MapEditorLaneDraft[]) => void;
   draftStops?: DraftStop[];
@@ -58,6 +59,7 @@ interface MapEditorSidebarProps {
 
 export function MapEditorSidebar({
   data,
+  originalLanes = [],
   draftLanes,
   onDraftLanesChange,
   draftStops = [],
@@ -107,41 +109,25 @@ export function MapEditorSidebar({
 
     if (lanesWithIds.length > 0) {
       // We're editing existing lanes - open update dialog
-      // Convert MapLane to BusLaneWithRelations format with updated path
-      const lanesToUpdate: BusLaneWithRelations[] = data!.lanes
+      // Use original lane data with all relations, but update path from draft
+      const lanesToUpdate: BusLaneWithRelations[] = originalLanes
         .filter((lane) => lanesWithIds.some((draft) => draft.id === lane.id))
         .map((lane) => {
           // Find corresponding draft to get updated path
           const draft = lanesWithIds.find((d) => d.id === lane.id);
+
+          // Create updated lane with draft path but keep all other relations
           return {
-            id: lane.id,
-            path: draft?.path || lane.path,
-            color: lane.color,
-            weight: lane.weight,
-            opacity: lane.opacity,
-            isActive: lane.isActive ?? true,
-            serviceId: lane.serviceId,
-            nameId: "",
-            descriptionId: null,
-            name: lane.name
-              ? {
-                  id: "",
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                  deletedAt: null,
-                  en: lane.name.en || "",
-                  ar: lane.name.ar || null,
-                  ckb: lane.name.ckb || null,
-                }
-              : null,
-            description: null,
-            images: [],
-            stops: [],
-            routes: [],
-            service: null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            deletedAt: null,
+            ...lane,
+            path: draft?.path || (lane.path as unknown as CoordinateTuple[]),
+            // Update other properties from draft if they exist
+            ...(draft?.color && { color: draft.color }),
+            ...(draft?.weight && { weight: draft.weight }),
+            ...(draft?.opacity && { opacity: draft.opacity }),
+            ...(draft?.isActive !== undefined && { isActive: draft.isActive }),
+            ...(draft?.serviceId !== undefined && {
+              serviceId: draft.serviceId,
+            }),
           } as BusLaneWithRelations;
         });
       setLanesForUpdate(lanesToUpdate);
