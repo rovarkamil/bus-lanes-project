@@ -22,9 +22,13 @@ import {
   MapZone,
 } from "@/types/map";
 
-
 type ServiceWithName = Prisma.TransportServiceGetPayload<{
-  include: { name: true };
+  include: {
+    name: true;
+    icon: {
+      include: { file: true };
+    };
+  };
 }>;
 
 type MapIconWithFile = PrismaMapIcon & {
@@ -37,7 +41,12 @@ type BusLaneRecord = Prisma.BusLaneGetPayload<{
     description: true;
 
     service: {
-      include: { name: true };
+      include: {
+        name: true;
+        icon: {
+          include: { file: true };
+        };
+      };
     };
   };
 }>;
@@ -47,7 +56,12 @@ type BusRouteRecord = Prisma.BusRouteGetPayload<{
     name: true;
     description: true;
     service: {
-      include: { name: true };
+      include: {
+        name: true;
+        icon: {
+          include: { file: true };
+        };
+      };
     };
     lanes: {
       include: {
@@ -78,13 +92,27 @@ type BusStopRecord = Prisma.BusStopGetPayload<{
       include: {
         name: true;
         description: true;
-        service: { include: { name: true } };
+        service: {
+          include: {
+            name: true;
+            icon: {
+              include: { file: true };
+            };
+          };
+        };
       };
     };
     routes: {
       include: {
         name: true;
-        service: { include: { name: true } };
+        service: {
+          include: {
+            name: true;
+            icon: {
+              include: { file: true };
+            };
+          };
+        };
       };
     };
   };
@@ -132,6 +160,7 @@ const mapTransportService = (
     color: service.color,
     name: toLanguageContent(service.name),
     isActive: service.isActive,
+    icon: toMapIconData(service.icon as MapIconWithFile | null),
   };
 };
 
@@ -271,6 +300,9 @@ export async function GET() {
           include: {
             name: true,
             description: true,
+            icon: {
+              include: { file: true },
+            },
           },
           orderBy: { createdAt: "asc" },
         }),
@@ -292,13 +324,27 @@ export async function GET() {
               include: {
                 name: true,
                 description: true,
-                service: { include: { name: true } },
+                service: {
+                  include: {
+                    name: true,
+                    icon: {
+                      include: { file: true },
+                    },
+                  },
+                },
               },
             },
             routes: {
               include: {
                 name: true,
-                service: { include: { name: true } },
+                service: {
+                  include: {
+                    name: true,
+                    icon: {
+                      include: { file: true },
+                    },
+                  },
+                },
               },
             },
           },
@@ -312,7 +358,14 @@ export async function GET() {
           include: {
             name: true,
             description: true,
-            service: { include: { name: true } },
+            service: {
+              include: {
+                name: true,
+                icon: {
+                  include: { file: true },
+                },
+              },
+            },
           },
           orderBy: { createdAt: "asc" },
         }),
@@ -324,7 +377,14 @@ export async function GET() {
           include: {
             name: true,
             description: true,
-            service: { include: { name: true } },
+            service: {
+              include: {
+                name: true,
+                icon: {
+                  include: { file: true },
+                },
+              },
+            },
             lanes: {
               include: {
                 name: true,

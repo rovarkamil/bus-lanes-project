@@ -35,20 +35,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
-import { ConfirmationDialog } from "@/components/data-table/confirmation-dialog";
 import { cn, hasPermission } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "@/i18n/client";
 import { useModelOperations } from "@/hooks/use-model-operations";
-import { Column, ensureIndexColumn } from "@/types/data-table";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { ensureIndexColumn } from "@/types/data-table";
 
 const BusLanesPage = () => {
   const { t, i18n } = useTranslation("BusLanes");
@@ -106,91 +97,8 @@ const BusLanesPage = () => {
   });
 
   const columns = useMemo(() => {
-    const actionColumn: Column<BusLaneWithRelations> = {
-      key: "actions",
-      label: t("Table.Actions"),
-      sortable: false,
-      className: "w-[120px]",
-      render: (lane) => {
-        const canView = hasPermission(session, Permission.VIEW_BUS_LANES);
-        const canEdit = hasPermission(session, Permission.UPDATE_BUS_LANE);
-        const canDelete = hasPermission(session, Permission.DELETE_BUS_LANE);
-
-        return (
-          <div className="flex items-center gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSelectedBusLane(lane);
-                      setIsViewDialogOpen(true);
-                    }}
-                    disabled={!canView}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t("Actions.View")}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSelectedBusLane(lane);
-                      setIsUpdateDialogOpen(true);
-                    }}
-                    disabled={!canEdit}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t("Actions.Edit")}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <ConfirmationDialog
-              title={t("Actions.DeleteConfirmTitle")}
-              message={t("Actions.DeleteConfirmMessage")}
-              onConfirm={() => handleDelete(lane.id)}
-              confirmLabel={
-                isDeleting ? t("Actions.Deleting") : t("Actions.Delete")
-              }
-              cancelLabel={t("Cancel")}
-              variant="destructive"
-              disabled={!canDelete || isDeleting}
-              isRtl={isRTL}
-            >
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive"
-                      disabled={!canDelete}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t("Actions.Delete")}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </ConfirmationDialog>
-          </div>
-        );
-      },
-    };
-
-    return ensureIndexColumn([...busLaneColumns(t), actionColumn]);
-  }, [session, isDeleting, isRTL, handleDelete, t]);
+    return ensureIndexColumn(busLaneColumns(t));
+  }, [t]);
 
   const handleCreateSuccess = () => {
     setIsCreateDialogOpen(false);
@@ -311,10 +219,19 @@ const BusLanesPage = () => {
                                 handlers: {
                                   setSelectedItem: (item) =>
                                     setSelectedBusLane(item),
-                                  setIsViewDialogOpen: setIsViewDialogOpen,
+                                  setIsViewDialogOpen: (isOpen: boolean) => {
+                                    if (isOpen) setIsViewDialogOpen(true);
+                                  },
                                   handleOpenUpdateDialog: (item) => {
-                                    setSelectedBusLane(item);
-                                    setIsUpdateDialogOpen(true);
+                                    if (
+                                      hasPermission(
+                                        session,
+                                        Permission.UPDATE_BUS_LANE
+                                      )
+                                    ) {
+                                      setSelectedBusLane(item);
+                                      setIsUpdateDialogOpen(true);
+                                    }
                                   },
                                   handleDelete,
                                   isRtl: isRTL,

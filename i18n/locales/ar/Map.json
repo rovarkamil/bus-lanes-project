@@ -164,6 +164,17 @@
     "ClickToSelect": "انقر على الخريطة لتحديد الموقع",
     "Apply": "تطبيق"
   },
+  "Filters": "عوامل التصفية",
+  "ClearAll": "مسح الكل",
+  "ShowAll": "عرض الكل",
+  "NoServices": "لا توجد خدمات متاحة",
+  "NoLanes": "لا توجد مسارات متاحة",
+  "ClickToCollapseLanes": "انقر للطي المسارات",
+  "ClickToShowLanes": "انقر لعرض المسارات",
+  "NoStopsAssigned": "لا توجد محطات مخصصة",
+  "MoreStops": "محطات إضافية",
+  "More": "المزيد",
+  "Images": "الصور",
   "Common": {
     "Cancel": "إلغاء",
     "Updating": "جاري التحديث..."

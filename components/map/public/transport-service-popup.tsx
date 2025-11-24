@@ -5,16 +5,13 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
 import { useLocale } from "@/components/locale-provder";
 import { useTranslation } from "@/i18n/client";
-import { cn } from "@/lib/utils";
 import {
   MapPin,
   Layers,
   Route as RouteIcon,
   Clock,
-  BusFront,
   Image as ImageIcon,
 } from "lucide-react";
 import {

@@ -287,28 +287,37 @@ export const InteractiveBusMap = ({
         const startPoint = lane.path[0];
         const service = services.find((s) => s.id === serviceId);
 
-        // Create icon from service or use default
+        // Create icon from service or use default (check both service from array and lane's service)
         let icon = defaultMarkerIcon;
-        if (service?.icon?.fileUrl) {
+        const serviceIcon =
+          service?.icon?.fileUrl || lane.service?.icon?.fileUrl;
+        if (serviceIcon) {
           try {
-            const size = service.icon.iconSize ?? 32;
+            const iconData = service?.icon || lane.service?.icon;
+            const size = iconData?.iconSize ?? 32;
             icon = L.icon({
-              iconUrl: service.icon.fileUrl,
+              iconUrl: serviceIcon,
               iconSize: [size, size],
               iconAnchor: [
-                service.icon.iconAnchorX ?? size / 2,
-                service.icon.iconAnchorY ?? size,
+                iconData?.iconAnchorX ?? size / 2,
+                iconData?.iconAnchorY ?? size,
               ],
               popupAnchor: [
-                service.icon.popupAnchorX ?? 0,
-                service.icon.popupAnchorY ?? -size / 2,
+                iconData?.popupAnchorX ?? 0,
+                iconData?.popupAnchorY ?? -size / 2,
               ],
             });
-          } catch {
+          } catch (error) {
+            console.warn(
+              `Failed to create service icon for lane ${lane.id}:`,
+              error
+            );
             // Fallback to default
           }
-        } else if (typeof window !== "undefined") {
-          // Use default starting marker
+        }
+
+        // Use default starting marker if no service icon
+        if (icon === defaultMarkerIcon && typeof window !== "undefined") {
           try {
             icon = L.icon({
               iconUrl: "/markers/starting.png",
@@ -410,25 +419,36 @@ export const InteractiveBusMap = ({
           let endIcon = defaultMarkerIcon;
           const service = services.find((s) => s.id === serviceId);
 
-          if (service?.icon?.fileUrl) {
+          // Check both service from array and lane's service for icon
+          const serviceIcon =
+            service?.icon?.fileUrl || lane.service?.icon?.fileUrl;
+          if (serviceIcon) {
             try {
-              const size = service.icon.iconSize ?? 32;
+              const iconData = service?.icon || lane.service?.icon;
+              const size = iconData?.iconSize ?? 32;
               endIcon = L.icon({
-                iconUrl: service.icon.fileUrl,
+                iconUrl: serviceIcon,
                 iconSize: [size, size],
                 iconAnchor: [
-                  service.icon.iconAnchorX ?? size / 2,
-                  service.icon.iconAnchorY ?? size,
+                  iconData?.iconAnchorX ?? size / 2,
+                  iconData?.iconAnchorY ?? size,
                 ],
                 popupAnchor: [
-                  service.icon.popupAnchorX ?? 0,
-                  service.icon.popupAnchorY ?? -size / 2,
+                  iconData?.popupAnchorX ?? 0,
+                  iconData?.popupAnchorY ?? -size / 2,
                 ],
               });
-            } catch {
+            } catch (error) {
+              console.warn(
+                `Failed to create service icon for lane end ${lane.id}:`,
+                error
+              );
               // Fallback
             }
-          } else if (typeof window !== "undefined") {
+          }
+
+          // Use default end marker if no service icon
+          if (endIcon === defaultMarkerIcon && typeof window !== "undefined") {
             try {
               endIcon = L.icon({
                 iconUrl: "/markers/end.png",

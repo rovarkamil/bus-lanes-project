@@ -164,6 +164,17 @@
     "ClickToSelect": "Click on the map to select location",
     "Apply": "Apply"
   },
+  "Filters": "Filters",
+  "ClearAll": "Clear All",
+  "ShowAll": "Show All",
+  "NoServices": "No services available",
+  "NoLanes": "No lanes available",
+  "ClickToCollapseLanes": "Click to collapse lanes",
+  "ClickToShowLanes": "Click to show lanes",
+  "NoStopsAssigned": "No stops assigned",
+  "MoreStops": "more stops",
+  "More": "more",
+  "Images": "Images",
   "Common": {
     "Cancel": "Cancel",
     "Updating": "Updating..."

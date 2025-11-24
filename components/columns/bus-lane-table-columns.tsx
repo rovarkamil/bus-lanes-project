@@ -1,12 +1,24 @@
 "use client";
 
 import { useMemo } from "react";
-import { Column } from "@/types/data-table";
-import { BusLaneWithRelations } from "@/types/models/bus-lane";
+import { Column, RenderContext } from "@/types/data-table";
+import {
+  BusLaneWithRelations,
+  BUS_LANE_ACTION_BUTTONS,
+} from "@/types/models/bus-lane";
 import { formatDate } from "@/lib/formatDate";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ConfirmationDialog } from "@/components/data-table/confirmation-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Activity, Route as RouteIcon, MapPin, CircleDot } from "lucide-react";
+import { UserType, Permission } from "@prisma/client";
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -79,6 +91,88 @@ const DateCell = ({ value }: { value: Date }) => (
     </span>
   </div>
 );
+
+const ActionButtons = ({
+  item,
+  context,
+}: {
+  item: BusLaneWithRelations;
+  context: RenderContext<BusLaneWithRelations>;
+}) => {
+  return (
+    <div className="flex items-center gap-2">
+      {BUS_LANE_ACTION_BUTTONS.map((button, idx) => {
+        const hasPermission =
+          !button.requiresPermission ||
+          context.session?.user.userType === UserType.SUPER_ADMIN ||
+          context.session?.user.role?.permissions.includes(
+            button.requiresPermission
+          );
+
+        const Icon = button.icon;
+
+        if (button.requiresPermission === Permission.DELETE_BUS_LANE) {
+          return (
+            <ConfirmationDialog
+              key={idx}
+              title={context.t("AreYouSure")}
+              message={context.t("AreYouSureYouWantToDeleteThisBusLane")}
+              onConfirm={() =>
+                button.onClick(item, {
+                  handleDelete: context.handlers.handleDelete,
+                })
+              }
+              confirmLabel={
+                context.isDeleting ? context.t("Deleting") : context.t("Delete")
+              }
+              cancelLabel={context.t("Cancel")}
+              variant="destructive"
+              isRtl={context.handlers.isRtl}
+              disabled={context.isDeleting}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn("h-8 w-8", button.className)}
+                disabled={!hasPermission}
+              >
+                <Icon className="h-4 w-4" />
+              </Button>
+            </ConfirmationDialog>
+          );
+        }
+
+        return (
+          <TooltipProvider key={idx}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("h-8 w-8", button.className)}
+                  disabled={!hasPermission}
+                  onClick={() =>
+                    button.onClick(item, {
+                      setSelectedItem: context.handlers.setSelectedItem,
+                      setIsViewDialogOpen: context.handlers.setIsViewDialogOpen,
+                      handleOpenUpdateDialog:
+                        context.handlers.handleOpenUpdateDialog,
+                    })
+                  }
+                >
+                  <Icon className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <span>{context.t(button.tooltip)}</span>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      })}
+    </div>
+  );
+};
 
 export const busLaneColumns = (
   t: Translate
@@ -160,5 +254,12 @@ export const busLaneColumns = (
     label: t("Table.Created"),
     sortable: true,
     render: (lane) => <DateCell value={lane.createdAt} />,
+  },
+  {
+    key: "actions",
+    label: t("Table.Actions"),
+    sortable: false,
+    className: "w-[120px]",
+    render: (lane, context) => <ActionButtons item={lane} context={context} />,
   },
 ];
