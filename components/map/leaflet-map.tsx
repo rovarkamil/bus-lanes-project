@@ -78,7 +78,7 @@ export function LeafletMap({
       center={memoizedCenter}
       zoom={zoom}
       scrollWheelZoom={true}
-      className={cn("relative h-[420px] w-full rounded-lg", className)}
+      className={cn("relative w-full", className || "h-full")}
       {...containerProps}
     >
       <TileLayer attribution={tileAttribution} url={tileUrl} />

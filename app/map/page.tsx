@@ -1,137 +1,171 @@
 "use client";
 
-import { useMemo } from "react";
-import { Loader2, MapPin, Route, Layers, BusFront } from "lucide-react";
+import { useMemo, useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { useMapData } from "@/hooks/public-hooks/use-map";
 import InteractiveBusMap from "@/components/map/interactive-bus-map";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { useTranslation } from "@/i18n/client";
+import { useSettingsStore } from "@/lib/stores/settings-store";
+import { settingsMap } from "@/lib/settings";
+import { CoordinateTuple } from "@/types/map";
+import { MapFilterPopover } from "@/components/map/public/map-filter-popover";
 
-const SummaryCard = ({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string;
-  value: number;
-  icon: typeof MapPin;
-}) => {
-  const { t, i18n } = useTranslation("Map");
-  const isRTL = i18n.language !== "en";
+const STARTING_POSITION_CACHE_KEY = "map-starting-position";
+
+const isValidCoordinate = (coord: { lat: number; lng: number }): boolean => {
   return (
-  <Card className="border-border/60 bg-background/80 shadow-sm" dir={isRTL ? "rtl" : "ltr"}>
-    <CardContent className="flex items-center gap-4 p-4">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-        <Icon className="h-6 w-6" />
-      </div>
-      <div>
-        <p className="text-xs uppercase tracking-wide text-muted-foreground">
-          {t(label)}
-        </p>
-        <p className="text-2xl font-semibold">{value.toLocaleString()}</p>
-      </div>
-    </CardContent>
-  </Card>
+    typeof coord.lat === "number" &&
+    typeof coord.lng === "number" &&
+    !isNaN(coord.lat) &&
+    !isNaN(coord.lng) &&
+    coord.lat >= -90 &&
+    coord.lat <= 90 &&
+    coord.lng >= -180 &&
+    coord.lng <= 180
   );
 };
 
 const MapPage = () => {
   const { t, i18n } = useTranslation("Map");
   const isRTL = i18n.language !== "en";
-  const { data, isPending, error, refetch } = useMapData();
+  const { data, isPending, error } = useMapData();
   const payload = data?.data;
+  const { getSetting } = useSettingsStore();
 
-  const stats = useMemo(
-    () => ({
-      stops: payload?.stops.length ?? 0,
-      lanes: payload?.lanes.length ?? 0,
-      routes: payload?.routes.length ?? 0,
-      services: payload?.services.length ?? 0,
-    }),
-    [payload]
-  );
+  // Filter state
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [selectedLanes, setSelectedLanes] = useState<string[]>([]);
+  const [showStops, setShowStops] = useState(true);
+
+  // Get starting location from localStorage first, then settings
+  const initialCenter = useMemo(() => {
+    // Try to get from localStorage first (faster)
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem(STARTING_POSITION_CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached) as { lat: number; lng: number };
+          if (isValidCoordinate(parsed)) {
+            return [parsed.lat, parsed.lng] as CoordinateTuple;
+          }
+        }
+      } catch {
+        // Invalid cached data, continue to settings
+      }
+    }
+
+    // Fallback to settings
+    const value = getSetting(settingsMap.STARTING_POSITION);
+    if (!value) return null;
+    try {
+      const parsed = JSON.parse(value) as { lat: number; lng: number };
+      if (isValidCoordinate(parsed)) {
+        // Save to localStorage for next time
+        if (typeof window !== "undefined") {
+          localStorage.setItem(
+            STARTING_POSITION_CACHE_KEY,
+            JSON.stringify(parsed)
+          );
+        }
+        return [parsed.lat, parsed.lng] as CoordinateTuple;
+      }
+    } catch {
+      // Invalid JSON
+    }
+    return null;
+  }, [getSetting]);
+
+  // Sync localStorage when settings change
+  useEffect(() => {
+    const value = getSetting(settingsMap.STARTING_POSITION);
+    if (value && typeof window !== "undefined") {
+      try {
+        const parsed = JSON.parse(value) as { lat: number; lng: number };
+        if (isValidCoordinate(parsed)) {
+          localStorage.setItem(
+            STARTING_POSITION_CACHE_KEY,
+            JSON.stringify(parsed)
+          );
+        }
+      } catch {
+        // Invalid JSON, clear cache
+        localStorage.removeItem(STARTING_POSITION_CACHE_KEY);
+      }
+    } else if (typeof window !== "undefined") {
+      // Clear cache if setting is empty
+      localStorage.removeItem(STARTING_POSITION_CACHE_KEY);
+    }
+  }, [getSetting]);
+
+  // Prevent body scrolling
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalStyle;
+      document.documentElement.style.overflow = originalStyle;
+    };
+  }, []);
 
   return (
-    <main className="space-y-8 px-4 py-10 md:px-10" dir={isRTL ? "rtl" : "ltr"}>
-      <section className="space-y-6 text-center md:text-left">
-        <Badge variant="outline" className="mx-auto w-fit md:mx-0">
-          {t("LiveTransitMap")}
-        </Badge>
-        <div className="space-y-4">
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-            {t("ExploreBusLanesStopsAndRoutesInRealTime")}
-          </h1>
-          <p className="text-base text-muted-foreground md:text-lg">
-            {t("UseServiceFiltersInspectZonesAndTapMarkersForMultilingualInformationAmenitiesMediaAndLinkedRoutesDataRefreshesAutomaticallyFromTheAdminDashboardSourceOfTruth")}
-          </p>
+    <main
+      className="relative w-full overflow-hidden"
+      dir={isRTL ? "rtl" : "ltr"}
+      style={{
+        height: "100vh",
+        width: "100vw",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: "hidden",
+      }}
+    >
+      {isPending && !payload ? (
+        <div className="flex h-full items-center justify-center gap-3 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          {t("LoadingLiveMapData")}
         </div>
-      </section>
-
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" dir={isRTL ? "rtl" : "ltr"}>
-        <SummaryCard label={t("ActiveStops")} value={stats.stops} icon={MapPin} />
-        <SummaryCard label={t("MappedLanes")} value={stats.lanes} icon={Layers} />
-        <SummaryCard label={t("BusRoutes")} value={stats.routes} icon={Route} />
-        <SummaryCard
-          label={t("TransportServices")}
-          value={stats.services}
-          icon={BusFront}
-        />
-      </section>
-
-      {error ? (
-        <Card className="border-destructive/40 bg-destructive/5">
-          <CardContent className="flex flex-col gap-3 p-6 text-destructive">
-            <p className="text-lg font-semibold">{t("UnableToLoadMapData")}</p>
+      ) : error ? (
+        <div className="flex h-full items-center justify-center">
+          <div className="text-center space-y-3">
+            <p className="text-lg font-semibold text-destructive">
+              {t("UnableToLoadMapData")}
+            </p>
             <p className="text-sm text-destructive/80">
               {error.message || t("PleaseTryAgainInAMoment")}
             </p>
-            <Button
-              variant="outline"
-              className="w-fit border-destructive text-destructive hover:bg-destructive/10"
-              onClick={() => refetch()}
-            >
-              {t("Retry")}
-            </Button>
-          </CardContent>
-        </Card>
-      ) : null}
-
-      <section className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-2xl font-semibold">{t("InteractiveMap")}</h2>
-            <p className="text-sm text-muted-foreground">
-              {t("ToggleServicesLayersAndTapAnyStopForLocalizedDetails")}
-            </p>
           </div>
-          <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
-            {t("AutoRefreshEveryMinute")}
-          </Badge>
         </div>
-
-        <Card className="border-border/60 bg-background/80 shadow-lg">
-          <CardContent className="p-0" dir={isRTL ? "rtl" : "ltr"}>
-            {isPending && !payload ? (
-              <div className="flex h-[620px] items-center justify-center gap-3 text-muted-foreground">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                {t("LoadingLiveMapData")}
-              </div>
-            ) : (
-              <InteractiveBusMap
-                stops={payload?.stops ?? []}
-                lanes={payload?.lanes ?? []}
-                routes={payload?.routes ?? []}
-                zones={payload?.zones ?? []}
-                services={payload?.services ?? []}
-                className={cn(isPending ? "opacity-60" : "opacity-100")}
-              />
-            )}
-          </CardContent>
-        </Card>
-      </section>
+      ) : (
+        <>
+          <InteractiveBusMap
+            stops={payload?.stops ?? []}
+            lanes={payload?.lanes ?? []}
+            routes={payload?.routes ?? []}
+            zones={payload?.zones ?? []}
+            services={payload?.services ?? []}
+            initialCenter={initialCenter ?? undefined}
+            selectedServices={selectedServices}
+            selectedLanes={selectedLanes}
+            showStops={showStops}
+            className="h-full w-full"
+          />
+          <MapFilterPopover
+            selectedServices={selectedServices}
+            selectedLanes={selectedLanes}
+            showStops={showStops}
+            onServicesChange={setSelectedServices}
+            onLanesChange={setSelectedLanes}
+            onStopsChange={setShowStops}
+          />
+        </>
+      )}
     </main>
   );
 };

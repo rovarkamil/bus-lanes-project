@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
             },
             {
               key: "THEME_PRIMARY_COLOR",
-              value: "#00C2FF",
+              value: "#00A878",
               type: "STRING",
               isLocked: true,
             },

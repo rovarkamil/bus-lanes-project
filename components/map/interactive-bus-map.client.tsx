@@ -10,12 +10,9 @@ import {
   useMap,
 } from "react-leaflet";
 import L, { Icon, LatLngExpression, LatLngBoundsExpression } from "leaflet";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { LeafletMap } from "@/components/map/leaflet-map";
 import { BusStopPopup } from "@/components/map/bus-stop-popup";
+import { TransportServicePopup } from "@/components/map/public/transport-service-popup";
 import {
   MapStop,
   MapLane,
@@ -28,14 +25,6 @@ import {
 import { useLocale } from "@/components/locale-provder";
 import { getLocalizedValue } from "@/lib/i18n/get-localized-value";
 import { cn } from "@/lib/utils";
-import {
-  Search,
-  MapPin,
-  Layers,
-  Route as RouteIcon,
-  Eye,
-  EyeOff,
-} from "lucide-react";
 import { useTranslation } from "@/i18n/client";
 import {
   createDefaultMarkerIcon,
@@ -44,15 +33,7 @@ import {
 
 const DEFAULT_CENTER: LatLngExpression = [36.1911, 44.0092];
 const DEFAULT_ZOOM = 13;
-
-type LayerToggle = "stops" | "lanes" | "routes" | "zones";
-
-const defaultLayerState: Record<LayerToggle, boolean> = {
-  stops: true,
-  lanes: true,
-  routes: true,
-  zones: false,
-};
+const DEFAULT_ZOOM_WITH_POSITION = 15; // Higher zoom when position is set
 
 const MapAutoFit = ({ bounds }: { bounds: LatLngBoundsExpression | null }) => {
   const map = useMap();
@@ -63,132 +44,6 @@ const MapAutoFit = ({ bounds }: { bounds: LatLngBoundsExpression | null }) => {
   }, [bounds, map]);
 
   return null;
-};
-
-const ServiceLegend = ({
-  services,
-  activeIds,
-  onToggle,
-}: {
-  services: MapTransportService[];
-  activeIds: string[];
-  onToggle: (serviceId: string) => void;
-}) => {
-  const { t, i18n } = useTranslation("Map");
-  const isRTL = i18n.language !== "en";
-  if (!services.length) return null;
-
-  return (
-    <Card className="space-y-3 p-4 shadow-lg" dir={isRTL ? "rtl" : "ltr"}>
-      <div className="text-sm font-semibold">{t("TransportServices")}</div>
-      <div className="flex flex-wrap gap-2">
-        {services.map((service) => {
-          const isActive = activeIds.includes(service.id);
-          return (
-            <Button
-              key={service.id}
-              variant={isActive ? "default" : "outline"}
-              size="sm"
-              className="h-8 rounded-full px-3 text-xs"
-              style={
-                service.color
-                  ? {
-                      backgroundColor: isActive
-                        ? service.color
-                        : `${service.color}12`,
-                      color: isActive ? "#fff" : service.color,
-                    }
-                  : undefined
-              }
-              onClick={() => onToggle(service.id)}
-            >
-              {service.type}
-            </Button>
-          );
-        })}
-      </div>
-    </Card>
-  );
-};
-
-const LayerToggleGroup = ({
-  state,
-  onChange,
-}: {
-  state: Record<LayerToggle, boolean>;
-  onChange: (key: LayerToggle) => void;
-}) => {
-  const { t, i18n } = useTranslation("Map");
-  const isRTL = i18n.language !== "en";
-  const config: { key: LayerToggle; label: string; icon: ReactNode }[] = [
-    {
-      key: "stops",
-      label: t("Stops"),
-      icon: <MapPin className="h-3.5 w-3.5" />,
-    },
-    {
-      key: "lanes",
-      label: t("Lanes"),
-      icon: <Layers className="h-3.5 w-3.5" />,
-    },
-    {
-      key: "routes",
-      label: t("Routes"),
-      icon: <RouteIcon className="h-3.5 w-3.5" />,
-    },
-    {
-      key: "zones",
-      label: t("Zones"),
-      icon: <Layers className="h-3.5 w-3.5" />,
-    },
-  ];
-
-  return (
-    <Card className="p-3 shadow-lg" dir={isRTL ? "rtl" : "ltr"}>
-      <div className="mb-3 text-sm font-semibold">{t("Layers")}</div>
-      <div className="grid grid-cols-2 gap-2">
-        {config.map((layer) => {
-          const isActive = state[layer.key];
-          const IconComponent = isActive ? Eye : EyeOff;
-          return (
-            <Button
-              key={layer.key}
-              type="button"
-              variant={isActive ? "default" : "outline"}
-              className="flex items-center gap-2 text-xs"
-              onClick={() => onChange(layer.key)}
-            >
-              {layer.icon}
-              {layer.label}
-              <IconComponent className="ml-auto h-4 w-4 opacity-80" />
-            </Button>
-          );
-        })}
-      </div>
-    </Card>
-  );
-};
-
-const SearchControl = ({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-}) => {
-  const { t, i18n } = useTranslation("Map");
-  const isRTL = i18n.language !== "en";
-  return (
-    <div className="relative" dir={isRTL ? "rtl" : "ltr"}>
-      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={t("SearchStopsRoutes")}
-        className="pl-10"
-      />
-    </div>
-  );
 };
 
 const createCustomIcon = (icon?: MapIconData | null): Icon | undefined => {
@@ -222,6 +77,9 @@ export interface InteractiveBusMapProps {
   onLaneSelect?: (laneId: string) => void;
   onRouteSelect?: (routeId: string) => void;
   onStopSelect?: (stopId: string) => void;
+  selectedServices?: string[];
+  selectedLanes?: string[];
+  showStops?: boolean;
 }
 
 export const InteractiveBusMap = ({
@@ -231,58 +89,48 @@ export const InteractiveBusMap = ({
   zones = [],
   services = [],
   initialCenter = DEFAULT_CENTER,
-  initialZoom = DEFAULT_ZOOM,
+  initialZoom,
   className,
   onLaneSelect,
   onRouteSelect,
   onStopSelect,
+  selectedServices = [],
+  selectedLanes = [],
+  showStops = true,
 }: InteractiveBusMapProps) => {
+  // Use higher zoom if initialCenter is provided (from settings)
+  const effectiveZoom = useMemo(() => {
+    if (initialZoom !== undefined) return initialZoom;
+    // If center is provided and not default, use higher zoom
+    // Check if center is different from default by comparing string representation
+    if (initialCenter) {
+      const centerStr = JSON.stringify(initialCenter);
+      const defaultStr = JSON.stringify(DEFAULT_CENTER);
+      if (centerStr !== defaultStr) {
+        return DEFAULT_ZOOM_WITH_POSITION;
+      }
+    }
+    return DEFAULT_ZOOM;
+  }, [initialCenter, initialZoom]);
   const { t, i18n } = useTranslation("Map");
   const isRTL = i18n.language !== "en";
   const locale = useLocale();
   const stopMarkerIcon = useMemo(() => createStopMarkerIcon(), []);
   const defaultMarkerIcon = useMemo(() => createDefaultMarkerIcon(), []);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeServiceIds, setActiveServiceIds] = useState<string[]>([]);
-  const [layers, setLayers] =
-    useState<Record<LayerToggle, boolean>>(defaultLayerState);
 
-  const serviceMap = useMemo(() => {
-    const map = new Map<string, MapTransportService>();
-    services.forEach((service) => {
-      map.set(service.id, service);
-    });
-    return map;
-  }, [services]);
-
-  const toggleService = useCallback((serviceId: string) => {
-    setActiveServiceIds((prev) =>
-      prev.includes(serviceId)
-        ? prev.filter((id) => id !== serviceId)
-        : [...prev, serviceId]
-    );
-  }, []);
-
-  const toggleLayer = useCallback((key: LayerToggle) => {
-    setLayers((prev) => ({ ...prev, [key]: !prev[key] }));
-  }, []);
-
-  const matchesService = useCallback(
-    (serviceId?: string | null) => {
-      if (!activeServiceIds.length) return true;
-      if (!serviceId) return false;
-      return activeServiceIds.includes(serviceId);
-    },
-    [activeServiceIds]
+  // Progressive lane disclosure: track which services/lanes are expanded
+  const [expandedServices, setExpandedServices] = useState<Set<string>>(
+    new Set()
   );
 
-  const normalizedSearch = searchTerm.trim().toLowerCase();
-
   const filteredStops = useMemo(() => {
+    if (!showStops) return [];
+
     return stops.filter((stop) => {
       if (stop.isActive === false) return false;
 
-      if (activeServiceIds.length) {
+      // Filter by selected services
+      if (selectedServices.length > 0) {
         const serviceIds = new Set([
           ...(stop.serviceIds ?? []),
           ...(stop.services?.map((service) => service.id) ?? []),
@@ -295,41 +143,56 @@ export const InteractiveBusMap = ({
         ]);
         if (serviceIds.size === 0) return false;
         const hasMatch = Array.from(serviceIds).some((id) =>
-          activeServiceIds.includes(id)
+          selectedServices.includes(id)
         );
         if (!hasMatch) return false;
       }
 
-      if (!normalizedSearch) return true;
-
-      const tokens = [
-        stop.id,
-        getLocalizedValue(stop.name, locale),
-        getLocalizedValue(stop.description, locale),
-      ]
-        .filter(Boolean)
-        .map((value) => value!.toLowerCase());
-
-      return tokens.some((token) => token.includes(normalizedSearch));
+      return true;
     });
-  }, [stops, activeServiceIds, normalizedSearch, locale]);
+  }, [stops, selectedServices, showStops]);
 
   const filteredLanes = useMemo(
     () =>
       lanes.filter((lane) => {
         if (lane.isActive === false) return false;
-        return matchesService(lane.serviceId ?? lane.service?.id ?? null);
+
+        // Filter by selected services
+        if (selectedServices.length > 0) {
+          const laneServiceId = lane.serviceId ?? lane.service?.id;
+          if (!laneServiceId || !selectedServices.includes(laneServiceId)) {
+            return false;
+          }
+        }
+
+        // Filter by selected lanes
+        if (selectedLanes.length > 0) {
+          if (!selectedLanes.includes(lane.id)) {
+            return false;
+          }
+        }
+
+        return true;
       }),
-    [lanes, matchesService]
+    [lanes, selectedServices, selectedLanes]
   );
 
   const filteredRoutes = useMemo(
     () =>
       routes.filter((route) => {
         if (route.isActive === false) return false;
-        return matchesService(route.serviceId ?? route.service?.id ?? null);
+
+        // Filter by selected services
+        if (selectedServices.length > 0) {
+          const routeServiceId = route.serviceId ?? route.service?.id;
+          if (!routeServiceId || !selectedServices.includes(routeServiceId)) {
+            return false;
+          }
+        }
+
+        return true;
       }),
-    [routes, matchesService]
+    [routes, selectedServices]
   );
 
   const activeZones = useMemo(
@@ -352,7 +215,6 @@ export const InteractiveBusMap = ({
   }, [filteredStops, filteredLanes, filteredRoutes, activeZones]);
 
   const renderStopMarkers = () => {
-    if (!layers.stops) return null;
     return filteredStops.map((stop) => {
       const localizedName =
         getLocalizedValue(stop.name, locale) ?? `Stop ${stop.id}`;
@@ -385,12 +247,144 @@ export const InteractiveBusMap = ({
     });
   };
 
+  // Handle starting point click to expand service
+  const handleStartingPointClick = useCallback((serviceId: string) => {
+    setExpandedServices((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(serviceId)) {
+        newSet.delete(serviceId);
+      } else {
+        newSet.add(serviceId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // Group lanes by service for progressive disclosure
+  // Use all lanes (not filtered) for starting points so they're always visible
+  const lanesByService = useMemo(() => {
+    const grouped = new Map<string, MapLane[]>();
+    lanes.forEach((lane) => {
+      if (lane.isActive === false) return;
+      const serviceId = lane.serviceId ?? lane.service?.id ?? "unknown";
+      if (!grouped.has(serviceId)) {
+        grouped.set(serviceId, []);
+      }
+      grouped.get(serviceId)!.push(lane);
+    });
+    return grouped;
+  }, [lanes]);
+
+  // Render starting point markers (always show, even when service is filtered or expanded)
+  const renderStartingPointMarkers = () => {
+    const markers: ReactNode[] = [];
+
+    lanesByService.forEach((serviceLanes, serviceId) => {
+      // Always show starting points, even if service is expanded (for collapse functionality)
+
+      serviceLanes.forEach((lane) => {
+        if (!lane.path?.length) return;
+        const startPoint = lane.path[0];
+        const service = services.find((s) => s.id === serviceId);
+
+        // Create icon from service or use default
+        let icon = defaultMarkerIcon;
+        if (service?.icon?.fileUrl) {
+          try {
+            const size = service.icon.iconSize ?? 32;
+            icon = L.icon({
+              iconUrl: service.icon.fileUrl,
+              iconSize: [size, size],
+              iconAnchor: [
+                service.icon.iconAnchorX ?? size / 2,
+                service.icon.iconAnchorY ?? size,
+              ],
+              popupAnchor: [
+                service.icon.popupAnchorX ?? 0,
+                service.icon.popupAnchorY ?? -size / 2,
+              ],
+            });
+          } catch {
+            // Fallback to default
+          }
+        } else if (typeof window !== "undefined") {
+          // Use default starting marker
+          try {
+            icon = L.icon({
+              iconUrl: "/markers/starting.png",
+              iconSize: [32, 32],
+              iconAnchor: [16, 32],
+              popupAnchor: [0, -32],
+            });
+          } catch {
+            // Fallback
+          }
+        }
+
+        const isExpanded = expandedServices.has(serviceId);
+        markers.push(
+          <Marker
+            key={`start-${lane.id}`}
+            position={startPoint}
+            icon={icon}
+            eventHandlers={{
+              click: () => handleStartingPointClick(serviceId),
+            }}
+          >
+            <Tooltip sticky>
+              {isExpanded
+                ? `${t("ClickToCollapseLanes") || "Click to collapse lanes"} - `
+                : `${t("ClickToShowLanes") || "Click to show lanes"} - `}
+              {getLocalizedValue(service?.name, locale) || serviceId}
+            </Tooltip>
+            <Popup minWidth={320} maxWidth={360}>
+              <TransportServicePopup
+                service={service}
+                serviceId={serviceId}
+                lanes={filteredLanes.filter(
+                  (l) => (l.serviceId ?? l.service?.id) === serviceId
+                )}
+                routes={filteredRoutes.filter(
+                  (r) => (r.serviceId ?? r.service?.id) === serviceId
+                )}
+                stops={filteredStops.filter((stop) => {
+                  const stopServiceIds = new Set([
+                    ...(stop.serviceIds ?? []),
+                    ...(stop.services?.map((s) => s.id) ?? []),
+                    ...(stop.routes
+                      ?.map((route) => route.serviceId)
+                      .filter(Boolean) as string[]),
+                    ...(stop.lanes
+                      ?.map((lane) => lane.serviceId)
+                      .filter(Boolean) as string[]),
+                  ]);
+                  return stopServiceIds.has(serviceId);
+                })}
+              />
+            </Popup>
+          </Marker>
+        );
+      });
+    });
+
+    return markers;
+  };
+
   const renderLanePolylines = () => {
-    if (!layers.lanes) return null;
-    return filteredLanes.map((lane) => {
-      if (!lane.path?.length) return null;
+    const polylines: ReactNode[] = [];
+
+    filteredLanes.forEach((lane) => {
+      if (!lane.path?.length) return;
+
+      const serviceId = lane.serviceId ?? lane.service?.id;
+      const shouldShowLane = !serviceId || expandedServices.has(serviceId);
+
+      if (!shouldShowLane) return; // Only show if service is expanded
+
       const color = lane.color ?? lane.service?.color ?? "#2563eb";
-      return (
+
+      // Render polyline
+      polylines.push(
         <Polyline
           key={lane.id}
           positions={lane.path}
@@ -405,11 +399,63 @@ export const InteractiveBusMap = ({
           </Tooltip>
         </Polyline>
       );
+
+      // Render end point marker if expanded
+      if (shouldShowLane && lane.path.length > 1) {
+        const endPoint = lane.path[lane.path.length - 1];
+        const startPoint = lane.path[0];
+
+        // Only show end marker if different from start
+        if (startPoint[0] !== endPoint[0] || startPoint[1] !== endPoint[1]) {
+          let endIcon = defaultMarkerIcon;
+          const service = services.find((s) => s.id === serviceId);
+
+          if (service?.icon?.fileUrl) {
+            try {
+              const size = service.icon.iconSize ?? 32;
+              endIcon = L.icon({
+                iconUrl: service.icon.fileUrl,
+                iconSize: [size, size],
+                iconAnchor: [
+                  service.icon.iconAnchorX ?? size / 2,
+                  service.icon.iconAnchorY ?? size,
+                ],
+                popupAnchor: [
+                  service.icon.popupAnchorX ?? 0,
+                  service.icon.popupAnchorY ?? -size / 2,
+                ],
+              });
+            } catch {
+              // Fallback
+            }
+          } else if (typeof window !== "undefined") {
+            try {
+              endIcon = L.icon({
+                iconUrl: "/markers/end.png",
+                iconSize: [32, 32],
+                iconAnchor: [16, 32],
+                popupAnchor: [0, -32],
+              });
+            } catch {
+              // Fallback
+            }
+          }
+
+          polylines.push(
+            <Marker key={`end-${lane.id}`} position={endPoint} icon={endIcon}>
+              <Tooltip sticky>
+                End: {getLocalizedValue(lane.name, locale) ?? lane.id}
+              </Tooltip>
+            </Marker>
+          );
+        }
+      }
     });
+
+    return polylines;
   };
 
   const renderRoutePolylines = () => {
-    if (!layers.routes) return null;
     return filteredRoutes.map((route) => {
       if (!route.path?.length) return null;
       const color = route.color ?? route.service?.color ?? "#f97316";
@@ -437,7 +483,6 @@ export const InteractiveBusMap = ({
   };
 
   const renderZonePolygons = () => {
-    if (!layers.zones) return null;
     return activeZones
       .filter((zone) => zone.polygon?.length)
       .map((zone) => (
@@ -460,77 +505,23 @@ export const InteractiveBusMap = ({
 
   return (
     <div
-      className={cn("w-full space-y-4", className)}
+      className={cn("w-full h-full relative overflow-hidden", className)}
       dir={isRTL ? "rtl" : "ltr"}
+      style={{ height: "100%", width: "100%", overflow: "hidden" }}
     >
-      <div className="flex flex-col gap-4 lg:flex-row">
-        <div className="flex-1 space-y-4">
-          <SearchControl value={searchTerm} onChange={setSearchTerm} />
-          <LayerToggleGroup state={layers} onChange={toggleLayer} />
-        </div>
-        <ServiceLegend
-          services={services}
-          activeIds={activeServiceIds}
-          onToggle={toggleService}
-        />
-      </div>
-
-      <div className="relative">
-        <LeafletMap
-          center={initialCenter}
-          zoom={initialZoom}
-          className="h-[620px]"
-        >
-          {bounds && <MapAutoFit bounds={bounds} />}
-          {renderZonePolygons()}
-          {renderLanePolylines()}
-          {renderRoutePolylines()}
-          {renderStopMarkers()}
-        </LeafletMap>
-
-        <div className="pointer-events-none">
-          <Card className="pointer-events-auto absolute bottom-6 left-6 max-w-xs space-y-2 p-4 shadow-2xl">
-            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {t("ActiveFilters")}
-            </div>
-            {activeServiceIds.length ? (
-              <div className="flex flex-wrap gap-2">
-                {activeServiceIds.map((serviceId) => {
-                  const service = serviceMap.get(serviceId);
-                  return (
-                    <Badge
-                      key={serviceId}
-                      variant="secondary"
-                      className="flex items-center gap-1"
-                      style={
-                        service?.color
-                          ? {
-                              backgroundColor: `${service.color}1a`,
-                              color: service.color,
-                            }
-                          : undefined
-                      }
-                    >
-                      {service?.type ?? serviceId}
-                      <button
-                        type="button"
-                        className="ml-1 text-xs"
-                        onClick={() => toggleService(serviceId)}
-                      >
-                        ×
-                      </button>
-                    </Badge>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                {t("ShowingAllServices")}
-              </p>
-            )}
-          </Card>
-        </div>
-      </div>
+      <LeafletMap
+        center={initialCenter}
+        zoom={effectiveZoom}
+        className="h-full w-full"
+      >
+        {/* Only auto-fit if no initial center is provided */}
+        {bounds && !initialCenter && <MapAutoFit bounds={bounds} />}
+        {renderZonePolygons()}
+        {renderStartingPointMarkers()}
+        {renderLanePolylines()}
+        {renderRoutePolylines()}
+        {renderStopMarkers()}
+      </LeafletMap>
     </div>
   );
 };

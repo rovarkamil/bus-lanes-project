@@ -11,6 +11,7 @@ import { usePathname } from "next/navigation";
 import { UserType } from "@prisma/client";
 import { useCallback } from "react";
 import { useTranslation as useDashboardTranslation } from "@/i18n/client";
+import { LayoutDashboard, LogOut } from "lucide-react";
 
 export default function Navbar() {
   const { t, i18n } = useTranslation("Map");
@@ -36,25 +37,25 @@ export default function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/95 text-slate-100 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-blue-200 dark:border-blue-800 bg-blue-100/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-3">
             <div className="relative">
-              <div className="h-12 w-12 rounded-2xl border border-slate-700 bg-slate-900 shadow-lg ring-1 ring-primary/30">
+              <div className="h-12 w-12 rounded-2xl border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-700">
                 <img
                   src="/images/project-logo.png"
                   alt={authT("AppName")}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover rounded-2xl"
                 />
               </div>
-              <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full border border-slate-900 bg-emerald-400 shadow-emerald-500/50"></span>
+              <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-white dark:border-slate-800 bg-emerald-500"></span>
             </div>
             <div className="flex flex-col leading-tight">
-              <span className="text-lg font-semibold tracking-tight">
+              <span className="text-lg font-semibold tracking-tight text-blue-700 dark:text-blue-400">
                 {authT("AppName")}
               </span>
-              <span className="text-[11px] uppercase text-slate-400">
+              <span className="text-[11px] uppercase text-blue-600/70 dark:text-blue-400/70">
                 {t("LiveTransitMap")}
               </span>
             </div>
@@ -68,9 +69,13 @@ export default function Navbar() {
               <Button
                 asChild
                 variant="secondary"
-                className="border border-slate-700 bg-slate-900/80 text-slate-100 hover:bg-slate-800"
+                size="icon"
+                className="border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-600"
+                title={dashboardT("Dashboard")}
               >
-                <Link href="/dashboard">{dashboardT("Dashboard")}</Link>
+                <Link href="/dashboard">
+                  <LayoutDashboard className="h-4 w-4" />
+                </Link>
               </Button>
             )}
 
@@ -78,14 +83,16 @@ export default function Navbar() {
               <Button
                 onClick={handleSignOut}
                 variant="outline"
-                className="border-primary/50 text-primary hover:bg-primary/10"
+                size="icon"
+                className="border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700"
+                title={authT("SignOut")}
               >
-                {authT("SignOut")}
+                <LogOut className="h-4 w-4" />
               </Button>
             ) : (
               <Button
                 asChild
-                className="bg-gradient-to-r from-primary to-indigo-500 text-white shadow-primary/40 hover:opacity-90"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Link href="/login">{authT("LogIn")}</Link>
               </Button>

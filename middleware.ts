@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 export default withAuth(
   async function middleware(req: NextRequest) {
     const token = await getToken({
-      req: req,
+      req,
       secret: process.env.NEXTAUTH_SECRET,
     });
 
@@ -17,13 +17,17 @@ export default withAuth(
     const userType = token.userType as UserType;
     const path = req.nextUrl.pathname;
 
-    // SUPER_ADMIN can access all routes
+    // SUPER_ADMIN can access all routes matched by this middleware
     if (userType === UserType.SUPER_ADMIN) {
       return NextResponse.next();
     }
 
-    // EMPLOYEE can only access /dashboard routes
-    if (userType === UserType.EMPLOYEE && !path.startsWith("/dashboard")) {
+    // EMPLOYEE routes guard: allow dashboard + root landing page
+    if (
+      userType === UserType.EMPLOYEE &&
+      path !== "/" &&
+      !path.startsWith("/dashboard")
+    ) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   },
@@ -36,5 +40,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/"],
+  matcher: ["/dashboard/:path*"],
 };
