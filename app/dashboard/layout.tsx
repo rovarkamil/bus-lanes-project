@@ -1,7 +1,7 @@
 /* eslint-disable-next-line @zohodesk/no-hardcoding/no-hardcoding */
 "use client";
 
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   ChevronLeft,
@@ -24,6 +24,7 @@ import { useSession } from "next-auth/react";
 import { Loader } from "@/components/loader-table";
 import { DashboardRoute, DashboardRouteGroup } from "@/types/dashboard-routes";
 import { StartingLocationButton } from "@/components/starting-location-button";
+import { UserType } from "@prisma/client";
 
 interface SidebarHeaderProps {
   isSidebarOpen: boolean;
@@ -283,6 +284,15 @@ const DashboardLayout: FC<{ children: React.ReactNode }> = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { getAllRoutes } = useDashboardRoutes();
+
+  useEffect(() => {
+    if (
+      status === "authenticated" &&
+      session?.user?.userType === UserType.CLIENT
+    ) {
+      router.replace("/");
+    }
+  }, [router, session?.user?.userType, status]);
 
   return (
     <div className="flex min-h-screen bg-background">

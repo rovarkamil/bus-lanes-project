@@ -29,6 +29,9 @@ import { Bar, BarChart, Cell, XAxis, YAxis } from "recharts";
 import { useFetchDashboard } from "@/hooks/employee-hooks/use-dashboard";
 import { subMonths, format, formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { UserType } from "@prisma/client";
 
 type DistributionDatum = {
   label: string;
@@ -40,6 +43,7 @@ export default function DashboardPage() {
   const { t, i18n } = useTranslation("Dashboard");
   const isRTL = i18n.language !== "en";
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const endDate = new Date();
   const startDate = subMonths(endDate, 3);
@@ -153,6 +157,22 @@ export default function DashboardPage() {
     })) ?? [];
 
   const recentActivity = data?.recentActivity ?? [];
+
+  useEffect(() => {
+    if (
+      status === "authenticated" &&
+      session?.user?.userType === UserType.CLIENT
+    ) {
+      router.replace("/");
+    }
+  }, [router, session?.user?.userType, status]);
+
+  if (
+    status === "authenticated" &&
+    session?.user?.userType === UserType.CLIENT
+  ) {
+    return null;
+  }
 
   if (isLoading) {
     return (

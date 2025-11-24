@@ -1,5 +1,5 @@
 import { Permission, Setting, UserType } from "@prisma/client";
-import { createEmployeeModelRoutes } from "@/utils/createModelRoutes";
+import { createPublicModelRoutes } from "@/utils/createModelRoutes";
 import {
   settingSchema,
   createSettingSchema,
@@ -8,18 +8,12 @@ import {
 } from "@/types/models/setting";
 import { createError } from "@/lib/custom-error-handler";
 
-export const { GET, POST, PUT, DELETE } = createEmployeeModelRoutes({
+export const { GET, POST, PUT, DELETE } = createPublicModelRoutes({
   modelName: "setting",
   schema: settingSchema,
   createSchema: createSettingSchema,
   updateSchema: updateSettingSchema,
   deleteSchema: settingSchema.pick({ id: true }),
-  permissions: {
-    view: Permission.VIEW_DASHBOARD,
-    create: Permission.UPDATE_SETTINGS,
-    update: Permission.UPDATE_SETTINGS,
-    delete: Permission.UPDATE_SETTINGS,
-  },
   fieldConfigs: settingFieldConfigs,
   defaultSort: { field: "key", order: "asc" },
   uniqueFields: ["key"],

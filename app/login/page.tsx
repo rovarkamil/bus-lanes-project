@@ -37,10 +37,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { getIpFromHeaders } from "@/lib/utils/get-ip";
 import { motion } from "framer-motion";
 import { UserType } from "@prisma/client";
+
+type SignupFormState = {
+  name: string;
+  username: string;
+  password: string;
+};
 
 const LogInPage = () => {
   const router = useRouter();
@@ -49,11 +56,20 @@ const LogInPage = () => {
     username: "",
     password: "",
   });
+  const [signupData, setSignupData] = useState<SignupFormState>({
+    name: "",
+    username: "",
+    password: "",
+  });
   const [showPassword, setShowPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSignupLoading, setIsSignupLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const [isCapsLockOn, setIsCapsLockOn] = useState(false);
   const { theme, setTheme } = useTheme();
   const { t, i18n } = useTranslation("Auth");
+  const { t: validationT } = useTranslation("Validation");
 
   // Check session and redirect if already authenticated
   useEffect(() => {
@@ -75,6 +91,32 @@ const LogInPage = () => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
+  const handleSignupChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setSignupData((prev) => ({
+      ...prev,
+      [name as keyof SignupFormState]: value,
+    }));
+  };
+
+  const redirectAfterAuth = async () => {
+    if (typeof session.update !== "function") {
+      router.push("/dashboard");
+      return;
+    }
+    const updatedSession = await session.update();
+
+    const userType = updatedSession?.user?.userType as UserType;
+    switch (userType) {
+      case UserType.SUPER_ADMIN:
+      case UserType.EMPLOYEE:
+        router.push("/dashboard");
+        break;
+      default:
+        router.push("/");
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -90,34 +132,64 @@ const LogInPage = () => {
 
       if (response?.error) {
         toast.error(t("InvalidCredentials"));
-        setIsLoading(false);
         return;
       }
 
       toast.success(t("LogInSuccessful"));
-
-      // Get user type from session
-      const updatedSession = await session.update();
-      const userType = updatedSession?.user?.userType as UserType;
-
-      // Role-based redirects
-      switch (userType) {
-        case UserType.SUPER_ADMIN:
-        case UserType.EMPLOYEE:
-          router.push("/dashboard");
-          break;
-        default:
-          router.push("/dashboard");
-      }
+      await redirectAfterAuth();
     } catch (error) {
       console.error(error);
       toast.error(t("LoginFailed"));
+    } finally {
       setIsLoading(false);
     }
   };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const toggleSignupPasswordVisibility = () => {
+    setShowSignupPassword(!showSignupPassword);
+  };
+
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSignupLoading(true);
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(signupData),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        toast.error(payload?.message ?? validationT("UnexpectedError"));
+        return;
+      }
+
+      const signinResponse = await signIn("credentials", {
+        username: signupData.username,
+        password: signupData.password,
+        redirect: false,
+      });
+
+      if (signinResponse?.error) {
+        toast.error(t("InvalidCredentials"));
+        return;
+      }
+
+      toast.success(t("LogInSuccessful"));
+      await redirectAfterAuth();
+    } catch (error) {
+      console.error(error);
+      toast.error(validationT("UnexpectedError"));
+    } finally {
+      setIsSignupLoading(false);
+    }
   };
 
   const handleKeyPress = (e: KeyboardEvent) => {
@@ -135,6 +207,7 @@ const LogInPage = () => {
   }, []);
 
   // Add language options
+  const isLoginTab = activeTab === "login";
   const languages = [
     { code: "en", label: "English" },
     { code: "ar", label: "العربية" },
@@ -245,101 +318,255 @@ const LogInPage = () => {
                   {t("WelcomeTo")} {t("AppName")}
                 </CardTitle>
                 <CardDescription className="text-center text-base text-muted-foreground/80">
-                  {t("PleaseLogIn")}
+                  {isLoginTab ? t("PleaseLogIn") : t("CreateAccount")}
                 </CardDescription>
               </CardHeader>
 
               <CardContent>
-                <form onSubmit={handleLogin} className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="username" className="text-sm font-medium">
-                        {t("Username")}
-                      </Label>
-                      <div className="relative group">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-primary transition-colors duration-300">
-                          <User className="h-5 w-5" />
-                        </div>
-                        <Input
-                          id="username"
-                          type="text"
-                          placeholder={t("EnterUsername")}
-                          value={formData.username}
-                          onChange={handleChange}
-                          className="pl-10 bg-background/50 border-border/50 focus:border-primary/70 ring-primary/20 focus:ring-2 transition-all duration-300 h-12 rounded-xl"
-                        />
-                      </div>
-                    </div>
+                <Tabs
+                  value={activeTab}
+                  onValueChange={(value) =>
+                    setActiveTab(value as "login" | "signup")
+                  }
+                  className="space-y-6"
+                >
+                  <TabsList className="grid grid-cols-2 h-12 rounded-2xl bg-muted/60 p-1">
+                    <TabsTrigger
+                      value="login"
+                      className="rounded-xl text-sm font-semibold data-[state=active]:bg-background data-[state=active]:text-primary"
+                    >
+                      {t("LogIn")}
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="signup"
+                      className="rounded-xl text-sm font-semibold data-[state=active]:bg-background data-[state=active]:text-primary"
+                    >
+                      {t("CreateAccount")}
+                    </TabsTrigger>
+                  </TabsList>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="password" className="text-sm font-medium">
-                        {t("Password")}
-                      </Label>
-                      <div className="relative group">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-primary transition-colors duration-300">
-                          <Lock className="h-5 w-5" />
+                  <TabsContent value="login" className="mt-6 space-y-6">
+                    <form onSubmit={handleLogin} className="space-y-6">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="username"
+                            className="text-sm font-medium"
+                          >
+                            {t("Username")}
+                          </Label>
+                          <div className="relative group">
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-primary transition-colors duration-300">
+                              <User className="h-5 w-5" />
+                            </div>
+                            <Input
+                              id="username"
+                              type="text"
+                              placeholder={t("EnterUsername")}
+                              value={formData.username}
+                              onChange={handleChange}
+                              className="pl-10 bg-background/50 border-border/50 focus:border-primary/70 ring-primary/20 focus:ring-2 transition-all duration-300 h-12 rounded-xl"
+                            />
+                          </div>
                         </div>
-                        <Input
-                          id="password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder={t("EnterPassword")}
-                          value={formData.password}
-                          onChange={handleChange}
-                          className="pl-10 pr-12 bg-background/50 border-border/50 focus:border-primary/70 ring-primary/20 focus:ring-2 transition-all duration-300 h-12 rounded-xl"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-1 top-1 h-10 w-10 rounded-lg hover:bg-background/80"
-                          onClick={togglePasswordVisibility}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground/60" />
-                          ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground/60" />
+
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="password"
+                            className="text-sm font-medium"
+                          >
+                            {t("Password")}
+                          </Label>
+                          <div className="relative group">
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-primary transition-colors duration-300">
+                              <Lock className="h-5 w-5" />
+                            </div>
+                            <Input
+                              id="password"
+                              type={showPassword ? "text" : "password"}
+                              placeholder={t("EnterPassword")}
+                              value={formData.password}
+                              onChange={handleChange}
+                              className="pl-10 pr-12 bg-background/50 border-border/50 focus:border-primary/70 ring-primary/20 focus:ring-2 transition-all duration-300 h-12 rounded-xl"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="absolute right-1 top-1 h-10 w-10 rounded-lg hover:bg-background/80"
+                              onClick={togglePasswordVisibility}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4 text-muted-foreground/60" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-muted-foreground/60" />
+                              )}
+                            </Button>
+                          </div>
+                          {isCapsLockOn && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -5 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="mt-2 flex items-center gap-2 text-sm text-yellow-500 dark:text-yellow-400"
+                            >
+                              <AlertTriangle className="h-4 w-4" />
+                              <span>{t("CapsLockOn")}</span>
+                            </motion.div>
                           )}
-                        </Button>
+                        </div>
                       </div>
-                      {isCapsLockOn && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="flex items-center gap-2 text-yellow-500 dark:text-yellow-400 text-sm mt-2"
-                        >
-                          <AlertTriangle className="h-4 w-4" />
-                          <span>{t("CapsLockOn")}</span>
-                        </motion.div>
-                      )}
-                    </div>
-                  </div>
 
-                  <Button
-                    type="submit"
-                    className={cn(
-                      "w-full h-12 font-medium text-base transition-all duration-300",
-                      "bg-primary hover:bg-primary/90 rounded-xl",
-                      "shadow-lg hover:shadow-primary/30 shadow-primary/20",
-                      "flex items-center justify-center gap-2",
-                      "group"
-                    )}
-                    disabled={
-                      !formData.username || !formData.password || isLoading
-                    }
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        {t("SigningIn")}
-                      </>
-                    ) : (
-                      <>
-                        {t("LogIn")}
-                        <ArrowRight className="h-4 w-4 ml-1 transition-transform duration-300 group-hover:translate-x-1" />
-                      </>
-                    )}
-                  </Button>
-                </form>
+                      <Button
+                        type="submit"
+                        className={cn(
+                          "w-full h-12 font-medium text-base transition-all duration-300",
+                          "bg-primary hover:bg-primary/90 rounded-xl",
+                          "shadow-lg hover:shadow-primary/30 shadow-primary/20",
+                          "flex items-center justify-center gap-2",
+                          "group"
+                        )}
+                        disabled={
+                          !formData.username || !formData.password || isLoading
+                        }
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            {t("SigningIn")}
+                          </>
+                        ) : (
+                          <>
+                            {t("LogIn")}
+                            <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                          </>
+                        )}
+                      </Button>
+                    </form>
+                  </TabsContent>
+
+                  <TabsContent value="signup" className="mt-6 space-y-6">
+                    <form onSubmit={handleSignup} className="space-y-6">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="signup-name"
+                            className="text-sm font-medium"
+                          >
+                            {t("Name", { defaultValue: "Name" })}
+                          </Label>
+                          <div className="relative group">
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-primary transition-colors duration-300">
+                              <User className="h-5 w-5" />
+                            </div>
+                            <Input
+                              id="signup-name"
+                              name="name"
+                              type="text"
+                              placeholder={t("Name", { defaultValue: "Name" })}
+                              value={signupData.name}
+                              onChange={handleSignupChange}
+                              className="pl-10 bg-background/50 border-border/50 focus:border-primary/70 ring-primary/20 focus:ring-2 transition-all duration-300 h-12 rounded-xl"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="signup-username"
+                            className="text-sm font-medium"
+                          >
+                            {t("Username")}
+                          </Label>
+                          <div className="relative group">
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-primary transition-colors duration-300">
+                              <User className="h-5 w-5" />
+                            </div>
+                            <Input
+                              id="signup-username"
+                              name="username"
+                              type="text"
+                              placeholder={t("EnterUsername")}
+                              value={signupData.username}
+                              onChange={handleSignupChange}
+                              className="pl-10 bg-background/50 border-border/50 focus:border-primary/70 ring-primary/20 focus:ring-2 transition-all duration-300 h-12 rounded-xl"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="signup-password"
+                            className="text-sm font-medium"
+                          >
+                            {t("Password")}
+                          </Label>
+                          <div className="relative group">
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-primary transition-colors duration-300">
+                              <Lock className="h-5 w-5" />
+                            </div>
+                            <Input
+                              id="signup-password"
+                              name="password"
+                              type={showSignupPassword ? "text" : "password"}
+                              placeholder={t("EnterPassword")}
+                              value={signupData.password}
+                              onChange={handleSignupChange}
+                              className="pl-10 pr-12 bg-background/50 border-border/50 focus:border-primary/70 ring-primary/20 focus:ring-2 transition-all duration-300 h-12 rounded-xl"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="absolute right-1 top-1 h-10 w-10 rounded-lg hover:bg-background/80"
+                              onClick={toggleSignupPasswordVisibility}
+                            >
+                              {showSignupPassword ? (
+                                <EyeOff className="h-4 w-4 text-muted-foreground/60" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-muted-foreground/60" />
+                              )}
+                            </Button>
+                          </div>
+                          {isCapsLockOn && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -5 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="mt-2 flex items-center gap-2 text-sm text-yellow-500 dark:text-yellow-400"
+                            >
+                              <AlertTriangle className="h-4 w-4" />
+                              <span>{t("CapsLockOn")}</span>
+                            </motion.div>
+                          )}
+                        </div>
+                      </div>
+
+                      <Button
+                        type="submit"
+                        className={cn(
+                          "w-full h-12 font-medium text-base transition-all duration-300",
+                          "bg-primary hover:bg-primary/90 rounded-xl",
+                          "shadow-lg hover:shadow-primary/30 shadow-primary/20",
+                          "flex items-center justify-center gap-2"
+                        )}
+                        disabled={
+                          !signupData.name ||
+                          !signupData.username ||
+                          !signupData.password ||
+                          isSignupLoading
+                        }
+                      >
+                        {isSignupLoading ? (
+                          <>
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            {t("CreatingAccount")}
+                          </>
+                        ) : (
+                          <>{t("CreateAccount")}</>
+                        )}
+                      </Button>
+                    </form>
+                  </TabsContent>
+                </Tabs>
               </CardContent>
 
               <CardFooter className="flex flex-col gap-4 pb-8">

@@ -4,12 +4,12 @@ import { Lato } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./_providers";
 import { ThemeProvider } from "next-themes";
-import { Suspense } from "react";
 import { getLocale } from "@/i18n/server";
 import { LocaleProvider } from "../components/locale-provder";
 import localFont from "next/font/local";
 import { ThemeInitializer } from "./theme-init";
 import { SettingsInitializer } from "./setting-init";
+import Navbar from "@/components/client/navbar";
 
 const lato = Lato({
   subsets: ["latin"],
@@ -75,7 +75,10 @@ export default async function RootLayout({
           <Providers>
             <LocaleProvider value={locale}>
               <SettingsInitializer />
-              <Suspense>{children}</Suspense>
+              <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900">
+                <Navbar />
+                {children}
+              </div>
             </LocaleProvider>
             <ThemeInitializer />
           </Providers>

@@ -9,6 +9,9 @@ import { v4 as uuidv4 } from "uuid";
 import { getIpFromHeaders } from "./utils/get-ip";
 import { Headers } from "next/dist/compiled/@edge-runtime/primitives";
 
+export const getLandingPath = (userType?: UserType | null) =>
+  userType === UserType.CLIENT ? "/" : "/dashboard";
+
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
