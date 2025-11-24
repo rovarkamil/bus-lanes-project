@@ -19,8 +19,9 @@ export const Pagination: FC<{
   const isRTL = i18n.language !== "en";
 
   const getPageRange = () => {
-    // On mobile, show fewer pages
-    const delta = window.innerWidth < 640 ? 1 : 2;
+    const isMobileViewport =
+      typeof window !== "undefined" ? window.innerWidth < 640 : false;
+    const delta = isMobileViewport ? 1 : 2;
     const range = [];
     const rangeWithDots = [];
 

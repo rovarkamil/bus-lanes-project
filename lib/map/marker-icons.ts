@@ -9,7 +9,16 @@ const withFallback = (factory: () => Icon): Icon => {
     return factory();
   } catch (error) {
     console.warn("[marker-icons] Falling back to Leaflet default icon.", error);
-    return new L.Icon.Default();
+    return L.icon({
+      iconUrl: DEFAULT_MARKER_URL,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      tooltipAnchor: [1, -34],
+      shadowUrl,
+      shadowSize: [41, 41],
+      shadowAnchor: [12, 41],
+    });
   }
 };
 
@@ -44,4 +53,3 @@ export const createDefaultMarkerIcon = (): Icon | undefined => {
     })
   );
 };
-

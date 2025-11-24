@@ -1,29 +1,55 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { ReactNode, useMemo } from "react";
-import { MapContainer, MapContainerProps, TileLayer } from "react-leaflet";
-import type { LatLngExpression } from "leaflet";
-import L from "leaflet";
+import type { LatLngExpression, IconOptions } from "leaflet";
+import type { MapContainerProps } from "react-leaflet";
 import { cn } from "@/lib/utils";
 import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 
-// Ensure default marker assets load correctly when bundled by Next.js.
-if (typeof window !== "undefined") {
-  const iconOptions = {
-    iconUrl,
-    iconRetinaUrl,
-    shadowUrl,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    tooltipAnchor: [16, -28],
-    shadowSize: [41, 41],
-  };
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+) as unknown as typeof import("react-leaflet").MapContainer;
 
-  L.Icon.Default.mergeOptions(iconOptions);
-}
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+) as unknown as typeof import("react-leaflet").TileLayer;
+
+let hasConfiguredDefaultIcon = false;
+
+let configureIconPromise: Promise<void> | null = null;
+
+const ensureDefaultIcon = () => {
+  if (hasConfiguredDefaultIcon || typeof window === "undefined") {
+    return;
+  }
+
+  if (!configureIconPromise) {
+    const iconOptions: IconOptions = {
+      iconUrl,
+      iconRetinaUrl,
+      shadowUrl,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      tooltipAnchor: [16, -28],
+      shadowSize: [41, 41],
+    };
+
+    configureIconPromise = import("leaflet")
+      .then((Leaflet) => {
+        Leaflet.Icon.Default.mergeOptions(iconOptions);
+        hasConfiguredDefaultIcon = true;
+      })
+      .catch(() => {
+        configureIconPromise = null;
+      });
+  }
+};
 
 type LeafletMapProps = {
   center?: LatLngExpression;
@@ -43,6 +69,8 @@ export function LeafletMap({
   tileAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   ...containerProps
 }: LeafletMapProps) {
+  ensureDefaultIcon();
+
   const memoizedCenter = useMemo(() => center, [center]);
 
   return (

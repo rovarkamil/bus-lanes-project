@@ -78,14 +78,14 @@ export const mapTransportService = (
   };
 };
 
-export const mapLaneSummary = (
-  lane: BusLaneWithRelations
-): MapLaneSummary => ({
+export const mapLaneSummary = (lane: BusLaneWithRelations): MapLaneSummary => ({
   id: lane.id,
   name: toLanguageContent(lane.name),
   color: lane.color ?? undefined,
   serviceId: lane.serviceId ?? undefined,
-  service: mapTransportService(lane.service),
+  service: mapTransportService(
+    lane.service as TransportServiceWithRelations | null
+  ),
 });
 
 export const mapLane = (lane: BusLaneWithRelations): MapLane => ({
@@ -105,7 +105,9 @@ export const mapRouteSummary = (
   direction: route.direction ?? undefined,
   color: route.service?.color ?? undefined,
   serviceId: route.serviceId ?? undefined,
-  service: mapTransportService(route.service),
+  service: mapTransportService(
+    route.service as TransportServiceWithRelations | null
+  ),
 });
 
 export const mapRoute = (route: BusRouteWithRelations): MapRoute => ({
@@ -187,7 +189,7 @@ export const mapStop = (
     lanes: laneSummaries,
     routes: routeSummaries,
     amenities,
-    isActive: stop.isActive ?? true,
+    isActive: stop.deletedAt ? false : true,
   };
 };
 
@@ -210,4 +212,3 @@ export const transformToMapDataPayload = (
     zones: zones.map(mapZone),
   };
 };
-

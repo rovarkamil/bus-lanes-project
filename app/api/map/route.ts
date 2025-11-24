@@ -22,7 +22,6 @@ import {
   MapZone,
 } from "@/types/map";
 
-export const revalidate = 60;
 
 type ServiceWithName = Prisma.TransportServiceGetPayload<{
   include: { name: true };

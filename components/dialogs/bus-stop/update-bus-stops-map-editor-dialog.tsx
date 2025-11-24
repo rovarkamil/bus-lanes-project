@@ -22,13 +22,7 @@ import { useFetchZones } from "@/hooks/employee-hooks/use-zone";
 import { useFetchMapIcons } from "@/hooks/employee-hooks/use-map-icon";
 import { useFetchBusLanes } from "@/hooks/employee-hooks/use-bus-lane";
 import { useFetchBusRoutes } from "@/hooks/employee-hooks/use-bus-route";
-import {
-  Home,
-  Sofa,
-  Lightbulb,
-  Accessibility,
-  Radio,
-} from "lucide-react";
+import { Home, Sofa, Lightbulb, Accessibility, Radio } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface UpdateBusStopsMapEditorDialogProps {
@@ -103,7 +97,6 @@ export const UpdateBusStopsMapEditorDialog: FC<
           isAccessible: stop.isAccessible,
           hasRealTimeInfo: stop.hasRealTimeInfo,
           order: stop.order || undefined,
-          isActive: stop.isActive ?? true,
         }))
       );
     }
@@ -115,9 +108,7 @@ export const UpdateBusStopsMapEditorDialog: FC<
       for (let i = 0; i < stopForms.length; i++) {
         const form = stopForms[i];
         if (!form.nameFields.en.trim()) {
-          toast.error(
-            t("UpdateDialog.NameRequired", { stopNumber: i + 1 })
-          );
+          toast.error(t("UpdateDialog.NameRequired", { stopNumber: i + 1 }));
           return;
         }
         if (
@@ -425,7 +416,9 @@ export const UpdateBusStopsMapEditorDialog: FC<
                     : "bg-background"
                 )}
                 onClick={() =>
-                  handleStopFormChange(index, { hasLighting: !form.hasLighting })
+                  handleStopFormChange(index, {
+                    hasLighting: !form.hasLighting,
+                  })
                 }
               >
                 <div className="flex items-center gap-2">
@@ -530,4 +523,3 @@ export const UpdateBusStopsMapEditorDialog: FC<
     </CustomDialog>
   );
 };
-
