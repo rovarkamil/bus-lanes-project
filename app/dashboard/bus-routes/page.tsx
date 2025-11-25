@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState, useMemo } from "react";
 import { Permission } from "@prisma/client";
 import {
   BusRouteWithRelations,
@@ -35,20 +35,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { ConfirmationDialog } from "@/components/data-table/confirmation-dialog";
 import { cn, hasPermission } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "@/i18n/client";
 import { useModelOperations } from "@/hooks/use-model-operations";
-import { Column, ensureIndexColumn } from "@/types/data-table";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { ensureIndexColumn } from "@/types/data-table";
 
 const BusRoutesPage = () => {
   const { t, i18n } = useTranslation("BusRoutes");
@@ -109,94 +100,8 @@ const BusRoutesPage = () => {
   });
 
   const columns = useMemo(() => {
-    const actionColumn: Column<BusRouteWithRelations> = {
-      key: "actions",
-      label: t("Table.Actions"),
-      sortable: false,
-      className: "w-[120px]",
-      render: (route) => {
-        const canView = hasPermission(session, Permission.VIEW_BUS_ROUTES);
-        const canEdit = hasPermission(session, Permission.UPDATE_BUS_ROUTE);
-        const canDelete = hasPermission(session, Permission.DELETE_BUS_ROUTE);
-
-        return (
-          <div className="flex items-center gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSelectedRoute(route);
-                      setIsViewDialogOpen(true);
-                    }}
-                    disabled={!canView}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t("Actions.View")}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSelectedRoute(route);
-                      setIsUpdateDialogOpen(true);
-                    }}
-                    disabled={!canEdit}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t("Actions.Edit")}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <ConfirmationDialog
-              title={t("Actions.DeleteConfirmTitle")}
-              message={t("Actions.DeleteConfirmMessage")}
-              onConfirm={() => handleDelete(route.id)}
-              confirmLabel={
-                isDeleting ? t("Actions.Deleting") : t("Actions.Delete")
-              }
-              cancelLabel={t("Common.Cancel")}
-              variant="destructive"
-              disabled={!canDelete || isDeleting}
-              isRtl={isRTL}
-            >
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive"
-                      disabled={!canDelete}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t("Actions.Delete")}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </ConfirmationDialog>
-          </div>
-        );
-      },
-    };
-
-    return ensureIndexColumn([
-      ...busRouteColumns(t, tTransportServices),
-      actionColumn,
-    ]);
-  }, [session, isDeleting, isRTL, handleDelete, t, tTransportServices]);
+    return ensureIndexColumn(busRouteColumns(t, tTransportServices));
+  }, [t, tTransportServices]);
 
   const handleCreateSuccess = () => {
     setIsCreateDialogOpen(false);
@@ -317,10 +222,19 @@ const BusRoutesPage = () => {
                                 handlers: {
                                   setSelectedItem: (item) =>
                                     setSelectedRoute(item),
-                                  setIsViewDialogOpen: setIsViewDialogOpen,
+                                  setIsViewDialogOpen: (isOpen: boolean) => {
+                                    if (isOpen) setIsViewDialogOpen(true);
+                                  },
                                   handleOpenUpdateDialog: (item) => {
-                                    setSelectedRoute(item);
-                                    setIsUpdateDialogOpen(true);
+                                    if (
+                                      hasPermission(
+                                        session,
+                                        Permission.UPDATE_BUS_ROUTE
+                                      )
+                                    ) {
+                                      setSelectedRoute(item);
+                                      setIsUpdateDialogOpen(true);
+                                    }
                                   },
                                   handleDelete,
                                   isRtl: isRTL,
