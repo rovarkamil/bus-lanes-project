@@ -17,6 +17,12 @@ This document captures the latest round of improvements for the public map filte
 - Each transport service row shows its icon/color chip and type, while lanes display their stroke color for at-a-glance recognition.
 - Section headers gained icons (`Compass`, `Layers3`, `MapPin`), counts, and one-tap “Show all / Clear all” controls.
 
+### 2.1 Map Style Popover
+
+- Introduced a dedicated `MapStylePopover` floating beside the filter button so users can swap basemaps without digging through filters.
+- Added extra presets (Minimal, Contrast, Terrain, Detailed) powered by the new `lib/map/tile-styles.ts` catalog—each label-free and tuned for different contrast levels so the “Minimal” option isn’t the only choice.
+- The selection still persists with the rest of the filter preferences and drives both the public map and the admin map editor so what you preview is what you edit.
+
 ### 3. Correct Visibility Logic
 
 - Filters default to “all checked” when the map loads, satisfying the requirement that nothing is hidden by default.

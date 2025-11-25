@@ -75,6 +75,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { DEFAULT_MAP_STYLE, MAP_TILE_STYLES } from "@/lib/map/tile-styles";
 
 const DEFAULT_CENTER: LatLngExpression = [36.1911, 44.0092];
 const CLOSING_POINT_THRESHOLD = 0.0001; // ~11 meters at equator
@@ -1318,7 +1319,10 @@ export const MapEditor = ({
                 className="h-full w-full"
               >
                 <MapInstanceTracker onMapReady={handleMapCreated} />
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <TileLayer
+                  url={MAP_TILE_STYLES[DEFAULT_MAP_STYLE].url}
+                  attribution={MAP_TILE_STYLES[DEFAULT_MAP_STYLE].attribution}
+                />
                 <ExistingLayers
                   stops={data?.stops ?? []}
                   lanes={data?.lanes ?? []}

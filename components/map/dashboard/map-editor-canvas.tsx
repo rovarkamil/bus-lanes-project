@@ -59,7 +59,11 @@ interface DraftStop {
   id: string;
   latitude: number;
   longitude: number;
-  name?: string;
+  name?: {
+    en: string;
+    ar?: string | null;
+    ckb?: string | null;
+  };
 }
 
 interface MapEditorCanvasProps {
@@ -290,7 +294,7 @@ export function MapEditorCanvas({
                 },
               }}
             >
-              <Tooltip sticky>{stop.name || "Draft Stop"}</Tooltip>
+              <Tooltip sticky>{stop.name?.en || "Draft Stop"}</Tooltip>
             </Marker>
           );
         })}

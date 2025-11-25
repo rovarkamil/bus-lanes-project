@@ -141,6 +141,10 @@ export interface MapEditorStopDraft {
   isActive?: boolean;
 }
 
+export interface MapEditorStopDraftWithId extends MapEditorStopDraft {
+  id: string;
+}
+
 export interface CreateBusStopsMapEditorData {
   stops: MapEditorStopDraft[];
 }

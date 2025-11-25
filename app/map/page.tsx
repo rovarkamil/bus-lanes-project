@@ -9,6 +9,8 @@ import { useSettingsStore } from "@/lib/stores/settings-store";
 import { settingsMap } from "@/lib/settings";
 import { CoordinateTuple, MapFocusPoint } from "@/types/map";
 import { MapFilterPopover } from "@/components/map/public/map-filter-popover";
+import { DEFAULT_MAP_STYLE, MapBaseStyle } from "@/lib/map/tile-styles";
+import { MapStylePopover } from "@/components/map/public/map-style-popover";
 
 const STARTING_POSITION_CACHE_KEY = "map-starting-position";
 
@@ -29,6 +31,7 @@ type StoredFilters = {
   services: string[];
   lanes: string[];
   showStops: boolean;
+  mapStyle: MapBaseStyle;
 };
 
 const FILTER_PREFERENCES_KEY = "map-filters-preferences-v1";
@@ -44,6 +47,7 @@ const MapPage = () => {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedLanes, setSelectedLanes] = useState<string[]>([]);
   const [showStops, setShowStops] = useState(true);
+  const [mapStyle, setMapStyle] = useState<MapBaseStyle>(DEFAULT_MAP_STYLE);
   const [filtersInitialized, setFiltersInitialized] = useState(false);
   const servicesRef = useRef<string[]>([]);
   const lanesRef = useRef<string[]>([]);
@@ -157,6 +161,7 @@ const MapPage = () => {
     setSelectedServices(serviceSelection);
     setSelectedLanes(laneSelection);
     setShowStops(stored?.showStops ?? true);
+    setMapStyle(stored?.mapStyle ?? DEFAULT_MAP_STYLE);
     setFiltersInitialized(true);
   }, [payload, filtersInitialized]);
 
@@ -196,9 +201,16 @@ const MapPage = () => {
       services: selectedServices,
       lanes: selectedLanes,
       showStops,
+      mapStyle,
     };
     localStorage.setItem(FILTER_PREFERENCES_KEY, JSON.stringify(data));
-  }, [selectedServices, selectedLanes, showStops, filtersInitialized]);
+  }, [
+    selectedServices,
+    selectedLanes,
+    showStops,
+    mapStyle,
+    filtersInitialized,
+  ]);
 
   const focusOnPosition = useCallback(
     (position: CoordinateTuple, zoom = 16) => {
@@ -287,6 +299,7 @@ const MapPage = () => {
             showStops={showStops}
             className="h-full w-full"
             focusPoint={focusPoint}
+            mapStyle={mapStyle}
             onViewportChange={(center) => {
               if (typeof window === "undefined") return;
               try {
@@ -311,6 +324,7 @@ const MapPage = () => {
             onServiceFocus={handleServiceFocus}
             onLaneFocus={handleLaneFocus}
           />
+          <MapStylePopover value={mapStyle} onChange={setMapStyle} />
         </>
       )}
     </main>

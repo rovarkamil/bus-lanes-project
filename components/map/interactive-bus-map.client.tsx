@@ -39,6 +39,11 @@ import {
   createDefaultMarkerIcon,
   createStopMarkerIcon,
 } from "@/lib/map/marker-icons";
+import {
+  DEFAULT_MAP_STYLE,
+  MAP_TILE_STYLES,
+  MapBaseStyle,
+} from "@/lib/map/tile-styles";
 
 const DEFAULT_CENTER: LatLngExpression = [36.1911, 44.0092];
 const DEFAULT_ZOOM = 13;
@@ -127,6 +132,7 @@ export interface InteractiveBusMapProps {
   showStops?: boolean;
   focusPoint?: MapFocusPoint | null;
   onViewportChange?: (center: CoordinateTuple, zoom: number) => void;
+  mapStyle?: MapBaseStyle;
 }
 
 export const InteractiveBusMap = ({
@@ -146,6 +152,7 @@ export const InteractiveBusMap = ({
   showStops = true,
   focusPoint = null,
   onViewportChange,
+  mapStyle = DEFAULT_MAP_STYLE,
 }: InteractiveBusMapProps) => {
   // Use higher zoom if initialCenter is provided (from settings)
   const effectiveZoom = useMemo(() => {
@@ -166,6 +173,10 @@ export const InteractiveBusMap = ({
   const locale = useLocale();
   const stopMarkerIcon = useMemo(() => createStopMarkerIcon(), []);
   const defaultMarkerIcon = useMemo(() => createDefaultMarkerIcon(), []);
+  const tileStyle = useMemo(
+    () => MAP_TILE_STYLES[mapStyle] ?? MAP_TILE_STYLES[DEFAULT_MAP_STYLE],
+    [mapStyle]
+  );
 
   // Progressive lane disclosure: track which services/lanes are expanded
   const [expandedServices, setExpandedServices] = useState<Set<string>>(
@@ -603,6 +614,8 @@ export const InteractiveBusMap = ({
         center={initialCenter}
         zoom={effectiveZoom}
         className="h-full w-full"
+        tileUrl={tileStyle.url}
+        tileAttribution={tileStyle.attribution}
       >
         {/* Only auto-fit if no initial center is provided */}
         {bounds && !initialCenter && <MapAutoFit bounds={bounds} />}

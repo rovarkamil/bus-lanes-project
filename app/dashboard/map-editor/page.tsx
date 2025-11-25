@@ -9,6 +9,11 @@ import { useTranslation } from "@/i18n/client";
 import { PageHeader } from "@/components/page-header";
 // import { MapIconWithRelations } from "@/types/models/map-icon";
 import { CoordinateTuple, MapDataPayload } from "@/types/map";
+import {
+  MapEditorStopDraft,
+  MapEditorStopDraftWithId,
+  BusStopWithRelations,
+} from "@/types/models/bus-stop";
 import { MapEditorLaneDraft } from "@/types/models/bus-lane";
 import type { MapControllerHandle } from "@/components/map/dashboard/map-editor-canvas";
 import { useSettingsStore } from "@/lib/stores/settings-store";
@@ -66,6 +71,30 @@ const MapEditorSidebar = dynamic(
 //     ssr: false,
 //   }
 // );
+
+const CreateBusStopsMapEditorDialog = dynamic(
+  () =>
+    import(
+      "@/components/dialogs/bus-stop/create-bus-stops-map-editor-dialog"
+    ).then((mod) => ({
+      default: mod.CreateBusStopsMapEditorDialog,
+    })),
+  {
+    ssr: false,
+  }
+);
+
+const UpdateBusStopsMapEditorDialog = dynamic(
+  () =>
+    import(
+      "@/components/dialogs/bus-stop/update-bus-stops-map-editor-dialog"
+    ).then((mod) => ({
+      default: mod.UpdateBusStopsMapEditorDialog,
+    })),
+  {
+    ssr: false,
+  }
+);
 
 const MAX_DRAFT_LANES = 3;
 
@@ -308,17 +337,11 @@ export default function MapEditorPage() {
     longitude: number;
   } | null>(null);
 
-  // Draft stops state
-  interface DraftStop {
-    id: string;
-    latitude: number;
-    longitude: number;
-    name?: string;
-  }
-  const [draftStops, setDraftStops] = useState<DraftStop[]>([]);
+  type DraftStopState = MapEditorStopDraftWithId;
+  const [draftStops, setDraftStops] = useState<DraftStopState[]>([]);
 
   // Undo/Redo history for stops
-  const [stopHistory, setStopHistory] = useState<DraftStop[][]>([[]]);
+  const [stopHistory, setStopHistory] = useState<DraftStopState[][]>([[]]);
   const [stopHistoryIndex, setStopHistoryIndex] = useState(0);
 
   // Delete hooks
@@ -326,6 +349,18 @@ export default function MapEditorPage() {
 
   // Map controller ref for programmatic control
   const mapControllerRef = useRef<MapControllerHandle>(null);
+
+  const [isCreateStopsDialogOpen, setIsCreateStopsDialogOpen] = useState(false);
+  const [createStopsPayload, setCreateStopsPayload] = useState<
+    MapEditorStopDraft[]
+  >([]);
+  const [isUpdateStopsDialogOpen, setIsUpdateStopsDialogOpen] = useState(false);
+  const [updateStopsPayload, setUpdateStopsPayload] = useState<
+    BusStopWithRelations[]
+  >([]);
+  const [draftStopIdsInFlight, setDraftStopIdsInFlight] = useState<string[]>(
+    []
+  );
 
   // Pan to location callback
   const handlePanToLocation = useCallback(
@@ -410,7 +445,7 @@ export default function MapEditorPage() {
   );
 
   const saveStopHistory = useCallback(
-    (stops: DraftStop[], skipIfUndoRedo = true) => {
+    (stops: DraftStopState[], skipIfUndoRedo = true) => {
       if (skipIfUndoRedo && isUndoRedoRef.current) {
         return;
       }
@@ -596,7 +631,7 @@ export default function MapEditorPage() {
   ]);
 
   const handleAddDraftStop = (position: CoordinateTuple) => {
-    const newStop: DraftStop = {
+    const newStop: DraftStopState = {
       id: `draft-stop-${Date.now()}`,
       latitude: position[0],
       longitude: position[1],
@@ -605,6 +640,93 @@ export default function MapEditorPage() {
     setDraftStops(newStops);
     saveStopHistory(newStops, false); // Save history immediately for new stop
   };
+
+  const handleSaveDraftStops = useCallback(
+    (stops: DraftStopState[]) => {
+      if (!stops.length) {
+        toast.error(
+          t("NoDraftStops", {
+            defaultValue: "There are no draft stops to save.",
+          })
+        );
+        return;
+      }
+
+      const newDrafts = stops.filter((stop) =>
+        stop.id.startsWith("draft-stop-")
+      );
+      const existingDrafts = stops.filter(
+        (stop) => !stop.id.startsWith("draft-stop-")
+      );
+
+      const stopMap = new Map(
+        (stopsData?.items ?? []).map((stop) => [stop.id, stop])
+      );
+
+      if (existingDrafts.length && newDrafts.length) {
+        toast.error(
+          t("SaveDraftsSeparately", {
+            defaultValue:
+              "Please save new stops and updates separately to avoid conflicts.",
+          })
+        );
+        return;
+      }
+
+      if (newDrafts.length) {
+        const payload: MapEditorStopDraft[] = newDrafts.map(
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          ({ id, ...rest }) => rest
+        );
+        setCreateStopsPayload(payload);
+        setDraftStopIdsInFlight(newDrafts.map((stop) => stop.id));
+        setIsCreateStopsDialogOpen(true);
+        return;
+      }
+
+      if (existingDrafts.length) {
+        if (!stopsData?.items?.length) {
+          toast.error(
+            t("StopsNotReady", {
+              defaultValue: "Stops data is still loading.",
+            })
+          );
+          return;
+        }
+
+        const payload = existingDrafts
+          .map((stop) => {
+            const original = stopMap.get(stop.id);
+            if (!original) return null;
+            return {
+              ...original,
+              latitude: stop.latitude,
+              longitude: stop.longitude,
+            } as BusStopWithRelations;
+          })
+          .filter((value): value is BusStopWithRelations => Boolean(value));
+
+        if (!payload.length) {
+          toast.error(
+            t("StopsNotFound", {
+              defaultValue: "Selected stops could not be matched.",
+            })
+          );
+          return;
+        }
+
+        setUpdateStopsPayload(payload);
+        setDraftStopIdsInFlight(existingDrafts.map((stop) => stop.id));
+        setIsUpdateStopsDialogOpen(true);
+      }
+    },
+    [stopsData?.items, t]
+  );
+
+  const clearDraftStopsByIds = useCallback((ids: string[]) => {
+    setDraftStops((prev) => prev.filter((stop) => !ids.includes(stop.id)));
+    setDraftStopIdsInFlight([]);
+  }, []);
 
   if (!canEdit) {
     return (
@@ -670,6 +792,7 @@ export default function MapEditorPage() {
           onUndoStops={handleUndoStops}
           onRedoStops={handleRedoStops}
           className="w-80 border-r"
+          onSaveDraftStops={handleSaveDraftStops}
         />
         <div className="flex-1 overflow-hidden">
           <MapEditorCanvas
@@ -711,6 +834,36 @@ export default function MapEditorPage() {
           />
         </div> */}
       </div>
+
+      <CreateBusStopsMapEditorDialog
+        isOpen={isCreateStopsDialogOpen}
+        onOpenChange={(open) => {
+          setIsCreateStopsDialogOpen(open);
+          if (!open) {
+            setDraftStopIdsInFlight([]);
+          }
+        }}
+        stops={createStopsPayload}
+        onSuccess={() => {
+          clearDraftStopsByIds(draftStopIdsInFlight);
+          refetch();
+        }}
+      />
+
+      <UpdateBusStopsMapEditorDialog
+        isOpen={isUpdateStopsDialogOpen}
+        onOpenChange={(open) => {
+          setIsUpdateStopsDialogOpen(open);
+          if (!open) {
+            setDraftStopIdsInFlight([]);
+          }
+        }}
+        stops={updateStopsPayload}
+        onSuccess={() => {
+          clearDraftStopsByIds(draftStopIdsInFlight);
+          refetch();
+        }}
+      />
     </main>
   );
 }

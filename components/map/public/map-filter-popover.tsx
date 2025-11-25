@@ -317,7 +317,7 @@ export function MapFilterPopover({
           {activeFilterCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-6 w-6 rounded-full p-0 text-xs"
+              className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full p-0 text-xs"
             >
               {activeFilterCount}
             </Badge>

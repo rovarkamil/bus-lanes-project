@@ -5,34 +5,32 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapDataPayload, CoordinateTuple } from "@/types/map";
+import { MapDataPayload, CoordinateTuple, LanguageContent } from "@/types/map";
 import { MapEditorLaneDraft } from "@/types/models/bus-lane";
 import { useTranslation } from "@/i18n/client";
-import { Edit, Trash2, Save, X, Check, Undo2, Redo2 } from "lucide-react";
+import { Edit, Trash2, Save, X, Check, Undo2, Redo2, Plus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CreateBusLanesMapEditorDialog } from "@/components/dialogs/bus-lane/create-bus-lanes-map-editor-dialog";
 import { UpdateBusLanesMapEditorDialog } from "@/components/dialogs/bus-lane/update-bus-lanes-map-editor-dialog";
 import { UpdateBusStopDialog } from "@/components/dialogs/bus-stop/update-bus-stop-dialog";
 import { useUpdateBusStop } from "@/hooks/employee-hooks/use-bus-stop";
 import { cn } from "@/lib/utils";
-import { BusStopWithRelations } from "@/types/models/bus-stop";
+import {
+  BusStopWithRelations,
+  MapEditorStopDraftWithId,
+} from "@/types/models/bus-stop";
 import { BusLaneWithRelations } from "@/types/models/bus-lane";
 import { toast } from "sonner";
-
-interface DraftStop {
-  id: string;
-  latitude: number;
-  longitude: number;
-  name?: string;
-}
 
 interface MapEditorSidebarProps {
   data?: MapDataPayload;
   originalLanes?: BusLaneWithRelations[];
   draftLanes: MapEditorLaneDraft[];
   onDraftLanesChange: (lanes: MapEditorLaneDraft[]) => void;
-  draftStops?: DraftStop[];
-  onDraftStopsChange?: React.Dispatch<React.SetStateAction<DraftStop[]>>;
+  draftStops?: MapEditorStopDraftWithId[];
+  onDraftStopsChange?: React.Dispatch<
+    React.SetStateAction<MapEditorStopDraftWithId[]>
+  >;
   editorMode?: "lane" | "stop";
   onEditorModeChange?: (mode: "lane" | "stop") => void;
   selectedLaneId?: string | null;
@@ -55,6 +53,7 @@ interface MapEditorSidebarProps {
   onUndoStops?: () => void;
   onRedoStops?: () => void;
   className?: string;
+  onSaveDraftStops?: (stops: MapEditorStopDraftWithId[]) => void;
 }
 
 export function MapEditorSidebar({
@@ -86,6 +85,7 @@ export function MapEditorSidebar({
   onUndoStops,
   onRedoStops,
   className,
+  onSaveDraftStops,
 }: MapEditorSidebarProps) {
   const { t } = useTranslation("Map");
   const queryClient = useQueryClient();
@@ -187,6 +187,15 @@ export function MapEditorSidebar({
       toast.error(t("Error.UpdateFailed"));
     }
   };
+
+  const formatLanguageFields = (content?: LanguageContent | null) =>
+    content
+      ? {
+          en: content.en ?? "",
+          ar: content.ar ?? null,
+          ckb: content.ckb ?? null,
+        }
+      : undefined;
 
   return (
     <>
@@ -446,7 +455,12 @@ export function MapEditorSidebar({
                           >
                             <div className="flex items-center gap-2">
                               <span className="truncate">
-                                {stop.name || `Stop ${index + 1}`}
+                                {stop.name?.en ||
+                                  stop.name?.ar ||
+                                  stop.name?.ckb ||
+                                  t("DraftStopLabel", {
+                                    defaultValue: `Stop ${index + 1}`,
+                                  })}
                               </span>
                             </div>
                             <Button
@@ -454,7 +468,7 @@ export function MapEditorSidebar({
                               variant="ghost"
                               className="h-6 w-6"
                               onClick={() => {
-                                onDraftStopsChange((prev: DraftStop[]) =>
+                                onDraftStopsChange((prev) =>
                                   prev.filter((s) => s.id !== stop.id)
                                 );
                               }}
@@ -469,10 +483,7 @@ export function MapEditorSidebar({
                     <div className="flex gap-2">
                       <Button
                         type="button"
-                        onClick={() => {
-                          // TODO: Open create stops dialog
-                          console.log("Save draft stops:", draftStops);
-                        }}
+                        onClick={() => onSaveDraftStops?.(draftStops)}
                         className="flex-1"
                         size="sm"
                       >
@@ -668,77 +679,141 @@ export function MapEditorSidebar({
                               )}
                             </span>
                           </div>
-                          <Button
-                            size="icon"
-                            variant={
-                              editingStopId === stop.id ? "default" : "ghost"
-                            }
-                            className="h-6 w-6 flex-shrink-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-6 w-6"
+                              onClick={(e) => {
+                                e.stopPropagation();
 
-                              if (editingStopId === stop.id) {
-                                // If already editing, open the update dialog
-                                const stopForEdit = {
-                                  id: stop.id,
-                                  latitude: stop.latitude,
-                                  longitude: stop.longitude,
-                                  nameId: "",
-                                  descriptionId: null,
-                                  name: stop.name
-                                    ? {
-                                        id: "",
-                                        createdAt: new Date(),
-                                        updatedAt: new Date(),
-                                        deletedAt: null,
-                                        en: stop.name.en || "",
-                                        ar: stop.name.ar || null,
-                                        ckb: stop.name.ckb || null,
-                                      }
-                                    : null,
-                                  description: null,
-                                  hasShelter:
-                                    stop.amenities?.hasShelter ?? false,
-                                  hasBench: stop.amenities?.hasBench ?? false,
-                                  hasLighting:
-                                    stop.amenities?.hasLighting ?? false,
-                                  isAccessible:
-                                    stop.amenities?.isAccessible ?? false,
-                                  hasRealTimeInfo:
-                                    stop.amenities?.hasRealTimeInfo ?? false,
-                                  iconId: stop.icon?.id || null,
-                                  icon: null,
-                                  zoneId: stop.zone?.id || null,
-                                  zone: null,
-                                  order: 0,
-                                  images: [],
-                                  lanes: [],
-                                  routes: [],
-                                  schedules: [],
-                                  createdAt: new Date(),
-                                  updatedAt: new Date(),
-                                  deletedAt: null,
-                                } as BusStopWithRelations;
-                                setSelectedStopForEdit(stopForEdit);
-                                setIsUpdateStopDialogOpen(true);
-                              } else {
-                                // Enter editing mode - allow repositioning
-                                if (onEditingStopChange) {
-                                  onEditingStopChange(stop.id);
-                                }
-                                // Pan to stop
-                                if (onPanToLocation) {
-                                  onPanToLocation(
-                                    stop.latitude,
-                                    stop.longitude,
-                                    16
-                                  );
-                                }
+                                onDraftStopsChange?.((prev) => {
+                                  if (
+                                    prev.some((draft) => draft.id === stop.id)
+                                  ) {
+                                    toast.error(
+                                      t("StopAlreadyInDrafts", {
+                                        defaultValue:
+                                          "This stop is already in drafts",
+                                      })
+                                    );
+                                    return prev;
+                                  }
+
+                                  return [
+                                    ...prev,
+                                    {
+                                      id: stop.id,
+                                      latitude: stop.latitude,
+                                      longitude: stop.longitude,
+                                      name: formatLanguageFields(stop.name),
+                                      description: formatLanguageFields(
+                                        stop.description
+                                      ),
+                                      iconId: stop.icon?.id ?? null,
+                                      zoneId: stop.zone?.id ?? null,
+                                      laneIds: stop.lanes?.map(
+                                        (lane) => lane.id
+                                      ),
+                                      routeIds: stop.routes?.map(
+                                        (route) => route.id
+                                      ),
+                                      hasShelter:
+                                        stop.amenities?.hasShelter ?? false,
+                                      hasBench:
+                                        stop.amenities?.hasBench ?? false,
+                                      hasLighting:
+                                        stop.amenities?.hasLighting ?? false,
+                                      isAccessible:
+                                        stop.amenities?.isAccessible ?? false,
+                                      hasRealTimeInfo:
+                                        stop.amenities?.hasRealTimeInfo ??
+                                        false,
+                                      isActive: stop.isActive ?? true,
+                                    },
+                                  ];
+                                });
+                                toast.success(
+                                  t("StopAddedToDrafts", {
+                                    defaultValue: "Stop added to drafts",
+                                  })
+                                );
+                              }}
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant={
+                                editingStopId === stop.id ? "default" : "ghost"
                               }
-                            }}
-                          >
-                            <Edit className="h-3.5 w-3.5" />
-                          </Button>
+                              className="h-6 w-6"
+                              onClick={(e) => {
+                                e.stopPropagation();
+
+                                if (editingStopId === stop.id) {
+                                  // If already editing, open the update dialog
+                                  const stopForEdit = {
+                                    id: stop.id,
+                                    latitude: stop.latitude,
+                                    longitude: stop.longitude,
+                                    nameId: "",
+                                    descriptionId: null,
+                                    name: stop.name
+                                      ? {
+                                          id: "",
+                                          createdAt: new Date(),
+                                          updatedAt: new Date(),
+                                          deletedAt: null,
+                                          en: stop.name.en || "",
+                                          ar: stop.name.ar || null,
+                                          ckb: stop.name.ckb || null,
+                                        }
+                                      : null,
+                                    description: null,
+                                    hasShelter:
+                                      stop.amenities?.hasShelter ?? false,
+                                    hasBench: stop.amenities?.hasBench ?? false,
+                                    hasLighting:
+                                      stop.amenities?.hasLighting ?? false,
+                                    isAccessible:
+                                      stop.amenities?.isAccessible ?? false,
+                                    hasRealTimeInfo:
+                                      stop.amenities?.hasRealTimeInfo ?? false,
+                                    iconId: stop.icon?.id || null,
+                                    icon: null,
+                                    zoneId: stop.zone?.id || null,
+                                    zone: null,
+                                    order: 0,
+                                    images: [],
+                                    lanes: [],
+                                    routes: [],
+                                    schedules: [],
+                                    createdAt: new Date(),
+                                    updatedAt: new Date(),
+                                    deletedAt: null,
+                                  } as BusStopWithRelations;
+                                  setSelectedStopForEdit(stopForEdit);
+                                  setIsUpdateStopDialogOpen(true);
+                                } else {
+                                  // Enter editing mode - allow repositioning
+                                  if (onEditingStopChange) {
+                                    onEditingStopChange(stop.id);
+                                  }
+                                  // Pan to stop
+                                  if (onPanToLocation) {
+                                    onPanToLocation(
+                                      stop.latitude,
+                                      stop.longitude,
+                                      16
+                                    );
+                                  }
+                                }
+                              }}
+                            >
+                              <Edit className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>

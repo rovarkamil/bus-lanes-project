@@ -26,7 +26,11 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!hasPermission(session, Permission.CREATE_BUS_STOP)) {
+    const canCreate =
+      hasPermission(session, Permission.CREATE_BUS_STOP) ||
+      hasPermission(session, Permission.EDIT_MAP);
+
+    if (!canCreate) {
       return NextResponse.json(
         { success: false, error: "Insufficient permissions" },
         { status: 403 }
@@ -92,7 +96,11 @@ export async function PUT(request: Request) {
       );
     }
 
-    if (!hasPermission(session, Permission.UPDATE_BUS_STOP)) {
+    const canUpdate =
+      hasPermission(session, Permission.UPDATE_BUS_STOP) ||
+      hasPermission(session, Permission.EDIT_MAP);
+
+    if (!canUpdate) {
       return NextResponse.json(
         { success: false, error: "Insufficient permissions" },
         { status: 403 }

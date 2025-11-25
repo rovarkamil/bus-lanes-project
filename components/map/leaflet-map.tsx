@@ -5,6 +5,7 @@ import { ReactNode, useMemo } from "react";
 import type { LatLngExpression, IconOptions } from "leaflet";
 import type { MapContainerProps } from "react-leaflet";
 import { cn } from "@/lib/utils";
+import { DEFAULT_MAP_STYLE, MAP_TILE_STYLES } from "@/lib/map/tile-styles";
 import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
@@ -65,13 +66,17 @@ export function LeafletMap({
   zoom = 13,
   className,
   children,
-  tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-  tileAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  tileUrl,
+  tileAttribution,
   ...containerProps
 }: LeafletMapProps) {
   ensureDefaultIcon();
 
   const memoizedCenter = useMemo(() => center, [center]);
+  const resolvedTileStyle =
+    tileUrl && tileAttribution
+      ? { url: tileUrl, attribution: tileAttribution }
+      : MAP_TILE_STYLES[DEFAULT_MAP_STYLE];
 
   return (
     <MapContainer
@@ -82,7 +87,10 @@ export function LeafletMap({
       className={cn("relative w-full", className || "h-full")}
       {...containerProps}
     >
-      <TileLayer attribution={tileAttribution} url={tileUrl} />
+      <TileLayer
+        attribution={resolvedTileStyle.attribution}
+        url={resolvedTileStyle.url}
+      />
       {children}
     </MapContainer>
   );
