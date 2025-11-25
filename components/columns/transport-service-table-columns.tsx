@@ -1,10 +1,22 @@
 "use client";
 
-import { Column } from "@/types/data-table";
-import { TransportServiceWithRelations } from "@/types/models/transport-service";
+import { Column, RenderContext } from "@/types/data-table";
+import {
+  TransportServiceWithRelations,
+  TRANSPORT_SERVICE_ACTION_BUTTONS,
+} from "@/types/models/transport-service";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ConfirmationDialog } from "@/components/data-table/confirmation-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Bus, Gauge, Clock, ToggleLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Permission, UserType } from "@prisma/client";
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -101,6 +113,88 @@ const RelationsCell = ({
   </div>
 );
 
+const ActionButtons = ({
+  item,
+  context,
+}: {
+  item: TransportServiceWithRelations;
+  context: RenderContext<TransportServiceWithRelations>;
+}) => (
+  <div className="flex items-center gap-2">
+    {TRANSPORT_SERVICE_ACTION_BUTTONS.map((button, idx) => {
+      const hasPermission =
+        !button.requiresPermission ||
+        context.session?.user.userType === UserType.SUPER_ADMIN ||
+        context.session?.user.role?.permissions.includes(
+          button.requiresPermission
+        );
+
+      const Icon = button.icon;
+
+      if (button.requiresPermission === Permission.DELETE_TRANSPORT_SERVICE) {
+        return (
+          <ConfirmationDialog
+            key={idx}
+            title={context.t("Actions.DeleteConfirmTitle")}
+            message={context.t("Actions.DeleteConfirmMessage")}
+            onConfirm={() =>
+              button.onClick(item, {
+                handleDelete: context.handlers.handleDelete,
+              })
+            }
+            confirmLabel={
+              context.isDeleting
+                ? context.t("Actions.Deleting")
+                : context.t("Actions.Delete")
+            }
+            cancelLabel={context.t("Cancel")}
+            variant="destructive"
+            isRtl={context.handlers.isRtl}
+            disabled={context.isDeleting}
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn("h-8 w-8", button.className)}
+              disabled={!hasPermission}
+            >
+              <Icon className="h-4 w-4" />
+            </Button>
+          </ConfirmationDialog>
+        );
+      }
+
+      return (
+        <TooltipProvider key={idx}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn("h-8 w-8", button.className)}
+                disabled={!hasPermission}
+                onClick={() =>
+                  button.onClick(item, {
+                    setSelectedItem: context.handlers.setSelectedItem,
+                    setIsViewDialogOpen: context.handlers.setIsViewDialogOpen,
+                    handleOpenUpdateDialog:
+                      context.handlers.handleOpenUpdateDialog,
+                  })
+                }
+              >
+                <Icon className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <span>{context.t(button.tooltip)}</span>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    })}
+  </div>
+);
+
 export const transportServiceColumns = (
   t: Translate
 ): Column<TransportServiceWithRelations>[] => [
@@ -165,6 +259,15 @@ export const transportServiceColumns = (
     sortable: true,
     render: (service) => (
       <StatusBadge isActive={service.isActive ?? false} t={t} />
+    ),
+  },
+  {
+    key: "actions",
+    label: t("Table.Actions"),
+    sortable: false,
+    className: "w-[120px]",
+    render: (service, context) => (
+      <ActionButtons item={service} context={context} />
     ),
   },
 ];

@@ -35,20 +35,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { ConfirmationDialog } from "@/components/data-table/confirmation-dialog";
 import { cn, hasPermission } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "@/i18n/client";
 import { useModelOperations } from "@/hooks/use-model-operations";
-import { Column, ensureIndexColumn } from "@/types/data-table";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { ensureIndexColumn } from "@/types/data-table";
 
 const MapIconsPage = () => {
   const { t, i18n } = useTranslation("MapIcons");
@@ -107,89 +98,8 @@ const MapIconsPage = () => {
   });
 
   const columns = useMemo(() => {
-    const actionColumn: Column<MapIconWithRelations> = {
-      key: "actions",
-      label: "Actions",
-      sortable: false,
-      className: "w-[120px]",
-      render: (icon) => {
-        const canView = hasPermission(session, Permission.VIEW_MAP_ICONS);
-        const canEdit = hasPermission(session, Permission.UPDATE_MAP_ICON);
-        const canDelete = hasPermission(session, Permission.DELETE_MAP_ICON);
-
-        return (
-          <div className="flex items-center gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSelectedIcon(icon);
-                      setIsViewDialogOpen(true);
-                    }}
-                    disabled={!canView}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>View</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSelectedIcon(icon);
-                      setIsUpdateDialogOpen(true);
-                    }}
-                    disabled={!canEdit}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Edit</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <ConfirmationDialog
-              title="Are you sure?"
-              message="This action cannot be undone."
-              onConfirm={() => handleDelete(icon.id)}
-              confirmLabel={isDeleting ? "Deleting..." : "Delete"}
-              cancelLabel="Cancel"
-              variant="destructive"
-              disabled={!canDelete || isDeleting}
-              isRtl={isRTL}
-            >
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive"
-                      disabled={!canDelete}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Delete</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </ConfirmationDialog>
-          </div>
-        );
-      },
-    };
-
-    return ensureIndexColumn([...mapIconColumns(t), actionColumn]);
-  }, [t, session, isDeleting, isRTL, handleDelete]);
+    return ensureIndexColumn(mapIconColumns(t));
+  }, [t]);
 
   const handleCreateSuccess = () => {
     setIsCreateDialogOpen(false);
@@ -310,10 +220,19 @@ const MapIconsPage = () => {
                                 handlers: {
                                   setSelectedItem: (item) =>
                                     setSelectedIcon(item),
-                                  setIsViewDialogOpen: setIsViewDialogOpen,
+                                  setIsViewDialogOpen: (isOpen: boolean) => {
+                                    if (isOpen) setIsViewDialogOpen(true);
+                                  },
                                   handleOpenUpdateDialog: (item) => {
-                                    setSelectedIcon(item);
-                                    setIsUpdateDialogOpen(true);
+                                    if (
+                                      hasPermission(
+                                        session,
+                                        Permission.UPDATE_MAP_ICON
+                                      )
+                                    ) {
+                                      setSelectedIcon(item);
+                                      setIsUpdateDialogOpen(true);
+                                    }
                                   },
                                   handleDelete,
                                   isRtl: isRTL,

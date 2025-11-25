@@ -35,20 +35,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { ConfirmationDialog } from "@/components/data-table/confirmation-dialog";
 import { cn, hasPermission } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "@/i18n/client";
 import { useModelOperations } from "@/hooks/use-model-operations";
-import { Column, ensureIndexColumn } from "@/types/data-table";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { ensureIndexColumn } from "@/types/data-table";
 
 const BusSchedulesPage = () => {
   const { t, i18n } = useTranslation("BusSchedules");
@@ -108,94 +99,8 @@ const BusSchedulesPage = () => {
   });
 
   const columns = useMemo(() => {
-    const actionColumn: Column<BusScheduleWithRelations> = {
-      key: "actions",
-      label: t("Table.Actions"),
-      sortable: false,
-      className: "w-[120px]",
-      render: (schedule) => {
-        const canView = hasPermission(session, Permission.VIEW_BUS_SCHEDULES);
-        const canEdit = hasPermission(session, Permission.UPDATE_BUS_SCHEDULE);
-        const canDelete = hasPermission(
-          session,
-          Permission.DELETE_BUS_SCHEDULE
-        );
-
-        return (
-          <div className="flex items-center gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSelectedSchedule(schedule);
-                      setIsViewDialogOpen(true);
-                    }}
-                    disabled={!canView}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t("Actions.View")}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSelectedSchedule(schedule);
-                      setIsUpdateDialogOpen(true);
-                    }}
-                    disabled={!canEdit}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t("Actions.Edit")}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <ConfirmationDialog
-              title={t("Actions.DeleteConfirmTitle")}
-              message={t("Actions.DeleteConfirmMessage")}
-              onConfirm={() => handleDelete(schedule.id)}
-              confirmLabel={
-                isDeleting ? t("Actions.Deleting") : t("Actions.Delete")
-              }
-              cancelLabel={t("Common.Cancel")}
-              variant="destructive"
-              disabled={!canDelete || isDeleting}
-              isRtl={isRTL}
-            >
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive"
-                      disabled={!canDelete}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t("Actions.Delete")}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </ConfirmationDialog>
-          </div>
-        );
-      },
-    };
-
-    return ensureIndexColumn([...busScheduleColumns(t), actionColumn]);
-  }, [session, isDeleting, isRTL, handleDelete, t]);
+    return ensureIndexColumn(busScheduleColumns(t));
+  }, [t]);
 
   const handleCreateSuccess = () => {
     setIsCreateDialogOpen(false);
@@ -314,15 +219,23 @@ const BusSchedulesPage = () => {
                                 session,
                                 isDeleting,
                                 handlers: {
-                                  setSelectedItem: (
-                                    item: BusScheduleWithRelations | null
-                                  ) => setSelectedSchedule(item),
-                                  setIsViewDialogOpen: setIsViewDialogOpen,
+                                  setSelectedItem: (item) =>
+                                    setSelectedSchedule(item),
+                                  setIsViewDialogOpen: (isOpen: boolean) => {
+                                    if (isOpen) setIsViewDialogOpen(true);
+                                  },
                                   handleOpenUpdateDialog: (
                                     item: BusScheduleWithRelations
                                   ) => {
-                                    setSelectedSchedule(item);
-                                    setIsUpdateDialogOpen(true);
+                                    if (
+                                      hasPermission(
+                                        session,
+                                        Permission.UPDATE_BUS_SCHEDULE
+                                      )
+                                    ) {
+                                      setSelectedSchedule(item);
+                                      setIsUpdateDialogOpen(true);
+                                    }
                                   },
                                   handleDelete,
                                   isRtl: isRTL,

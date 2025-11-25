@@ -35,20 +35,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
-import { ConfirmationDialog } from "@/components/data-table/confirmation-dialog";
 import { cn, hasPermission } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "@/i18n/client";
 import { useModelOperations } from "@/hooks/use-model-operations";
-import { Column, ensureIndexColumn } from "@/types/data-table";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { ensureIndexColumn } from "@/types/data-table";
 
 const TransportServicesPage = () => {
   const { t, i18n } = useTranslation("TransportServices");
@@ -108,100 +99,8 @@ const TransportServicesPage = () => {
   });
 
   const columns = useMemo(() => {
-    const actionColumn: Column<TransportServiceWithRelations> = {
-      key: "actions",
-      label: t("Table.Actions"),
-      sortable: false,
-      className: "w-[120px]",
-      render: (service) => {
-        const canView = hasPermission(
-          session,
-          Permission.VIEW_TRANSPORT_SERVICES
-        );
-        const canEdit = hasPermission(
-          session,
-          Permission.UPDATE_TRANSPORT_SERVICE
-        );
-        const canDelete = hasPermission(
-          session,
-          Permission.DELETE_TRANSPORT_SERVICE
-        );
-
-        return (
-          <div className="flex items-center gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSelectedService(service);
-                      setIsViewDialogOpen(true);
-                    }}
-                    disabled={!canView}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t("Actions.View")}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSelectedService(service);
-                      setIsUpdateDialogOpen(true);
-                    }}
-                    disabled={!canEdit}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t("Actions.Edit")}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <ConfirmationDialog
-              title={t("Actions.DeleteConfirmTitle")}
-              message={t("Actions.DeleteConfirmMessage")}
-              onConfirm={() => handleDelete(service.id)}
-              confirmLabel={
-                isDeleting ? t("Actions.Deleting") : t("Actions.Delete")
-              }
-              cancelLabel={t("Cancel")}
-              variant="destructive"
-              disabled={!canDelete || isDeleting}
-              isRtl={isRTL}
-            >
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive"
-                      disabled={!canDelete}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t("Actions.Delete")}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </ConfirmationDialog>
-          </div>
-        );
-      },
-    };
-
-    return ensureIndexColumn([...transportServiceColumns(t), actionColumn]);
-  }, [session, isDeleting, isRTL, handleDelete, t]);
+    return ensureIndexColumn(transportServiceColumns(t));
+  }, [t]);
 
   const handleCreateSuccess = () => {
     setIsCreateDialogOpen(false);
@@ -325,10 +224,19 @@ const TransportServicesPage = () => {
                                 handlers: {
                                   setSelectedItem: (item) =>
                                     setSelectedService(item),
-                                  setIsViewDialogOpen: setIsViewDialogOpen,
+                                  setIsViewDialogOpen: (isOpen: boolean) => {
+                                    if (isOpen) setIsViewDialogOpen(true);
+                                  },
                                   handleOpenUpdateDialog: (item) => {
-                                    setSelectedService(item);
-                                    setIsUpdateDialogOpen(true);
+                                    if (
+                                      hasPermission(
+                                        session,
+                                        Permission.UPDATE_TRANSPORT_SERVICE
+                                      )
+                                    ) {
+                                      setSelectedService(item);
+                                      setIsUpdateDialogOpen(true);
+                                    }
                                   },
                                   handleDelete,
                                   isRtl: isRTL,

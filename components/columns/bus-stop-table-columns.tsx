@@ -1,9 +1,22 @@
 "use client";
 
-import { Column } from "@/types/data-table";
-import { BusStopWithRelations } from "@/types/models/bus-stop";
+import { Column, RenderContext } from "@/types/data-table";
+import {
+  BusStopWithRelations,
+  BUS_STOP_ACTION_BUTTONS,
+} from "@/types/models/bus-stop";
 import { Badge } from "@/components/ui/badge";
 import { Map, Layers, Image as ImageIcon, Navigation2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ConfirmationDialog } from "@/components/data-table/confirmation-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { Permission, UserType } from "@prisma/client";
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -74,6 +87,88 @@ const ImageCountCell = ({ count, t }: { count: number; t: Translate }) =>
       {t("Common.NotAvailable")}
     </span>
   );
+
+const ActionButtons = ({
+  item,
+  context,
+}: {
+  item: BusStopWithRelations;
+  context: RenderContext<BusStopWithRelations>;
+}) => (
+  <div className="flex items-center gap-2">
+    {BUS_STOP_ACTION_BUTTONS.map((button, idx) => {
+      const hasPermission =
+        !button.requiresPermission ||
+        context.session?.user.userType === UserType.SUPER_ADMIN ||
+        context.session?.user.role?.permissions.includes(
+          button.requiresPermission
+        );
+
+      const Icon = button.icon;
+
+      if (button.requiresPermission === Permission.DELETE_BUS_STOP) {
+        return (
+          <ConfirmationDialog
+            key={idx}
+            title={context.t("Actions.DeleteConfirmTitle")}
+            message={context.t("Actions.DeleteConfirmMessage")}
+            onConfirm={() =>
+              button.onClick(item, {
+                handleDelete: context.handlers.handleDelete,
+              })
+            }
+            confirmLabel={
+              context.isDeleting
+                ? context.t("Actions.Deleting")
+                : context.t("Actions.Delete")
+            }
+            cancelLabel={context.t("Common.Cancel")}
+            variant="destructive"
+            isRtl={context.handlers.isRtl}
+            disabled={context.isDeleting}
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn("h-8 w-8", button.className)}
+              disabled={!hasPermission}
+            >
+              <Icon className="h-4 w-4" />
+            </Button>
+          </ConfirmationDialog>
+        );
+      }
+
+      return (
+        <TooltipProvider key={idx}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn("h-8 w-8", button.className)}
+                disabled={!hasPermission}
+                onClick={() =>
+                  button.onClick(item, {
+                    setSelectedItem: context.handlers.setSelectedItem,
+                    setIsViewDialogOpen: context.handlers.setIsViewDialogOpen,
+                    handleOpenUpdateDialog:
+                      context.handlers.handleOpenUpdateDialog,
+                  })
+                }
+              >
+                <Icon className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <span>{context.t(button.tooltip)}</span>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    })}
+  </div>
+);
 
 export const busStopColumns = (
   t: Translate
@@ -197,5 +292,12 @@ export const busStopColumns = (
         {t("Table.View")}
       </a>
     ),
+  },
+  {
+    key: "actions",
+    label: t("Table.Actions"),
+    sortable: false,
+    className: "w-[120px]",
+    render: (stop, context) => <ActionButtons item={stop} context={context} />,
   },
 ];
