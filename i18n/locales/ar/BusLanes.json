@@ -64,7 +64,8 @@
     "LaneNumber": "المسار {{number}}",
     "Points": "نقاط",
     "IsActive": "الحالة النشطة",
-    "BulkCreate": "إنشاء {{count}} مسارات"
+    "BulkCreate": "إنشاء {{count}} مسارات",
+    "NewTransportService": "إضافة خدمة نقل"
   },
   "UpdateDialog": {
     "Title": "تحديث مسار حافلة",

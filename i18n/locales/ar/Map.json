@@ -164,6 +164,25 @@
     "ClickToSelect": "انقر على الخريطة لتحديد الموقع",
     "Apply": "تطبيق"
   },
+  "DayOfWeek": {
+    "MONDAY": "الاثنين",
+    "TUESDAY": "الثلاثاء",
+    "WEDNESDAY": "الأربعاء",
+    "THURSDAY": "الخميس",
+    "FRIDAY": "الجمعة",
+    "SATURDAY": "السبت",
+    "SUNDAY": "الأحد"
+  },
+  "TransportServiceType": {
+    "Label": "النوع",
+    "BUS": "حافلة",
+    "MINIBUS": "ميني باص",
+    "TAXI": "تاكسي",
+    "SHARED_TAXI": "تاكسي مشترك",
+    "OTHER": "أخرى",
+    "UNKNOWN": "غير معروف"
+  },
+  "ShowingStops": "عرض المحطات",
   "Filters": "عوامل التصفية",
   "ClearAll": "مسح الكل",
   "ShowAll": "عرض الكل",
@@ -175,6 +194,7 @@
   "MoreStops": "محطات إضافية",
   "More": "المزيد",
   "Images": "الصور",
+  "FocusOnMap": "إظهار على الخريطة",
   "Common": {
     "Cancel": "إلغاء",
     "Updating": "جاري التحديث..."

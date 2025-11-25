@@ -78,6 +78,7 @@ export function LeafletMap({
       center={memoizedCenter}
       zoom={zoom}
       scrollWheelZoom={true}
+      zoomControl={false}
       className={cn("relative w-full", className || "h-full")}
       {...containerProps}
     >

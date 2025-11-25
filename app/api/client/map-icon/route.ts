@@ -1,11 +1,10 @@
 "use server";
 
-import { Permission } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
-import { createEmployeeModelRoutes } from "@/utils/createModelRoutes";
+import { createPublicModelRoutes } from "@/utils/createModelRoutes";
 import {
   mapIconSchema,
   createMapIconSchema,
@@ -26,18 +25,12 @@ const deleteSchema = mapIconSchema.pick({ id: true });
 type CreatePayload = CreateMapIconData & { file?: UploadedFileInput };
 type UpdatePayload = UpdateMapIconData & { file?: UploadedFileInput };
 
-export const { GET, POST, PUT, DELETE } = createEmployeeModelRoutes({
+export const { GET, POST, PUT, DELETE } = createPublicModelRoutes({
   modelName: "mapIcon",
   schema: mapIconSchema,
   createSchema: createMapIconSchema,
   updateSchema: updateMapIconSchema,
   deleteSchema,
-  permissions: {
-    view: Permission.VIEW_MAP_ICONS,
-    create: Permission.CREATE_MAP_ICON,
-    update: Permission.UPDATE_MAP_ICON,
-    delete: Permission.DELETE_MAP_ICON,
-  },
   fieldConfigs: mapIconFieldConfigs,
   relations: {
     name: true,

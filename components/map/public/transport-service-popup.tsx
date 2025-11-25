@@ -14,12 +14,7 @@ import {
   Clock,
   Image as ImageIcon,
 } from "lucide-react";
-import {
-  MapTransportService,
-  MapLane,
-  MapRoute,
-  MapStop,
-} from "@/types/map";
+import { MapTransportService, MapLane, MapRoute, MapStop } from "@/types/map";
 import { getLocalizedValue } from "@/lib/i18n/get-localized-value";
 import { useFetchBusSchedules } from "@/hooks/public-hooks/use-bus-schedule";
 import { useFetchBusLanes } from "@/hooks/public-hooks/use-bus-lane";
@@ -43,7 +38,9 @@ export function TransportServicePopup({
   const { t, i18n } = useTranslation("Map");
   const isRTL = i18n.language !== "en";
   const locale = useLocale();
-  const [previewImages, setPreviewImages] = useState<{ url: string; alt?: string }[]>([]);
+  const [previewImages, setPreviewImages] = useState<
+    { url: string; alt?: string }[]
+  >([]);
   const [previewIndex, setPreviewIndex] = useState(0);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
@@ -85,12 +82,12 @@ export function TransportServicePopup({
   const allImages = useMemo(() => {
     const images: { url: string; alt?: string }[] = [];
     if (!lanesData?.items) return images;
-    
+
     // Filter lanes to only include those in this service
     const serviceLanes = lanesData.items.filter((lane) =>
       laneIds.includes(lane.id)
     );
-    
+
     serviceLanes.forEach((lane) => {
       if (lane.images && lane.images.length > 0) {
         lane.images.forEach((image) => {
@@ -105,11 +102,15 @@ export function TransportServicePopup({
   }, [lanesData?.items, laneIds]);
 
   const serviceName = useMemo(
-    () => getLocalizedValue(service?.name, locale) || service?.type || serviceId,
+    () =>
+      getLocalizedValue(service?.name, locale) || service?.type || serviceId,
     [service?.name, service?.type, locale, serviceId]
   );
 
-  const handleImageClick = (images: { url: string; alt?: string }[], index: number) => {
+  const handleImageClick = (
+    images: { url: string; alt?: string }[],
+    index: number
+  ) => {
     setPreviewImages(images);
     setPreviewIndex(index);
     setIsPreviewOpen(true);
@@ -129,9 +130,11 @@ export function TransportServicePopup({
                 style={{ backgroundColor: service.color }}
               />
             )}
-            <p className="text-base font-semibold leading-tight">{serviceName}</p>
+            <p className="text-base font-semibold leading-tight">
+              {serviceName}
+            </p>
             <Badge variant="secondary" className="text-[10px] uppercase">
-              {service?.type}
+              {t(`TransportServiceType.${service?.type ?? "UNKNOWN"}`)}
             </Badge>
           </div>
           {service?.icon?.fileUrl && (
@@ -156,7 +159,9 @@ export function TransportServicePopup({
             {t("Lanes")} ({lanes.length})
           </div>
           {lanes.length === 0 ? (
-            <p className="text-xs text-muted-foreground">{t("NoLanesAssigned")}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("NoLanesAssigned")}
+            </p>
           ) : (
             <ScrollArea className="max-h-32">
               <div className="space-y-1 pr-4">
@@ -190,7 +195,9 @@ export function TransportServicePopup({
             {t("Routes")} ({routes.length})
           </div>
           {routes.length === 0 ? (
-            <p className="text-xs text-muted-foreground">{t("NoRoutesAssigned")}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("NoRoutesAssigned")}
+            </p>
           ) : (
             <ScrollArea className="max-h-32">
               <div className="space-y-1 pr-4">
@@ -226,7 +233,9 @@ export function TransportServicePopup({
             {t("Stops")} ({stops.length})
           </div>
           {stops.length === 0 ? (
-            <p className="text-xs text-muted-foreground">{t("NoStopsAssigned") || "No stops assigned"}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("NoStopsAssigned") || "No stops assigned"}
+            </p>
           ) : (
             <ScrollArea className="max-h-32">
               <div className="space-y-1 pr-4">
@@ -262,31 +271,37 @@ export function TransportServicePopup({
               </div>
               <ScrollArea className="max-h-32">
                 <div className="space-y-1 pr-4">
-                  {Array.from(schedulesByRoute.entries()).map(([routeId, routeSchedules]) => {
-                    const route = routes.find((r) => r.id === routeId);
-                    return (
-                      <div key={routeId} className="space-y-1">
-                        <p className="text-xs font-medium">
-                          {route?.routeNumber || getLocalizedValue(route?.name, locale) || routeId}
-                        </p>
-                        <div className="ml-2 space-y-0.5">
-                          {routeSchedules.slice(0, 3).map((schedule) => (
-                            <div
-                              key={schedule.id}
-                              className="text-xs text-muted-foreground"
-                            >
-                              {schedule.departureTime} - {schedule.dayOfWeek}
-                            </div>
-                          ))}
-                          {routeSchedules.length > 3 && (
-                            <p className="text-xs text-muted-foreground">
-                              +{routeSchedules.length - 3} {t("More") || "more"}
-                            </p>
-                          )}
+                  {Array.from(schedulesByRoute.entries()).map(
+                    ([routeId, routeSchedules]) => {
+                      const route = routes.find((r) => r.id === routeId);
+                      return (
+                        <div key={routeId} className="space-y-1">
+                          <p className="text-xs font-medium">
+                            {route?.routeNumber ||
+                              getLocalizedValue(route?.name, locale) ||
+                              routeId}
+                          </p>
+                          <div className="ml-2 space-y-0.5">
+                            {routeSchedules.slice(0, 3).map((schedule) => (
+                              <div
+                                key={schedule.id}
+                                className="text-xs text-muted-foreground"
+                              >
+                                {schedule.departureTime} -{" "}
+                                {t(`DayOfWeek.${schedule.dayOfWeek}`)}
+                              </div>
+                            ))}
+                            {routeSchedules.length > 3 && (
+                              <p className="text-xs text-muted-foreground">
+                                +{routeSchedules.length - 3}{" "}
+                                {t("More") || "more"}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    }
+                  )}
                 </div>
               </ScrollArea>
             </div>
@@ -333,4 +348,3 @@ export function TransportServicePopup({
     </>
   );
 }
-

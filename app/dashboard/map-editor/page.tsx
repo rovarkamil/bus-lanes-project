@@ -67,6 +67,8 @@ const MapEditorSidebar = dynamic(
 //   }
 // );
 
+const MAX_DRAFT_LANES = 3;
+
 export default function MapEditorPage() {
   const { t, i18n } = useTranslation("Map");
   const isRTL = i18n.language !== "en";
@@ -277,6 +279,11 @@ export default function MapEditorPage() {
 
   // Draft lanes state
   const [draftLanes, setDraftLanes] = useState<MapEditorLaneDraft[]>([]);
+  const clampDraftLanes = useCallback(
+    (lanes: MapEditorLaneDraft[]) =>
+      lanes.length > MAX_DRAFT_LANES ? lanes.slice(-MAX_DRAFT_LANES) : lanes,
+    []
+  );
 
   // Undo/Redo history for lanes
   const [laneHistory, setLaneHistory] = useState<MapEditorLaneDraft[][]>([[]]);
@@ -344,23 +351,25 @@ export default function MapEditorPage() {
     // Find the lane and set it as draft for editing
     const lane = mapData?.lanes.find((l) => l.id === laneId);
     if (lane) {
-      setDraftLanes([
-        {
-          path: lane.path || [],
-          color: lane.color || "#0066CC",
-          weight: lane.weight || 5,
-          opacity: lane.opacity || 0.8,
-          name: lane.name
-            ? {
-                en: lane.name.en || "",
-                ar: lane.name.ar || null,
-                ckb: lane.name.ckb || null,
-              }
-            : undefined,
-          isActive: lane.isActive ?? true,
-          serviceId: lane.serviceId,
-        },
-      ]);
+      setDraftLanes(
+        clampDraftLanes([
+          {
+            path: lane.path || [],
+            color: lane.color || "#0066CC",
+            weight: lane.weight || 5,
+            opacity: lane.opacity || 0.8,
+            name: lane.name
+              ? {
+                  en: lane.name.en || "",
+                  ar: lane.name.ar || null,
+                  ckb: lane.name.ckb || null,
+                }
+              : undefined,
+            isActive: lane.isActive ?? true,
+            serviceId: lane.serviceId,
+          },
+        ])
+      );
       setEditorMode("lane");
     }
   };
@@ -424,24 +433,28 @@ export default function MapEditorPage() {
       isUndoRedoRef.current = true;
       const newIndex = laneHistoryIndex - 1;
       setLaneHistoryIndex(newIndex);
-      setDraftLanes(JSON.parse(JSON.stringify(laneHistory[newIndex])));
+      setDraftLanes(
+        clampDraftLanes(JSON.parse(JSON.stringify(laneHistory[newIndex])))
+      );
       setTimeout(() => {
         isUndoRedoRef.current = false;
       }, 100);
     }
-  }, [laneHistory, laneHistoryIndex]);
+  }, [laneHistory, laneHistoryIndex, clampDraftLanes]);
 
   const handleRedoLanes = useCallback(() => {
     if (laneHistoryIndex < laneHistory.length - 1) {
       isUndoRedoRef.current = true;
       const newIndex = laneHistoryIndex + 1;
       setLaneHistoryIndex(newIndex);
-      setDraftLanes(JSON.parse(JSON.stringify(laneHistory[newIndex])));
+      setDraftLanes(
+        clampDraftLanes(JSON.parse(JSON.stringify(laneHistory[newIndex])))
+      );
       setTimeout(() => {
         isUndoRedoRef.current = false;
       }, 100);
     }
-  }, [laneHistory, laneHistoryIndex]);
+  }, [laneHistory, laneHistoryIndex, clampDraftLanes]);
 
   const handleUndoStops = useCallback(() => {
     if (stopHistoryIndex > 0) {
@@ -495,12 +508,12 @@ export default function MapEditorPage() {
           return l;
         });
 
-        setDraftLanes(updatedLanes);
+        setDraftLanes(clampDraftLanes(updatedLanes));
         saveLaneHistory(updatedLanes, false); // Save history for delete operation
         setSelectedPoint(null); // Clear selection after deletion
       }
     }
-  }, [selectedPoint, draftLanes, saveLaneHistory, t]);
+  }, [selectedPoint, draftLanes, saveLaneHistory, t, clampDraftLanes]);
 
   const handleDeleteStop = useCallback(async () => {
     if (editingStopId && mapData) {
@@ -593,20 +606,6 @@ export default function MapEditorPage() {
     saveStopHistory(newStops, false); // Save history immediately for new stop
   };
 
-  // const handleIconPlace = (
-  //   icon: MapIconWithRelations,
-  //   position: CoordinateTuple
-  // ) => {
-  //   const newPlacedIcon = {
-  //     id: `placed-icon-${Date.now()}`,
-  //     icon,
-  //     position,
-  //   };
-  //   setPlacedIcons((prev) => [...prev, newPlacedIcon]);
-  //   // Clear selection after placing
-  //   setSelectedIcon(null);
-  // };
-
   if (!canEdit) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -632,9 +631,10 @@ export default function MapEditorPage() {
           originalLanes={lanesData?.items || []}
           draftLanes={draftLanes}
           onDraftLanesChange={(lanes) => {
-            setDraftLanes(lanes);
+            const limited = clampDraftLanes(lanes);
+            setDraftLanes(limited);
             // Save history immediately when lanes change (not during undo/redo)
-            saveLaneHistory(lanes, true);
+            saveLaneHistory(limited, true);
           }}
           draftStops={draftStops}
           onDraftStopsChange={(setter) => {
@@ -684,9 +684,10 @@ export default function MapEditorPage() {
             // onPlacedIconUpdate={handlePlacedIconUpdate}
             draftLanes={draftLanes}
             onDraftLanesChange={(lanes) => {
-              setDraftLanes(lanes);
+              const limited = clampDraftLanes(lanes);
+              setDraftLanes(limited);
               // Save history immediately when lanes change from map interactions
-              saveLaneHistory(lanes, true);
+              saveLaneHistory(limited, true);
             }}
             draftStops={draftStops}
             onAddDraftStop={handleAddDraftStop}

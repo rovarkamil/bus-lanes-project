@@ -1314,6 +1314,7 @@ export const MapEditor = ({
                 center={center}
                 zoom={14}
                 scrollWheelZoom
+                zoomControl={false}
                 className="h-full w-full"
               >
                 <MapInstanceTracker onMapReady={handleMapCreated} />

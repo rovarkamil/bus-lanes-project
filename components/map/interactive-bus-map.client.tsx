@@ -1,6 +1,13 @@
 "use client";
 
-import { ReactNode, useCallback, useMemo, useState, useEffect } from "react";
+import {
+  ReactNode,
+  useCallback,
+  useMemo,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 import {
   Marker,
   Popup,
@@ -8,6 +15,7 @@ import {
   Polyline,
   Polygon,
   useMap,
+  useMapEvents,
 } from "react-leaflet";
 import L, { Icon, LatLngExpression, LatLngBoundsExpression } from "leaflet";
 import { LeafletMap } from "@/components/map/leaflet-map";
@@ -21,6 +29,7 @@ import {
   MapTransportService,
   MapIconData,
   CoordinateTuple,
+  MapFocusPoint,
 } from "@/types/map";
 import { useLocale } from "@/components/locale-provder";
 import { getLocalizedValue } from "@/lib/i18n/get-localized-value";
@@ -57,6 +66,42 @@ const createCustomIcon = (icon?: MapIconData | null): Icon | undefined => {
   });
 };
 
+const MapFocusHandler = ({
+  focusPoint,
+}: {
+  focusPoint?: MapFocusPoint | null;
+}) => {
+  const map = useMap();
+  const lastTokenRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!focusPoint) return;
+    if (lastTokenRef.current === focusPoint.token) return;
+    lastTokenRef.current = focusPoint.token;
+    const zoom =
+      focusPoint.zoom ?? Math.max(map.getZoom(), DEFAULT_ZOOM_WITH_POSITION);
+    map.flyTo(focusPoint.position as LatLngExpression, zoom, { duration: 0.8 });
+  }, [focusPoint, map]);
+
+  return null;
+};
+
+const MapViewportTracker = ({
+  onViewportChange,
+}: {
+  onViewportChange?: (center: CoordinateTuple, zoom: number) => void;
+}) => {
+  const map = useMapEvents({
+    moveend: () => {
+      if (!onViewportChange) return;
+      const center = map.getCenter();
+      onViewportChange([center.lat, center.lng], map.getZoom());
+    },
+  });
+
+  return null;
+};
+
 const collectPoints = (
   coords: CoordinateTuple[] | undefined,
   accumulator: CoordinateTuple[]
@@ -80,6 +125,8 @@ export interface InteractiveBusMapProps {
   selectedServices?: string[];
   selectedLanes?: string[];
   showStops?: boolean;
+  focusPoint?: MapFocusPoint | null;
+  onViewportChange?: (center: CoordinateTuple, zoom: number) => void;
 }
 
 export const InteractiveBusMap = ({
@@ -97,6 +144,8 @@ export const InteractiveBusMap = ({
   selectedServices = [],
   selectedLanes = [],
   showStops = true,
+  focusPoint = null,
+  onViewportChange,
 }: InteractiveBusMapProps) => {
   // Use higher zoom if initialCenter is provided (from settings)
   const effectiveZoom = useMemo(() => {
@@ -123,15 +172,32 @@ export const InteractiveBusMap = ({
     new Set()
   );
 
+  const serviceIds = useMemo(
+    () => services.map((service) => service.id),
+    [services]
+  );
+  const laneIds = useMemo(() => lanes.map((lane) => lane.id), [lanes]);
+
+  const isServiceFilterActive = useMemo(() => {
+    if (!serviceIds.length) return false;
+    if (!selectedServices.length) return false;
+    return selectedServices.length !== serviceIds.length;
+  }, [selectedServices, serviceIds]);
+
+  const isLaneFilterActive = useMemo(() => {
+    if (!laneIds.length) return false;
+    if (!selectedLanes.length) return false;
+    return selectedLanes.length !== laneIds.length;
+  }, [selectedLanes, laneIds]);
+
   const filteredStops = useMemo(() => {
     if (!showStops) return [];
 
     return stops.filter((stop) => {
       if (stop.isActive === false) return false;
 
-      // Filter by selected services
-      if (selectedServices.length > 0) {
-        const serviceIds = new Set([
+      if (isServiceFilterActive) {
+        const serviceSet = new Set([
           ...(stop.serviceIds ?? []),
           ...(stop.services?.map((service) => service.id) ?? []),
           ...(stop.routes
@@ -141,8 +207,8 @@ export const InteractiveBusMap = ({
             ?.map((lane) => lane.serviceId)
             .filter(Boolean) as string[]),
         ]);
-        if (serviceIds.size === 0) return false;
-        const hasMatch = Array.from(serviceIds).some((id) =>
+        if (serviceSet.size === 0) return false;
+        const hasMatch = Array.from(serviceSet).some((id) =>
           selectedServices.includes(id)
         );
         if (!hasMatch) return false;
@@ -150,31 +216,33 @@ export const InteractiveBusMap = ({
 
       return true;
     });
-  }, [stops, selectedServices, showStops]);
+  }, [stops, showStops, isServiceFilterActive, selectedServices]);
 
   const filteredLanes = useMemo(
     () =>
       lanes.filter((lane) => {
         if (lane.isActive === false) return false;
 
-        // Filter by selected services
-        if (selectedServices.length > 0) {
+        if (isServiceFilterActive) {
           const laneServiceId = lane.serviceId ?? lane.service?.id;
           if (!laneServiceId || !selectedServices.includes(laneServiceId)) {
             return false;
           }
         }
 
-        // Filter by selected lanes
-        if (selectedLanes.length > 0) {
-          if (!selectedLanes.includes(lane.id)) {
-            return false;
-          }
+        if (isLaneFilterActive && !selectedLanes.includes(lane.id)) {
+          return false;
         }
 
         return true;
       }),
-    [lanes, selectedServices, selectedLanes]
+    [
+      lanes,
+      isServiceFilterActive,
+      isLaneFilterActive,
+      selectedServices,
+      selectedLanes,
+    ]
   );
 
   const filteredRoutes = useMemo(
@@ -182,8 +250,7 @@ export const InteractiveBusMap = ({
       routes.filter((route) => {
         if (route.isActive === false) return false;
 
-        // Filter by selected services
-        if (selectedServices.length > 0) {
+        if (isServiceFilterActive) {
           const routeServiceId = route.serviceId ?? route.service?.id;
           if (!routeServiceId || !selectedServices.includes(routeServiceId)) {
             return false;
@@ -192,7 +259,7 @@ export const InteractiveBusMap = ({
 
         return true;
       }),
-    [routes, selectedServices]
+    [routes, isServiceFilterActive, selectedServices]
   );
 
   const activeZones = useMemo(
@@ -280,6 +347,9 @@ export const InteractiveBusMap = ({
     const markers: ReactNode[] = [];
 
     lanesByService.forEach((serviceLanes, serviceId) => {
+      if (isServiceFilterActive && !selectedServices.includes(serviceId)) {
+        return;
+      }
       // Always show starting points, even if service is expanded (for collapse functionality)
 
       serviceLanes.forEach((lane) => {
@@ -536,6 +606,8 @@ export const InteractiveBusMap = ({
       >
         {/* Only auto-fit if no initial center is provided */}
         {bounds && !initialCenter && <MapAutoFit bounds={bounds} />}
+        <MapFocusHandler focusPoint={focusPoint} />
+        <MapViewportTracker onViewportChange={onViewportChange} />
         {renderZonePolygons()}
         {renderStartingPointMarkers()}
         {renderLanePolylines()}

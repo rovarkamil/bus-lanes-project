@@ -26,6 +26,7 @@ import {
 } from "@/components/dialogs/map/map-lines-dialog";
 import { CoordinateTuple } from "@/types/map";
 import { TransportServiceWithRelations } from "@/types/models/transport-service";
+import { CreateTransportServiceDialog } from "@/components/dialogs/transport-service/create-transport-service-dialog";
 
 interface UpdateBusLanesMapEditorDialogProps {
   isOpen: boolean;
@@ -357,6 +358,29 @@ export const UpdateBusLanesMapEditorDialog: FC<
                     canClear
                     defaultValue={selectedServices[form.id] || undefined}
                     value={selectedServices[form.id]?.id ?? ""}
+                    showAddButton
+                    addButtonLabel={t("CreateDialog.NewTransportService")}
+                    addDialog={
+                      <CreateTransportServiceDialog
+                        isOpen={false}
+                        onOpenChange={() => {}}
+                        onSuccess={() => {}}
+                      />
+                    }
+                    onAddSuccess={(newService) => {
+                      const created = newService as
+                        | TransportServiceWithRelations
+                        | undefined;
+                      if (created?.id) {
+                        setSelectedServices((prev) => ({
+                          ...prev,
+                          [form.id]: created,
+                        }));
+                        handleLaneFormChange(index, {
+                          serviceId: created.id,
+                        });
+                      }
+                    }}
                   />
                 </div>
               </div>

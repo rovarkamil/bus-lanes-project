@@ -64,7 +64,8 @@
     "LaneNumber": "ڕێدەر {{number}}",
     "Points": "خاڵ",
     "IsActive": "دۆخی چالاکی",
-    "BulkCreate": "دروستکردنی {{count}} ڕێدەر"
+    "BulkCreate": "دروستکردنی {{count}} ڕێدەر",
+    "NewTransportService": "خزمەتگوزاریی گواستنەوەی نوێ زیاد بکە"
   },
   "UpdateDialog": {
     "Title": "نوێکردنەوەی ڕێدەری بۆس",

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useMapEvents, Marker, Polyline, Tooltip } from "react-leaflet";
-import { LatLng } from "leaflet";
+import { LatLng, LeafletEventHandlerFnMap } from "leaflet";
 import { CoordinateTuple } from "@/types/map";
 import { MapEditorLaneDraft } from "@/types/models/bus-lane";
 // import { MapIconWithRelations } from "@/types/models/map-icon";
@@ -66,6 +66,20 @@ export function LaneDrawingTool({
   // selectedIcon,
   // onIconPlace,
 }: LaneDrawingToolProps) {
+  const updateLanePoint = (
+    laneIndex: number,
+    pointIndex: number,
+    position: LatLng
+  ) => {
+    const updatedLanes = draftLanes.map((lane, idx) => {
+      if (idx !== laneIndex) return lane;
+      const updatedPath = [...lane.path];
+      updatedPath[pointIndex] = [position.lat, position.lng];
+      return { ...lane, path: updatedPath };
+    });
+    onDraftLanesChange(updatedLanes);
+  };
+
   const handleMapClick = (event: { latlng: LatLng }) => {
     const point: CoordinateTuple = [event.latlng.lat, event.latlng.lng];
 
@@ -198,6 +212,23 @@ export function LaneDrawingTool({
                 key={`${laneId}-start`}
                 position={startPoint}
                 icon={getMarkerIcon(lane, true)}
+                draggable={isDrawingMode}
+                eventHandlers={
+                  {
+                    click: (e) => {
+                      e.originalEvent.stopPropagation();
+                      onSelectedPointChange?.({
+                        laneIndex,
+                        pointIndex: 0,
+                      });
+                    },
+                    dragend: (e) => {
+                      const marker = e.target;
+                      const position = marker.getLatLng();
+                      updateLanePoint(laneIndex, 0, position);
+                    },
+                  } as LeafletEventHandlerFnMap
+                }
               >
                 <Tooltip sticky>
                   Start: {lane.name?.en || `Draft Lane ${laneIndex + 1}`}
@@ -214,6 +245,27 @@ export function LaneDrawingTool({
                   key={`${laneId}-end`}
                   position={endPoint}
                   icon={getMarkerIcon(lane, false)}
+                  draggable={isDrawingMode}
+                  eventHandlers={
+                    {
+                      click: (e) => {
+                        e.originalEvent.stopPropagation();
+                        onSelectedPointChange?.({
+                          laneIndex,
+                          pointIndex: lane.path.length - 1,
+                        });
+                      },
+                      dragend: (e) => {
+                        const marker = e.target;
+                        const position = marker.getLatLng();
+                        updateLanePoint(
+                          laneIndex,
+                          lane.path.length - 1,
+                          position
+                        );
+                      },
+                    } as LeafletEventHandlerFnMap
+                  }
                 >
                   <Tooltip sticky>
                     End: {lane.name?.en || `Draft Lane ${laneIndex + 1}`}
@@ -249,33 +301,24 @@ export function LaneDrawingTool({
                   position={point}
                   icon={selectedIcon || defaultIcon}
                   draggable={isDrawingMode}
-                  eventHandlers={{
-                    click: (e) => {
-                      e.originalEvent.stopPropagation();
-                      if (onSelectedPointChange) {
-                        onSelectedPointChange({
-                          laneIndex,
-                          pointIndex,
-                        });
-                      }
-                    },
-                    dragend: (e) => {
-                      const marker = e.target;
-                      const newPosition = marker.getLatLng();
-                      const updatedLanes = draftLanes.map((l, idx) => {
-                        if (idx === laneIndex) {
-                          const updatedPath = [...l.path];
-                          updatedPath[pointIndex] = [
-                            newPosition.lat,
-                            newPosition.lng,
-                          ];
-                          return { ...l, path: updatedPath };
+                  eventHandlers={
+                    {
+                      click: (e) => {
+                        e.originalEvent.stopPropagation();
+                        if (onSelectedPointChange) {
+                          onSelectedPointChange({
+                            laneIndex,
+                            pointIndex,
+                          });
                         }
-                        return l;
-                      });
-                      onDraftLanesChange(updatedLanes);
-                    },
-                  }}
+                      },
+                      dragend: (e) => {
+                        const marker = e.target;
+                        const newPosition = marker.getLatLng();
+                        updateLanePoint(laneIndex, pointIndex, newPosition);
+                      },
+                    } as LeafletEventHandlerFnMap
+                  }
                 >
                   <Tooltip sticky>
                     Point {pointIndex + 1}

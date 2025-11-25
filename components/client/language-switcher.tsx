@@ -33,10 +33,13 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all duration-300 font-medium bg-white/80 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-white/20 backdrop-blur-sm hover:scale-105 border border-slate-200/50 dark:border-white/20 hover:border-purple-400/50">
+        <button
+          title="Switch language"
+          className="flex items-center gap-1.5 px-2.5 py-2 text-xs font-semibold rounded-full transition-all duration-300 bg-white/80 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-white/20 backdrop-blur-sm border border-slate-200/60 dark:border-white/10 hover:border-blue-400/60"
+        >
           <Globe className="w-4 h-4" />
-          <span className="hidden sm:inline">{currentLanguage?.label}</span>
-          <span className="sm:hidden">
+          <span className="hidden md:inline">{currentLanguage?.label}</span>
+          <span className="md:hidden">
             {currentLanguage?.code.toUpperCase()}
           </span>
           <ChevronDown className="w-3 h-3" />

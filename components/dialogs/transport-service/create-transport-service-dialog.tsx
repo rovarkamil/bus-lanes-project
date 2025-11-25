@@ -15,6 +15,7 @@ import { LanguageFields } from "@/utils/language-handler";
 import { Info } from "lucide-react";
 import {
   CreateTransportServiceData,
+  TransportServiceWithRelations,
   createTransportServiceSchema,
 } from "@/types/models/transport-service";
 import { useCreateTransportService } from "@/hooks/employee-hooks/use-transport-service";
@@ -32,7 +33,7 @@ import { useFetchMapIcons } from "@/hooks/employee-hooks/use-map-icon";
 interface CreateTransportServiceDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
+  onSuccess?: (service?: TransportServiceWithRelations) => void;
 }
 
 export const CreateTransportServiceDialog: FC<
@@ -76,7 +77,7 @@ export const CreateTransportServiceDialog: FC<
 
   const handleSubmit = async (formData: CreateTransportServiceData) => {
     try {
-      await createTransportService({
+      const response = await createTransportService({
         ...formData,
         iconId: formData.iconId || null,
         capacity:
@@ -87,7 +88,9 @@ export const CreateTransportServiceDialog: FC<
 
       toast.success(t("Success.Created"));
       onOpenChange(false);
-      onSuccess?.();
+      if (response?.data) {
+        onSuccess?.(response.data);
+      }
       resetState();
     } catch (error) {
       console.error("Error creating transport service:", error);

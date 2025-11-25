@@ -21,6 +21,7 @@ import {
   Languages,
   Lock,
   ArrowRight,
+  Home,
 } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
@@ -243,6 +244,16 @@ const LogInPage = () => {
       <div className="absolute inset-0 bg-grid-white/[0.02] dark:bg-grid-white/[0.03]" />
 
       <div className="fixed top-4 right-4 flex items-center gap-3 z-50">
+        <Button
+          asChild
+          variant="outline"
+          size="icon"
+          className="rounded-full hover:bg-background/80 backdrop-blur-sm border-primary/20"
+        >
+          <Link href="/" aria-label="Go to map">
+            <Home className="h-5 w-5" />
+          </Link>
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

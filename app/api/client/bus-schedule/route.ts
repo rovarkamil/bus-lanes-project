@@ -1,11 +1,10 @@
 "use server";
 
-import { Permission } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
-import { createEmployeeModelRoutes } from "@/utils/createModelRoutes";
+import { createPublicModelRoutes } from "@/utils/createModelRoutes";
 import {
   busScheduleSchema,
   createBusScheduleSchema,
@@ -25,18 +24,12 @@ const deleteSchema = busScheduleSchema.pick({ id: true });
 type CreatePayload = CreateBusScheduleData;
 type UpdatePayload = UpdateBusScheduleData;
 
-export const { GET, POST, PUT, DELETE } = createEmployeeModelRoutes({
+export const { GET, POST, PUT, DELETE } = createPublicModelRoutes({
   modelName: "busSchedule",
   schema: busScheduleSchema,
   createSchema: createBusScheduleSchema,
   updateSchema: updateBusScheduleSchema,
   deleteSchema,
-  permissions: {
-    view: Permission.VIEW_BUS_SCHEDULES,
-    create: Permission.CREATE_BUS_SCHEDULE,
-    update: Permission.UPDATE_BUS_SCHEDULE,
-    delete: Permission.DELETE_BUS_SCHEDULE,
-  },
   fieldConfigs: busScheduleFieldConfigs,
   relations: {
     route: {

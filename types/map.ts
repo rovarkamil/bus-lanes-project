@@ -106,3 +106,9 @@ export interface MapDataPayload {
   services: MapTransportService[];
   zones?: MapZone[];
 }
+
+export interface MapFocusPoint {
+  position: CoordinateTuple;
+  zoom?: number;
+  token: number;
+}

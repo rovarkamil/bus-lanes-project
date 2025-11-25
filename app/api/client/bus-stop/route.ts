@@ -1,11 +1,10 @@
 "use server";
 
-import { Permission } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
-import { createEmployeeModelRoutes } from "@/utils/createModelRoutes";
+import { createPublicModelRoutes } from "@/utils/createModelRoutes";
 import {
   busStopSchema,
   createBusStopSchema,
@@ -31,18 +30,12 @@ type UpdatePayload = UpdateBusStopData & {
   images?: UploadedFileInput[];
 };
 
-export const { GET, POST, PUT, DELETE } = createEmployeeModelRoutes({
+export const { GET, POST, PUT, DELETE } = createPublicModelRoutes({
   modelName: "busStop",
   schema: busStopSchema,
   createSchema: createBusStopSchema,
   updateSchema: updateBusStopSchema,
   deleteSchema,
-  permissions: {
-    view: Permission.VIEW_BUS_STOPS,
-    create: Permission.CREATE_BUS_STOP,
-    update: Permission.UPDATE_BUS_STOP,
-    delete: Permission.DELETE_BUS_STOP,
-  },
   fieldConfigs: busStopFieldConfigs,
   relations: {
     name: true,

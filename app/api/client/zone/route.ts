@@ -1,11 +1,10 @@
 "use server";
 
-import { Permission } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
-import { createEmployeeModelRoutes } from "@/utils/createModelRoutes";
+import { createPublicModelRoutes } from "@/utils/createModelRoutes";
 import {
   zoneSchema,
   createZoneSchema,
@@ -25,18 +24,12 @@ const deleteSchema = zoneSchema.pick({ id: true });
 type CreatePayload = CreateZoneData;
 type UpdatePayload = UpdateZoneData;
 
-export const { GET, POST, PUT, DELETE } = createEmployeeModelRoutes({
+export const { GET, POST, PUT, DELETE } = createPublicModelRoutes({
   modelName: "zone",
   schema: zoneSchema,
   createSchema: createZoneSchema,
   updateSchema: updateZoneSchema,
   deleteSchema,
-  permissions: {
-    view: Permission.VIEW_ZONES,
-    create: Permission.CREATE_ZONE,
-    update: Permission.UPDATE_ZONE,
-    delete: Permission.DELETE_ZONE,
-  },
   fieldConfigs: zoneFieldConfigs,
   relations: {
     name: true,

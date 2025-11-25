@@ -1,11 +1,10 @@
 "use server";
 
-import { Permission } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
-import { createEmployeeModelRoutes } from "@/utils/createModelRoutes";
+import { createPublicModelRoutes } from "@/utils/createModelRoutes";
 import {
   transportServiceSchema,
   createTransportServiceSchema,
@@ -25,18 +24,12 @@ const deleteSchema = transportServiceSchema.pick({ id: true });
 type CreatePayload = CreateTransportServiceData;
 type UpdatePayload = UpdateTransportServiceData;
 
-export const { GET, POST, PUT, DELETE } = createEmployeeModelRoutes({
+export const { GET, POST, PUT, DELETE } = createPublicModelRoutes({
   modelName: "transportService",
   schema: transportServiceSchema,
   createSchema: createTransportServiceSchema,
   updateSchema: updateTransportServiceSchema,
   deleteSchema,
-  permissions: {
-    view: Permission.VIEW_TRANSPORT_SERVICES,
-    create: Permission.CREATE_TRANSPORT_SERVICE,
-    update: Permission.UPDATE_TRANSPORT_SERVICE,
-    delete: Permission.DELETE_TRANSPORT_SERVICE,
-  },
   fieldConfigs: transportServiceFieldConfigs,
   relations: {
     name: true,

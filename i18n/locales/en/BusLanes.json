@@ -67,7 +67,8 @@
     "LaneNumber": "Lane {{number}}",
     "Points": "points",
     "IsActive": "Active status",
-    "BulkCreate": "Create {{count}} Lanes"
+    "BulkCreate": "Create {{count}} Lanes",
+    "NewTransportService": "Add transport service"
   },
   "UpdateDialog": {
     "Title": "Update Bus Lane",

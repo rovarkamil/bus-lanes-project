@@ -9,9 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { LanguageTabs } from "@/components/language-tabs";
 import { LanguageFields } from "@/utils/language-handler";
-import {
-  useCreateBusLanesMapEditor,
-} from "@/hooks/employee-hooks/use-bus-lane";
+import { useCreateBusLanesMapEditor } from "@/hooks/employee-hooks/use-bus-lane";
 import {
   MapEditorLaneDraft,
   CreateBusLanesMapEditorData,
@@ -27,6 +25,8 @@ import {
   type MapLinesDialogResult,
 } from "@/components/dialogs/map/map-lines-dialog";
 import { CoordinateTuple } from "@/types/map";
+import { CreateTransportServiceDialog } from "@/components/dialogs/transport-service/create-transport-service-dialog";
+import { TransportServiceWithRelations } from "@/types/models/transport-service";
 
 interface CreateBusLanesMapEditorDialogProps {
   isOpen: boolean;
@@ -94,15 +94,11 @@ export const CreateBusLanesMapEditorDialog: FC<
       for (let i = 0; i < laneForms.length; i++) {
         const form = laneForms[i];
         if (!form.name.en.trim()) {
-          toast.error(
-            t("CreateDialog.NameRequired", { laneNumber: i + 1 })
-          );
+          toast.error(t("CreateDialog.NameRequired", { laneNumber: i + 1 }));
           return;
         }
         if (form.path.length < 2) {
-          toast.error(
-            t("CreateDialog.PathRequired", { laneNumber: i + 1 })
-          );
+          toast.error(t("CreateDialog.PathRequired", { laneNumber: i + 1 }));
           return;
         }
       }
@@ -312,6 +308,25 @@ export const CreateBusLanesMapEditorDialog: FC<
                     placeholder={t("SelectTransportService")}
                     canClear
                     value={form.serviceId || ""}
+                    showAddButton
+                    addButtonLabel={t("CreateDialog.NewTransportService")}
+                    addDialog={
+                      <CreateTransportServiceDialog
+                        isOpen={false}
+                        onOpenChange={() => {}}
+                        onSuccess={() => {}}
+                      />
+                    }
+                    onAddSuccess={(newService) => {
+                      const created = newService as
+                        | TransportServiceWithRelations
+                        | undefined;
+                      if (created?.id) {
+                        handleLaneFormChange(index, {
+                          serviceId: created.id,
+                        });
+                      }
+                    }}
                   />
                 </div>
               </div>
@@ -361,11 +376,7 @@ export const CreateBusLanesMapEditorDialog: FC<
             >
               {t("Cancel")}
             </Button>
-            <Button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isCreating}
-            >
+            <Button type="button" onClick={handleSubmit} disabled={isCreating}>
               {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t("CreateDialog.BulkCreate", { count: lanes.length })}
             </Button>
@@ -395,4 +406,3 @@ export const CreateBusLanesMapEditorDialog: FC<
     </>
   );
 };
-

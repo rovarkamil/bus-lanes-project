@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation";
 import { UserType } from "@prisma/client";
 import { useCallback } from "react";
 import { useTranslation as useDashboardTranslation } from "@/i18n/client";
-import { LayoutDashboard, LogOut } from "lucide-react";
+import { LayoutDashboard, LogIn, LogOut } from "lucide-react";
 
 export default function Navbar() {
   const { t, i18n } = useTranslation("Map");
@@ -38,11 +38,11 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-blue-200 dark:border-blue-800 bg-blue-100/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 py-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-3 sm:px-4 py-2">
+        <div className="flex items-center justify-between gap-2">
           <Link href="/" className="flex items-center gap-3">
             <div className="relative">
-              <div className="h-12 w-12 rounded-2xl border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-700">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-2xl border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-700">
                 <img
                   src="/images/project-logo.png"
                   alt={authT("AppName")}
@@ -52,7 +52,7 @@ export default function Navbar() {
               <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-white dark:border-slate-800 bg-emerald-500"></span>
             </div>
             <div className="flex flex-col leading-tight">
-              <span className="text-lg font-semibold tracking-tight text-blue-700 dark:text-blue-400">
+              <span className="text-base sm:text-lg font-semibold tracking-tight text-blue-700 dark:text-blue-400">
                 {authT("AppName")}
               </span>
               <span className="text-[11px] uppercase text-blue-600/70 dark:text-blue-400/70">
@@ -61,7 +61,7 @@ export default function Navbar() {
             </div>
           </Link>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
             <LanguageSwitcher currentLocale={locale} />
             <ThemeToggle />
 
@@ -84,7 +84,7 @@ export default function Navbar() {
                 onClick={handleSignOut}
                 variant="outline"
                 size="icon"
-                className="border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700"
+                className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-500 dark:text-red-300 dark:hover:bg-red-500/10"
                 title={authT("SignOut")}
               >
                 <LogOut className="h-4 w-4" />
@@ -92,9 +92,13 @@ export default function Navbar() {
             ) : (
               <Button
                 asChild
+                size="icon"
                 className="bg-blue-600 hover:bg-blue-700 text-white"
+                title={authT("LogIn")}
               >
-                <Link href="/login">{authT("LogIn")}</Link>
+                <Link href="/login" aria-label={authT("LogIn")}>
+                  <LogIn className="h-4 w-4" />
+                </Link>
               </Button>
             )}
           </div>

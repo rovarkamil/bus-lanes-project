@@ -164,6 +164,25 @@
     "ClickToSelect": "کرتە لەسەر نەخشە بکە بۆ هەڵبژاردنی شوێن",
     "Apply": "جێبەجێکردن"
   },
+  "DayOfWeek": {
+    "MONDAY": "دووشەممە",
+    "TUESDAY": "سێشەممە",
+    "WEDNESDAY": "چوارشەممە",
+    "THURSDAY": "پێنجشەممە",
+    "FRIDAY": "هەینی",
+    "SATURDAY": "شەممە",
+    "SUNDAY": "یەکشەممە"
+  },
+  "TransportServiceType": {
+    "Label": "جۆر",
+    "BUS": "بۆس",
+    "MINIBUS": "مینیبوس",
+    "TAXI": "تاکسی",
+    "SHARED_TAXI": "تاکسی هاوبەش",
+    "OTHER": "هیتر",
+    "UNKNOWN": "نەزانراو"
+  },
+  "ShowingStops": "وەستانەکانی نیشاندان",
   "Filters": "پاڵاوتنەکان",
   "ClearAll": "سڕینەوەی هەموو",
   "ShowAll": "نیشاندانی هەموو",
@@ -175,6 +194,7 @@
   "MoreStops": "وەستانەی زیاتر",
   "More": "زیاتر",
   "Images": "وێنەکان",
+  "FocusOnMap": "نیشاندانی لەسەر نەخشە",
   "Common": {
     "Cancel": "هەڵوەشاندن",
     "Updating": "نوێ دەکرێتەوە..."

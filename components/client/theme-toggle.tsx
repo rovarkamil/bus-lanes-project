@@ -20,19 +20,20 @@ const ThemeToggle: FC = () => {
 
   return (
     <Button
+      size="icon"
       className={cn(
-        "px-3 py-2 text-sm rounded-lg transition-all duration-300 font-medium",
-        "bg-white/80 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-white/20 hover:scale-105 backdrop-blur-sm border border-slate-200/50 dark:border-white/20 hover:border-purple-400/50"
+        "rounded-full border border-slate-200/60 dark:border-white/10 bg-white/80 dark:bg-white/10 text-slate-700 dark:text-slate-200",
+        "hover:bg-white hover:text-slate-900 dark:hover:bg-white/20"
       )}
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      aria-label="Toggle theme"
+      title="Toggle theme"
     >
-      <div className="w-4 h-4 flex-shrink-0">
-        {theme === "dark" ? (
-          <SunIcon className="w-4 h-4" />
-        ) : (
-          <MoonIcon className="w-4 h-4" />
-        )}
-      </div>
+      {theme === "dark" ? (
+        <SunIcon className="w-4 h-4" />
+      ) : (
+        <MoonIcon className="w-4 h-4" />
+      )}
     </Button>
   );
 };
