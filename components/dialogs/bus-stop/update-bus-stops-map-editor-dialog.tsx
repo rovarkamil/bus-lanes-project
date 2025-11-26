@@ -24,6 +24,7 @@ import { useFetchBusLanes } from "@/hooks/employee-hooks/use-bus-lane";
 import { useFetchBusRoutes } from "@/hooks/employee-hooks/use-bus-route";
 import { Home, Sofa, Lightbulb, Accessibility, Radio } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BusLane, BusRoute } from "@prisma/client";
 
 interface UpdateBusStopsMapEditorDialogProps {
   isOpen: boolean;
@@ -41,6 +42,13 @@ export const UpdateBusStopsMapEditorDialog: FC<
   const isRTL = i18n.language !== "en";
   const [activeTab, setActiveTab] = useState<"english" | "arabic" | "kurdish">(
     "english"
+  );
+
+  const [selectedRoutes, setSelectedRoutes] = useState<
+    Record<string, BusRoute[]>
+  >({});
+  const [selectedLanes, setSelectedLanes] = useState<Record<string, BusLane[]>>(
+    {}
   );
   const [stopForms, setStopForms] = useState<
     Array<{
@@ -99,6 +107,14 @@ export const UpdateBusStopsMapEditorDialog: FC<
           order: stop.order || undefined,
         }))
       );
+      const routes: Record<string, BusRoute[]> = {};
+      const lanes: Record<string, BusLane[]> = {};
+      stops.forEach((stop) => {
+        routes[stop.id] = stop.routes as BusRoute[];
+        lanes[stop.id] = stop.lanes as BusLane[];
+      });
+      setSelectedRoutes(routes);
+      setSelectedLanes(lanes);
     }
   }, [isOpen, stops]);
 
@@ -308,48 +324,56 @@ export const UpdateBusStopsMapEditorDialog: FC<
             <div className="space-y-2">
               <Label>{t("UpdateDialog.Lanes")}</Label>
               <MultipleSelectWithPagination
-                fetchFunction={useFetchBusLanes}
-                onSelect={(items: SelectableEntity[]) =>
-                  handleStopFormChange(index, {
-                    laneIds: items.map((item) => item.id),
-                  })
-                }
-                fields={[
-                  {
-                    key: "name",
-                    label: t("Common.Name"),
-                    type: "relation",
-                    relationKey: "en",
-                  },
-                ]}
-                placeholder={t("UpdateDialog.SelectLanes")}
-                defaultValue={
-                  form.laneIds?.map((id) => ({ id })) as SelectableEntity[]
-                }
+                 key={`lanes-${form.id}-${form.laneIds?.join(",") || ""}`}
+                 fetchFunction={useFetchBusLanes}
+                 fields={[
+                   {
+                     key: "name",
+                     label: t("Common.Name"),
+                     type: "relation",
+                     relationKey: "en",
+                   },
+                 ]}
+                 onSelect={(items: SelectableEntity[]) => {
+                   setSelectedLanes((prev) => ({
+                     ...prev,
+                     [form.id]: items as BusLane[],
+                   }));
+                   handleStopFormChange(index, {
+                     laneIds: items.map((item) => item.id),
+                   });
+                 }}
+                 placeholder={t("UpdateDialog.SelectLanes")}
+                 defaultValue={selectedLanes[form.id] || []}
+                 
               />
             </div>
 
             <div className="space-y-2">
               <Label>{t("UpdateDialog.Routes")}</Label>
               <MultipleSelectWithPagination
-                fetchFunction={useFetchBusRoutes}
-                onSelect={(items: SelectableEntity[]) =>
-                  handleStopFormChange(index, {
-                    routeIds: items.map((item) => item.id),
-                  })
-                }
-                fields={[
-                  {
-                    key: "name",
-                    label: t("Common.Name"),
-                    type: "relation",
-                    relationKey: "en",
-                  },
-                ]}
-                placeholder={t("UpdateDialog.SelectRoutes")}
-                defaultValue={
-                  form.routeIds?.map((id) => ({ id })) as SelectableEntity[]
-                }
+                 key={`routes-${form.id}-${form.routeIds?.join(",") || ""}`}
+                 fetchFunction={useFetchBusRoutes}
+                 fields={[
+                   {
+                     key: "name",
+                     label: t("Common.Name"),
+                     type: "relation",
+                     relationKey: "en",
+                   },
+                 ]}
+                 onSelect={(items: SelectableEntity[]) => {
+                   setSelectedRoutes((prev) => ({
+                     ...prev,
+                     [form.id]: items as BusRoute[],
+                   }));
+                   handleStopFormChange(index, {
+                     routeIds: items.map((item) => item.id),
+                   });
+                 }}
+                 
+                 placeholder={t("UpdateDialog.SelectRoutes")}
+                 defaultValue={selectedRoutes[form.id] || [] as BusRoute[]}
               />
             </div>
 

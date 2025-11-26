@@ -22,14 +22,9 @@ import { useFetchZones } from "@/hooks/employee-hooks/use-zone";
 import { useFetchMapIcons } from "@/hooks/employee-hooks/use-map-icon";
 import { useFetchBusLanes } from "@/hooks/employee-hooks/use-bus-lane";
 import { useFetchBusRoutes } from "@/hooks/employee-hooks/use-bus-route";
-import {
-  Home,
-  Sofa,
-  Lightbulb,
-  Accessibility,
-  Radio,
-} from "lucide-react";
+import { Home, Sofa, Lightbulb, Accessibility, Radio } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BusLane, BusRoute } from "@prisma/client";
 
 interface CreateBusStopsMapEditorDialogProps {
   isOpen: boolean;
@@ -48,6 +43,12 @@ export const CreateBusStopsMapEditorDialog: FC<
   const [activeTab, setActiveTab] = useState<"english" | "arabic" | "kurdish">(
     "english"
   );
+  const [selectedLanes, setSelectedLanes] = useState<Record<string, BusLane[]>>(
+    {}
+  );
+  const [selectedRoutes, setSelectedRoutes] = useState<
+    Record<string, BusRoute[]>
+  >({});
   const [stopForms, setStopForms] = useState<
     Array<{
       name: { en: string; ar?: string | null; ckb?: string | null };
@@ -105,9 +106,7 @@ export const CreateBusStopsMapEditorDialog: FC<
       for (let i = 0; i < stopForms.length; i++) {
         const form = stopForms[i];
         if (!form.name.en.trim()) {
-          toast.error(
-            t("CreateDialog.NameRequired", { stopNumber: i + 1 })
-          );
+          toast.error(t("CreateDialog.NameRequired", { stopNumber: i + 1 }));
           return;
         }
         if (
@@ -300,11 +299,15 @@ export const CreateBusStopsMapEditorDialog: FC<
               <Label>{t("CreateDialog.Lanes")}</Label>
               <MultipleSelectWithPagination
                 fetchFunction={useFetchBusLanes}
-                onSelect={(items: SelectableEntity[]) =>
+                onSelect={(items: SelectableEntity[]) => {
                   handleStopFormChange(index, {
                     laneIds: items.map((item) => item.id),
-                  })
-                }
+                  });
+                  setSelectedLanes((prev) => ({
+                    ...prev,
+                    [index]: items as BusLane[],
+                  }));
+                }}
                 fields={[
                   {
                     key: "name",
@@ -314,9 +317,7 @@ export const CreateBusStopsMapEditorDialog: FC<
                   },
                 ]}
                 placeholder={t("CreateDialog.SelectLanes")}
-                defaultValue={
-                  form.laneIds?.map((id) => ({ id })) as SelectableEntity[]
-                }
+                defaultValue={selectedLanes[index] || []}
               />
             </div>
 
@@ -324,11 +325,15 @@ export const CreateBusStopsMapEditorDialog: FC<
               <Label>{t("CreateDialog.Routes")}</Label>
               <MultipleSelectWithPagination
                 fetchFunction={useFetchBusRoutes}
-                onSelect={(items: SelectableEntity[]) =>
+                onSelect={(items: SelectableEntity[]) => {
                   handleStopFormChange(index, {
                     routeIds: items.map((item) => item.id),
-                  })
-                }
+                  });
+                  setSelectedRoutes((prev) => ({
+                    ...prev,
+                    [index]: items as BusRoute[],
+                  }));
+                }}
                 fields={[
                   {
                     key: "name",
@@ -338,9 +343,7 @@ export const CreateBusStopsMapEditorDialog: FC<
                   },
                 ]}
                 placeholder={t("CreateDialog.SelectRoutes")}
-                defaultValue={
-                  form.routeIds?.map((id) => ({ id })) as SelectableEntity[]
-                }
+                defaultValue={selectedRoutes[index] || []}
               />
             </div>
 
@@ -407,7 +410,9 @@ export const CreateBusStopsMapEditorDialog: FC<
                     : "bg-background"
                 )}
                 onClick={() =>
-                  handleStopFormChange(index, { hasLighting: !form.hasLighting })
+                  handleStopFormChange(index, {
+                    hasLighting: !form.hasLighting,
+                  })
                 }
               >
                 <div className="flex items-center gap-2">
@@ -512,4 +517,3 @@ export const CreateBusStopsMapEditorDialog: FC<
     </CustomDialog>
   );
 };
-

@@ -66,6 +66,10 @@ export const CreateBusLanesMapEditorDialog: FC<
   const [editingLaneIndex, setEditingLaneIndex] = useState<number | null>(null);
   const [isMapDialogOpen, setIsMapDialogOpen] = useState(false);
 
+  const [selectedRoutes, setSelectedRoutes] = useState<
+    Record<string, SelectableEntity[]>
+  >({});
+
   const { mutateAsync: createLanes, isPending: isCreating } =
     useCreateBusLanesMapEditor();
 
@@ -334,6 +338,7 @@ export const CreateBusLanesMapEditorDialog: FC<
               <div className="space-y-2">
                 <Label>{t("CreateDialog.Routes")}</Label>
                 <MultipleSelectWithPagination
+                  key={`routes-${index}-${form.routeIds?.join(",") || ""}`}
                   fetchFunction={useFetchBusRoutes}
                   fields={[
                     {
@@ -343,15 +348,17 @@ export const CreateBusLanesMapEditorDialog: FC<
                       relationKey: "en",
                     },
                   ]}
-                  onSelect={(items: SelectableEntity[]) =>
+                  onSelect={(items: SelectableEntity[]) => {
+                    setSelectedRoutes((prev) => ({
+                      ...prev,
+                      [index]: items,
+                    }));
                     handleLaneFormChange(index, {
                       routeIds: items.map((item) => item.id),
-                    })
-                  }
+                    });
+                  }}
                   placeholder={t("SelectRoutes")}
-                  defaultValue={
-                    form.routeIds?.map((id) => ({ id })) as SelectableEntity[]
-                  }
+                  defaultValue={selectedRoutes[index] || []}
                 />
               </div>
 
