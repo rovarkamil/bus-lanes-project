@@ -308,7 +308,7 @@ export function MapFilterPopover({
         <Button
           size="icon"
           className={cn(
-            "fixed bottom-12 right-6 z-[1500] h-14 w-14 rounded-full shadow-lg",
+            "fixed bottom-14 right-6 z-[1500] h-14 w-14 rounded-full shadow-lg",
             isRTL && "right-auto left-6"
           )}
           dir={isRTL ? "rtl" : "ltr"}
