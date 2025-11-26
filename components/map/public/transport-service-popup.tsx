@@ -15,7 +15,13 @@ import {
   Image as ImageIcon,
   Info,
 } from "lucide-react";
-import { MapTransportService, MapLane, MapRoute, MapStop } from "@/types/map";
+import {
+  MapTransportService,
+  MapLane,
+  MapRoute,
+  MapStop,
+  LanguageContent,
+} from "@/types/map";
 import { getLocalizedValue } from "@/lib/i18n/get-localized-value";
 import { useFetchBusSchedules } from "@/hooks/public-hooks/use-bus-schedule";
 import { useFetchBusLanes } from "@/hooks/public-hooks/use-bus-lane";
@@ -107,10 +113,17 @@ export function TransportServicePopup({
       getLocalizedValue(service?.name, locale) || service?.type || serviceId,
     [service?.name, service?.type, locale, serviceId]
   );
-  const serviceDescription = useMemo(
-    () => getLocalizedValue(service?.description, locale),
-    [service?.description, locale]
-  );
+  const serviceDescription =
+    service && "description" in service
+      ? getLocalizedValue(
+          (
+            service as MapTransportService & {
+              description?: LanguageContent | null;
+            }
+          ).description,
+          locale
+        )
+      : undefined;
 
   const handleImageClick = (
     images: { url: string; alt?: string }[],
@@ -174,11 +187,11 @@ export function TransportServicePopup({
                   {t(`TransportServiceType.${service?.type ?? "UNKNOWN"}`)}
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {service?.description?.[i18n.language] ??
-                  service?.description?.en ??
-                  serviceId}
-              </p>
+              {serviceDescription && (
+                <p className="text-xs text-muted-foreground">
+                  {serviceDescription}
+                </p>
+              )}
             </div>
             {service?.icon?.fileUrl && (
               <div className="relative h-14 w-14 overflow-hidden rounded-2xl border border-border/40 bg-background/80 p-2">
@@ -228,7 +241,7 @@ export function TransportServicePopup({
                     {lanes.map((lane) => (
                       <Pill
                         key={lane.id}
-                        color={lane.color || lane.service?.color}
+                        color={lane.color || lane.service?.color || undefined}
                         label={getLocalizedValue(lane.name, locale) || lane.id}
                       />
                     ))}
