@@ -41,7 +41,7 @@ export const MapStylePopover = ({
       <PopoverTrigger asChild>
         <Button
           size="icon"
-          className="fixed bottom-6 z-[1499] h-12 w-12 rounded-full shadow-lg"
+          className="fixed bottom-12 z-[1499] h-12 w-12 rounded-full shadow-lg"
           style={triggerPosition}
           dir={isRTL ? "rtl" : "ltr"}
           aria-label={t("MapAppearance", { defaultValue: "Map appearance" })}

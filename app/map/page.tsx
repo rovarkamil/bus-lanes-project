@@ -256,7 +256,7 @@ const MapPage = () => {
 
   return (
     <main
-      className="relative w-full overflow-hidden"
+      className="relative w-full overflow-hidden "
       dir={isRTL ? "rtl" : "ltr"}
       style={{
         height: "100vh",

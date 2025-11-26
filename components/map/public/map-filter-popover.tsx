@@ -308,7 +308,7 @@ export function MapFilterPopover({
         <Button
           size="icon"
           className={cn(
-            "fixed bottom-6 right-6 z-[1500] h-14 w-14 rounded-full shadow-lg",
+            "fixed bottom-12 right-6 z-[1500] h-14 w-14 rounded-full shadow-lg",
             isRTL && "right-auto left-6"
           )}
           dir={isRTL ? "rtl" : "ltr"}
@@ -317,7 +317,7 @@ export function MapFilterPopover({
           {activeFilterCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full p-0 text-xs"
+              className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full p-0 text-xs "
             >
               {activeFilterCount}
             </Badge>
