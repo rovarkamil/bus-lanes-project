@@ -639,7 +639,7 @@ export function MapEditorSidebar({
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => onDraftStopsChange([])}
+                        onClick={() => onDraftStopsChange?.([])}
                         size="sm"
                       >
                         <X className="h-3.5 w-3.5" />
@@ -663,99 +663,48 @@ export function MapEditorSidebar({
                   icon={Layers3}
                   title={t("ExistingLanes")}
                   action={
-                    <Badge variant="secondary">
-                      {data?.lanes?.length ?? 0}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">
+                        {data?.lanes?.length ?? 0}
+                      </Badge>
+                      {selectedLaneId && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => onSelectedLaneChange?.(null)}
+                          className="h-6 px-2 text-xs"
+                        >
+                          {t("ClearSelection", { defaultValue: "Clear" })}
+                        </Button>
+                      )}
+                    </div>
                   }
                 />
 
                 {data?.lanes && data.lanes.length > 0 && (
                   <ScrollArea className="flex-1">
                     <div className="space-y-1 pr-4">
-                      {data.lanes.map((lane) => (
-                        <div
-                          key={lane.id}
-                          className={cn(
-                            "flex items-center justify-between rounded border p-2 text-sm hover:bg-accent cursor-pointer transition-colors",
-                            selectedLaneId === lane.id &&
-                              "bg-accent border-primary"
-                          )}
-                          onClick={() => {
-                            // Highlight the lane on map
-                            if (onSelectedLaneChange) {
-                              onSelectedLaneChange(lane.id);
-                            }
-                            // Pan map to lane center
-                            if (
-                              onPanToLocation &&
-                              lane.path &&
-                              lane.path.length > 0
-                            ) {
-                              // Calculate center of lane path
-                              const latSum = lane.path.reduce(
-                                (sum, point) => sum + point[0],
-                                0
-                              );
-                              const lngSum = lane.path.reduce(
-                                (sum, point) => sum + point[1],
-                                0
-                              );
-                              const centerLat = latSum / lane.path.length;
-                              const centerLng = lngSum / lane.path.length;
-                              onPanToLocation(centerLat, centerLng, 15);
-                            }
-                          }}
-                        >
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <div
-                              className="h-3 w-3 rounded-full flex-shrink-0"
-                              style={{
-                                backgroundColor:
-                                  lane.color ||
-                                  lane.service?.color ||
-                                  "#0066CC",
-                              }}
-                            />
-                            <span className="truncate">
-                              {lane.name?.en ?? lane.id}
-                            </span>
-                          </div>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-6 w-6 flex-shrink-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // Load lane into draft for editing
-                              onDraftLanesChange([
-                                {
-                                  id: lane.id, // Include ID to mark as editing existing
-                                  path: lane.path || [],
-                                  color: lane.color || "#0066CC",
-                                  weight: lane.weight || 5,
-                                  opacity: lane.opacity || 0.8,
-                                  name: lane.name
-                                    ? {
-                                        en: lane.name.en || "",
-                                        ar: lane.name.ar || null,
-                                        ckb: lane.name.ckb || null,
-                                      }
-                                    : undefined,
-                                  isActive: lane.isActive ?? true,
-                                  serviceId: lane.serviceId,
-                                },
-                              ]);
-                              // Select and highlight the lane
+                      {data.lanes.map((lane) => {
+                        const isSelected = selectedLaneId === lane.id;
+                        return (
+                          <div
+                            key={lane.id}
+                            className={cn(
+                              "flex items-center justify-between rounded border p-2 text-sm hover:bg-accent cursor-pointer transition-colors",
+                              isSelected && "bg-accent border-primary"
+                            )}
+                            onClick={() => {
+                              const nextId = isSelected ? null : lane.id;
                               if (onSelectedLaneChange) {
-                                onSelectedLaneChange(lane.id);
+                                onSelectedLaneChange(nextId);
                               }
-                              // Pan map to lane center
                               if (
+                                !isSelected &&
                                 onPanToLocation &&
                                 lane.path &&
                                 lane.path.length > 0
                               ) {
-                                // Calculate center of lane path
                                 const latSum = lane.path.reduce(
                                   (sum, point) => sum + point[0],
                                   0
@@ -770,10 +719,71 @@ export function MapEditorSidebar({
                               }
                             }}
                           >
-                            <Edit className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      ))}
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <div
+                                className="h-3 w-3 rounded-full flex-shrink-0"
+                                style={{
+                                  backgroundColor:
+                                    lane.color ||
+                                    lane.service?.color ||
+                                    "#0066CC",
+                                }}
+                              />
+                              <span className="truncate">
+                                {lane.name?.en ?? lane.id}
+                              </span>
+                            </div>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-6 w-6 flex-shrink-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDraftLanesChange([
+                                  {
+                                    id: lane.id,
+                                    path: lane.path || [],
+                                    color: lane.color || "#0066CC",
+                                    weight: lane.weight || 5,
+                                    opacity: lane.opacity || 0.8,
+                                    name: lane.name
+                                      ? {
+                                          en: lane.name.en || "",
+                                          ar: lane.name.ar || null,
+                                          ckb: lane.name.ckb || null,
+                                        }
+                                      : undefined,
+                                    isActive: lane.isActive ?? true,
+                                    serviceId: lane.serviceId,
+                                  },
+                                ]);
+                                if (onSelectedLaneChange) {
+                                  onSelectedLaneChange(lane.id);
+                                }
+                                if (
+                                  onPanToLocation &&
+                                  lane.path &&
+                                  lane.path.length > 0
+                                ) {
+                                  const latSum = lane.path.reduce(
+                                    (sum, point) => sum + point[0],
+                                    0
+                                  );
+                                  const lngSum = lane.path.reduce(
+                                    (sum, point) => sum + point[1],
+                                    0
+                                  );
+                                  const centerLat = latSum / lane.path.length;
+                                  const centerLng = lngSum / lane.path.length;
+                                  onPanToLocation(centerLat, centerLng, 15);
+                                }
+                              }}
+                            >
+                              <Edit className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        );
+                      })}
                     </div>
                   </ScrollArea>
                 )}

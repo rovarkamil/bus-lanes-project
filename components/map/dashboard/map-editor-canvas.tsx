@@ -87,7 +87,7 @@ interface MapEditorCanvasProps {
   onAddDraftStop?: (position: CoordinateTuple) => void;
   editorMode?: "lane" | "stop";
   selectedLaneId?: string | null;
-  onLaneSelect?: (laneId: string) => void;
+  onLaneSelect?: (laneId: string | null) => void;
   editingStopId?: string | null;
   editingStopNewPosition?: { latitude: number; longitude: number } | null;
   onStopPositionUpdate?: (stopId: string, position: CoordinateTuple) => void;
@@ -226,10 +226,12 @@ export function MapEditorCanvas({
           routes={data?.routes ?? []}
           selectedLaneId={effectiveSelectedLaneId}
           onLaneClick={(laneId: string) => {
+            const nextValue =
+              effectiveSelectedLaneId === laneId ? null : laneId;
             if (onLaneSelect) {
-              onLaneSelect(laneId);
+              onLaneSelect(nextValue);
             } else {
-              setSelectedLaneId(laneId);
+              setSelectedLaneId(nextValue);
             }
           }}
           editingStopId={editingStopId}

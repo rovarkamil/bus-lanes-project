@@ -381,7 +381,11 @@ export default function MapEditorPage() {
   //   );
   // };
 
-  const handleLaneSelect = (laneId: string) => {
+  const handleLaneSelect = (laneId: string | null) => {
+    if (!laneId) {
+      setSelectedLaneId(null);
+      return;
+    }
     setSelectedLaneId(laneId);
     // Find the lane and set it as draft for editing
     const lane = mapData?.lanes.find((l) => l.id === laneId);

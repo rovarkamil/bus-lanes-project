@@ -61,8 +61,11 @@ export function ExistingLayers({
           // Use default markers
           if (typeof window !== "undefined") {
             try {
+              const fallbackIconUrl = isStart
+                ? "/markers/starting.png"
+                : "/markers/end.png";
               return L.icon({
-                iconUrl: isStart ? "/markers/starting.png" : "/markers/end.png",
+                iconUrl: fallbackIconUrl,
                 iconSize: [32, 32],
                 iconAnchor: [16, 32],
                 popupAnchor: [0, -32],

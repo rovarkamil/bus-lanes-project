@@ -207,7 +207,7 @@ export function LaneDrawingTool({
             )}
 
             {/* Render start marker */}
-            {startPoint && hasMultiplePoints && (
+            {startPoint && (
               <Marker
                 key={`${laneId}-start`}
                 position={startPoint}
