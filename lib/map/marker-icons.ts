@@ -31,9 +31,6 @@ export const createStopMarkerIcon = (): Icon | undefined => {
       iconAnchor: [22, 44],
       popupAnchor: [0, -36],
       tooltipAnchor: [0, -36],
-      shadowUrl,
-      shadowSize: [52, 52],
-      shadowAnchor: [22, 44],
     })
   );
 };
