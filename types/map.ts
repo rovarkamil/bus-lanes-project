@@ -111,4 +111,5 @@ export interface MapFocusPoint {
   position: CoordinateTuple;
   zoom?: number;
   token: number;
+  laneId?: string;
 }

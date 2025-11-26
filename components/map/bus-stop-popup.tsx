@@ -108,134 +108,132 @@ export const BusStopPopup = memo(
 
     return (
       <div
-        className="w-[320px] max-w-full space-y-4 text-sm"
+        className="w-[min(90vw,360px)] space-y-4 text-sm text-card-foreground sm:w-[320px]"
         dir={isRTL ? "rtl" : "ltr"}
       >
-        <div className="space-y-2">
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="text-base font-semibold leading-tight">
-                {stopName}
+        <div className="rounded-3xl border border-border/60 bg-card/95 p-4 shadow-xl ring-1 ring-border/30 backdrop-blur">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1">
+              <p className="text-lg font-semibold leading-tight">{stopName}</p>
+              <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5" />
+                {stop.latitude.toFixed(5)}, {stop.longitude.toFixed(5)}
               </p>
-              {stop.zone && (
-                <Badge
-                  variant="secondary"
-                  className="text-[10px] uppercase tracking-wide"
-                  style={
-                    stop.zone.color
-                      ? {
-                          backgroundColor: `${stop.zone.color}1a`,
-                          color: stop.zone.color,
-                        }
-                      : undefined
-                  }
-                >
-                  {zoneName ?? stop.zone.id}
-                </Badge>
-              )}
             </div>
-            <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-              <MapPin className="h-3 w-3" />
-              {stop.latitude.toFixed(5)}, {stop.longitude.toFixed(5)}
-            </p>
-          </div>
-
-          {description && (
-            <p className="text-xs text-muted-foreground">{description}</p>
-          )}
-        </div>
-
-        {stop.images?.length ? (
-          <ScrollArea className="h-32 w-full rounded-md border">
-            <div className="grid grid-cols-2 gap-2 p-2">
-              {stop.images.slice(0, 4).map((image) => (
-                <div
-                  key={image.id}
-                  className="relative h-24 w-full overflow-hidden rounded-md border bg-muted"
-                >
-                  <Image
-                    src={image.url}
-                    alt={image.name ?? stopName}
-                    fill
-                    sizes="150px"
-                    className="object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-        ) : null}
-
-        <div className="space-y-3">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              <CheckSquare className="h-3.5 w-3.5" />
-              {t("Amenities")}
-            </div>
-            {enabledAmenities.length ? (
-              <div className="mt-2 flex flex-wrap gap-2">
-                {enabledAmenities.map((amenity) => (
-                  <Badge key={amenity.key} variant="outline">
-                    {amenity.label}
-                  </Badge>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                {t("NoAmenitiesData")}
-              </p>
+            {stop.zone && (
+              <Badge
+                variant="secondary"
+                className="text-[10px] uppercase"
+                style={
+                  stop.zone.color
+                    ? {
+                        backgroundColor: `${stop.zone.color}22`,
+                        color: stop.zone.color,
+                      }
+                    : undefined
+                }
+              >
+                {zoneName ?? stop.zone.id}
+              </Badge>
             )}
           </div>
 
-          <Separator />
+          {description && (
+            <p className="mt-2 text-xs text-muted-foreground">{description}</p>
+          )}
 
-          <div>
-            <div className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              <Layers className="h-3.5 w-3.5" />
-              {t("Lanes")}
+          {stop.images?.length ? (
+            <ScrollArea className="mt-4 h-32 rounded-2xl border border-border/40 bg-background/60">
+              <div className="grid grid-cols-2 gap-2 p-2">
+                {stop.images.slice(0, 4).map((image) => (
+                  <div
+                    key={image.id}
+                    className="relative h-24 w-full overflow-hidden rounded-xl border border-border/30 bg-muted/30"
+                  >
+                    <Image
+                      src={image.url}
+                      alt={image.name ?? stopName}
+                      fill
+                      sizes="150px"
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          ) : null}
+
+          <div className="mt-4 space-y-4">
+            <div>
+              <div className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <CheckSquare className="h-3.5 w-3.5" />
+                {t("Amenities")}
+              </div>
+              {enabledAmenities.length ? (
+                <div className="flex flex-wrap gap-2">
+                  {enabledAmenities.map((amenity) => (
+                    <Badge key={amenity.key} variant="outline">
+                      {amenity.label}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="rounded-2xl bg-muted/30 p-3 text-xs text-muted-foreground">
+                  {t("NoAmenitiesData")}
+                </p>
+              )}
             </div>
-            <RelationPills
-              items={stop.lanes}
-              emptyLabel={t("NoLanesAssigned")}
-              icon={Layers}
-              colorFn={(lane) => lane.color ?? lane.service?.color ?? undefined}
-              getLabel={(lane) =>
-                getLocalizedValue(lane.name, locale) ?? lane.id
-              }
-              onSelect={(lane) => onLaneSelect?.(lane.id)}
-            />
+
+            <div>
+              <div className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <Layers className="h-3.5 w-3.5" />
+                {t("Lanes")}
+              </div>
+              <RelationPills
+                items={stop.lanes}
+                emptyLabel={t("NoLanesAssigned")}
+                icon={Layers}
+                colorFn={(lane) =>
+                  lane.color ?? lane.service?.color ?? undefined
+                }
+                getLabel={(lane) =>
+                  getLocalizedValue(lane.name, locale) ?? lane.id
+                }
+                onSelect={(lane) => onLaneSelect?.(lane.id)}
+              />
+            </div>
+
+            <div>
+              <div className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <RouteIcon className="h-3.5 w-3.5" />
+                {t("Routes")}
+              </div>
+              <RelationPills
+                items={stop.routes}
+                emptyLabel={t("NoRoutesAssigned")}
+                icon={RouteIcon}
+                colorFn={(route) =>
+                  route.color ?? route.service?.color ?? undefined
+                }
+                getLabel={(route) => {
+                  const localized =
+                    getLocalizedValue(route.name, locale) ?? route.id;
+                  return route.routeNumber
+                    ? `${route.routeNumber} • ${localized}`
+                    : localized;
+                }}
+                onSelect={(route) => onRouteSelect?.(route.id)}
+              />
+            </div>
           </div>
 
-          <div>
-            <div className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              <RouteIcon className="h-3.5 w-3.5" />
-              {t("Routes")}
-            </div>
-            <RelationPills
-              items={stop.routes}
-              emptyLabel={t("NoRoutesAssigned")}
-              icon={RouteIcon}
-              colorFn={(route) =>
-                route.color ?? route.service?.color ?? undefined
-              }
-              getLabel={(route) => {
-                const localized =
-                  getLocalizedValue(route.name, locale) ?? route.id;
-                return route.routeNumber
-                  ? `${route.routeNumber} • ${localized}`
-                  : localized;
-              }}
-              onSelect={(route) => onRouteSelect?.(route.id)}
-            />
-          </div>
+          <Separator className="my-4" />
+
+          <p className="flex items-center gap-2 rounded-2xl border border-border/40 bg-background/60 px-3 py-2 text-xs text-muted-foreground">
+            <Info className="h-3.5 w-3.5" />
+            {t("TapARouteOrLanePillToFilterTheMap")}
+          </p>
         </div>
-
-        <Separator />
-
-        <p className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Info className="h-3.5 w-3.5" />
-          {t("TapARouteOrLanePillToFilterTheMap")}
-        </p>
       </div>
     );
   }

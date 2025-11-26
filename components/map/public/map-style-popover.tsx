@@ -61,7 +61,7 @@ export const MapStylePopover = ({
         side="top"
         align={isRTL ? "start" : "end"}
         dir={isRTL ? "rtl" : "ltr"}
-        className="w-[86vw] max-w-sm p-3 z-[2000]"
+        className="w-[86vw] max-w-sm border border-border/60 bg-card/95 p-3 text-card-foreground shadow-2xl backdrop-blur z-[2000]"
       >
         <div className="space-y-3">
           <div>

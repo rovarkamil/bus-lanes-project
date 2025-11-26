@@ -213,12 +213,13 @@ const MapPage = () => {
   ]);
 
   const focusOnPosition = useCallback(
-    (position: CoordinateTuple, zoom = 16) => {
+    (position: CoordinateTuple, zoom = 16, laneId?: string) => {
       focusTokenRef.current += 1;
       setFocusPoint({
         position,
         zoom,
         token: focusTokenRef.current,
+        laneId,
       });
     },
     []
@@ -234,7 +235,7 @@ const MapPage = () => {
       if (!lane?.path?.length) {
         return;
       }
-      focusOnPosition(lane.path[0], 16);
+      focusOnPosition(lane.path[0], 16, lane.id);
     },
     [lanes, focusOnPosition]
   );
@@ -249,7 +250,7 @@ const MapPage = () => {
       }
       const middlePoint =
         lane.path[Math.floor(lane.path.length / 2)] ?? lane.path[0];
-      focusOnPosition(middlePoint, 16);
+      focusOnPosition(middlePoint, 16, lane.id);
     },
     [lanes, focusOnPosition]
   );

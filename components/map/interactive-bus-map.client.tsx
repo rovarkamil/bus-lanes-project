@@ -178,10 +178,18 @@ export const InteractiveBusMap = ({
     [mapStyle]
   );
 
-  // Progressive lane disclosure: track which services/lanes are expanded
-  const [expandedServices, setExpandedServices] = useState<Set<string>>(
-    new Set()
-  );
+  // Progressive lane disclosure: track which lanes are expanded
+  const [expandedLanes, setExpandedLanes] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (focusPoint?.laneId) {
+      setExpandedLanes((prev) => {
+        const next = new Set(prev);
+        next.add(focusPoint.laneId!);
+        return next;
+      });
+    }
+  }, [focusPoint]);
 
   const serviceIds = useMemo(
     () => services.map((service) => service.id),
@@ -325,16 +333,16 @@ export const InteractiveBusMap = ({
     });
   };
 
-  // Handle starting point click to expand service
-  const handleStartingPointClick = useCallback((serviceId: string) => {
-    setExpandedServices((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(serviceId)) {
-        newSet.delete(serviceId);
+  // Handle starting point click to expand a specific lane
+  const handleStartingPointClick = useCallback((laneId: string) => {
+    setExpandedLanes((prev) => {
+      const next = new Set(prev);
+      if (next.has(laneId)) {
+        next.delete(laneId);
       } else {
-        newSet.add(serviceId);
+        next.add(laneId);
       }
-      return newSet;
+      return next;
     });
   }, []);
 
@@ -411,14 +419,14 @@ export const InteractiveBusMap = ({
           }
         }
 
-        const isExpanded = expandedServices.has(serviceId);
+        const isExpanded = expandedLanes.has(lane.id);
         markers.push(
           <Marker
             key={`start-${lane.id}`}
             position={startPoint}
             icon={icon}
             eventHandlers={{
-              click: () => handleStartingPointClick(serviceId),
+              click: () => handleStartingPointClick(lane.id),
             }}
           >
             <Tooltip sticky>
@@ -467,7 +475,7 @@ export const InteractiveBusMap = ({
       if (!lane.path?.length) return;
 
       const serviceId = lane.serviceId ?? lane.service?.id;
-      const shouldShowLane = !serviceId || expandedServices.has(serviceId);
+      const shouldShowLane = !serviceId || expandedLanes.has(lane.id);
 
       if (!shouldShowLane) return; // Only show if service is expanded
 
