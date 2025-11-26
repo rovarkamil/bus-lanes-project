@@ -38,7 +38,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-blue-200 dark:border-blue-800 bg-blue-100/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-3 sm:px-4 py-2 pt-12 md:pt-0">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-3 sm:px-4 py-2 pt-12 md:pt-2">
         <div className="flex items-center justify-between gap-2">
           <Link href="/" className="flex items-center gap-3">
             <div className="relative">
