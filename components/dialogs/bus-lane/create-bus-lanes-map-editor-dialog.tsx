@@ -72,6 +72,8 @@ export const CreateBusLanesMapEditorDialog: FC<
 
   const { mutateAsync: createLanes, isPending: isCreating } =
     useCreateBusLanesMapEditor();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isBusy = isCreating || isSubmitting;
 
   useEffect(() => {
     if (isOpen && lanes.length > 0) {
@@ -93,6 +95,7 @@ export const CreateBusLanesMapEditorDialog: FC<
   }, [isOpen, lanes]);
 
   const handleSubmit = async () => {
+    if (isBusy) return;
     try {
       // Validate all lanes have required fields
       for (let i = 0; i < laneForms.length; i++) {
@@ -107,6 +110,7 @@ export const CreateBusLanesMapEditorDialog: FC<
         }
       }
 
+      setIsSubmitting(true);
       const dataToSubmit: CreateBusLanesMapEditorData = {
         lanes: laneForms.map((form, index) => ({
           ...lanes[index],
@@ -130,6 +134,8 @@ export const CreateBusLanesMapEditorDialog: FC<
     } catch (error) {
       console.error("Error creating lanes:", error);
       toast.error(t("Error.CreateFailed"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -383,8 +389,8 @@ export const CreateBusLanesMapEditorDialog: FC<
             >
               {t("Cancel")}
             </Button>
-            <Button type="button" onClick={handleSubmit} disabled={isCreating}>
-              {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button type="button" onClick={handleSubmit} disabled={isBusy}>
+              {isBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t("CreateDialog.BulkCreate", { count: lanes.length })}
             </Button>
           </div>

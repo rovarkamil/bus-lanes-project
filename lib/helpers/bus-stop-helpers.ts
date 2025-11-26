@@ -242,13 +242,19 @@ export async function deleteBusStopWithBusinessLogic({
     throw new Error("Bus stop not found or already deleted");
   }
 
+  const deletionTimestamp = new Date();
+
   if (existing.schedules.length > 0) {
-    throw new Error("Cannot delete bus stop with active schedules");
+    const scheduleIds = existing.schedules.map((schedule) => schedule.id);
+    await tx.busSchedule.updateMany({
+      where: { id: { in: scheduleIds } },
+      data: { deletedAt: deletionTimestamp },
+    });
   }
 
   return tx.busStop.update({
     where: { id },
-    data: { deletedAt: new Date() },
+    data: { deletedAt: deletionTimestamp },
   });
 }
 

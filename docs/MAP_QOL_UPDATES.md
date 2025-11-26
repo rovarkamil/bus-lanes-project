@@ -39,6 +39,19 @@ This document captures the latest round of improvements for the public map filte
 - Filter button badge counts only the filters that materially change output (e.g., hiding stops or deselecting services).
 - Popover layout now matches the refreshed iZurvive-inspired aesthetic with rounded cards, muted surfaces, and consistent spacing.
 
+### 6. Editor Safety & Submission Feedback
+
+- Map editor delete actions (selected points, stop edits, draft lanes/stops) now show confirmation dialogs so accidental taps don’t wipe progress.
+- Bulk create/update dialogs for lanes and stops display a guarded loading state that locks the primary action button until each request completes, preventing duplicate submissions.
+
+### 7. Next Wave of Map Editor QOL Ideas
+
+- **Guided snapping for geometry**: allow lane points and stop placements to snap to existing roads or previously drawn geometries, reducing manual coordinate tweaking.
+- **Mini-map + bookmarks**: surface a collapsible overview map and user-defined bookmarks so editors can jump between high-activity corridors without panning across the whole city.
+- **Bulk import/export flows**: support CSV/GeoJSON uploads for lanes/stops and downloadable change-sets, enabling planners to prep edits offline and re-use data between environments.
+- **Conflict dashboard**: highlight overlapping lane segments, duplicated stop coordinates, or orphaned routes in a dedicated panel so data issues are caught before publishing.
+- **Contextual keyboard palette**: expose a command palette (e.g., `Ctrl+K`) with shortcuts for toggling modes, centering on last selection, or opening creation dialogs to speed up power users.
+
 ## Testing Checklist
 
 - [x] Refresh `/map` and confirm every filter starts checked.

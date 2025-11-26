@@ -1,14 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapDataPayload, CoordinateTuple, LanguageContent } from "@/types/map";
 import { MapEditorLaneDraft } from "@/types/models/bus-lane";
 import { useTranslation } from "@/i18n/client";
-import { Edit, Trash2, Save, X, Check, Undo2, Redo2, Plus } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  Save,
+  X,
+  Check,
+  Undo2,
+  Redo2,
+  Plus,
+  PenTool,
+  MapPin,
+  Layers3,
+  Compass,
+  Target,
+  Route,
+  LayoutPanelLeft,
+} from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CreateBusLanesMapEditorDialog } from "@/components/dialogs/bus-lane/create-bus-lanes-map-editor-dialog";
 import { UpdateBusLanesMapEditorDialog } from "@/components/dialogs/bus-lane/update-bus-lanes-map-editor-dialog";
@@ -21,6 +37,16 @@ import {
 } from "@/types/models/bus-stop";
 import { BusLaneWithRelations } from "@/types/models/bus-lane";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface MapEditorSidebarProps {
   data?: MapDataPayload;
@@ -101,6 +127,14 @@ export function MapEditorSidebar({
   const { mutateAsync: updateBusStop, isPending: isUpdatingStopPosition } =
     useUpdateBusStop();
 
+  type DeleteIntent =
+    | { type: "lanePoint" }
+    | { type: "stop" }
+    | { type: "draftLane"; index: number; label?: string }
+    | { type: "draftStop"; id: string; label?: string };
+
+  const [deleteIntent, setDeleteIntent] = useState<DeleteIntent | null>(null);
+
   const handleCreateLanes = () => {
     if (draftLanes.length === 0) return;
 
@@ -142,6 +176,13 @@ export function MapEditorSidebar({
     onDraftLanesChange(draftLanes.filter((_, i) => i !== index));
   };
 
+  const handleDeleteDraftStop = (id: string) => {
+    if (!onDraftStopsChange) {
+      return;
+    }
+    onDraftStopsChange((prev) => prev.filter((stop) => stop.id !== id));
+  };
+
   const handleClearDrafts = () => {
     onDraftLanesChange([]);
   };
@@ -150,6 +191,87 @@ export function MapEditorSidebar({
     onDraftLanesChange([]);
     onRefetch?.();
   };
+
+  const openDeleteDialog = (intent: DeleteIntent) => {
+    setDeleteIntent(intent);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteIntent) return;
+    switch (deleteIntent.type) {
+      case "lanePoint":
+        onDeletePoint?.();
+        break;
+      case "stop":
+        onDeleteStop?.();
+        break;
+      case "draftLane":
+        handleDeleteDraftLane(deleteIntent.index);
+        break;
+      case "draftStop":
+        handleDeleteDraftStop(deleteIntent.id);
+        break;
+    }
+    setDeleteIntent(null);
+  };
+
+  const deleteDialogCopy = useMemo(() => {
+    if (!deleteIntent) return null;
+    switch (deleteIntent.type) {
+      case "lanePoint":
+        return {
+          title: t("DeleteSelectedPointTitle", {
+            defaultValue: "Remove selected point?",
+          }),
+          description: t("DeleteSelectedPointDescription", {
+            defaultValue:
+              "This removes the highlighted point from the current draft lane and cannot be undone.",
+          }),
+        };
+      case "stop":
+        return {
+          title: t("DeleteStopTitle", {
+            defaultValue: "Delete selected stop?",
+          }),
+          description: t("DeleteStopDescription", {
+            defaultValue:
+              "This removes the selected stop adjustment from the editor. This action cannot be undone.",
+          }),
+        };
+      case "draftLane": {
+        const laneLabel =
+          deleteIntent.label ??
+          t("DraftLaneLabel", { defaultValue: "this draft lane" });
+        return {
+          title: t("DeleteDraftLaneTitle", {
+            lane: laneLabel,
+            defaultValue: `Delete ${laneLabel}?`,
+          }),
+          description: t("DeleteDraftLaneDescription", {
+            defaultValue:
+              "All unsaved points for this draft lane will be removed permanently.",
+          }),
+        };
+      }
+      case "draftStop": {
+        const stopLabel =
+          deleteIntent.label ??
+          t("DraftStopLabel", { defaultValue: "this draft stop" });
+        return {
+          title: t("DeleteDraftStopTitle", {
+            stop: stopLabel,
+            defaultValue: `Delete ${stopLabel}?`,
+          }),
+          description: t("DeleteDraftStopDescription", {
+            defaultValue:
+              "This draft stop will be removed from the list and cannot be recovered.",
+          }),
+        };
+      }
+      default:
+        return null;
+    }
+  }, [deleteIntent, t]);
 
   const handleSaveStopPosition = async () => {
     if (!editingStopId || !editingStopNewPosition || !data) return;
@@ -197,15 +319,40 @@ export function MapEditorSidebar({
         }
       : undefined;
 
+  const SectionHeader = ({
+    icon: Icon,
+    title,
+    action,
+  }: {
+    icon: React.ComponentType<{ className?: string }>;
+    title: string;
+    action?: React.ReactNode;
+  }) => (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <Icon className="h-3.5 w-3.5" />
+        </div>
+        <span>{title}</span>
+      </div>
+      {action}
+    </div>
+  );
+
   return (
     <>
-      <div className={`flex flex-col ${className}`}>
-        <Card className="flex-1 overflow-hidden flex flex-col">
-          <CardHeader className="pb-3">
-            <h2 className="text-lg font-semibold">{t("MapEditor")}</h2>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-hidden flex flex-col space-y-4">
-            {/* Editor Mode Toggle */}
+      <div className={`flex flex-col gap-4 ${className}`}>
+        <Card className="border-none bg-gradient-to-b from-card to-muted/40 p-4 shadow-sm">
+          <div className="flex flex-col gap-4 rounded-xl border border-border/40 bg-background/95 p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {t("ModeSelection", { defaultValue: "Mode" })}
+                </p>
+                <p className="text-lg font-semibold">{t("MapEditor")}</p>
+              </div>
+              <LayoutPanelLeft className="h-6 w-6 text-muted-foreground" />
+            </div>
             {onEditorModeChange && (
               <div className="grid grid-cols-2 gap-2">
                 <Button
@@ -213,8 +360,9 @@ export function MapEditorSidebar({
                   variant={editorMode === "lane" ? "default" : "outline"}
                   size="sm"
                   onClick={() => onEditorModeChange("lane")}
-                  className="w-full"
+                  className="flex h-12 flex-col items-center justify-center gap-1 text-xs"
                 >
+                  <Route className="h-4 w-4" />
                   {t("LaneMode")}
                 </Button>
                 <Button
@@ -222,96 +370,76 @@ export function MapEditorSidebar({
                   variant={editorMode === "stop" ? "default" : "outline"}
                   size="sm"
                   onClick={() => onEditorModeChange("stop")}
-                  className="w-full"
+                  className="flex h-12 flex-col items-center justify-center gap-1 text-xs"
                 >
+                  <MapPin className="h-4 w-4" />
                   {t("StopMode")}
                 </Button>
               </div>
             )}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={editorMode === "lane" ? onUndoLanes : onUndoStops}
+                disabled={editorMode === "lane" ? !canUndoLanes : !canUndoStops}
+                className="flex items-center justify-center gap-2"
+                title="Undo (Ctrl+Z)"
+              >
+                <Undo2 className="h-4 w-4" />
+                {t("Undo")}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={editorMode === "lane" ? onRedoLanes : onRedoStops}
+                disabled={editorMode === "lane" ? !canRedoLanes : !canRedoStops}
+                className="flex items-center justify-center gap-2"
+                title="Redo (Ctrl+Shift+Z)"
+              >
+                <Redo2 className="h-4 w-4" />
+                {t("Redo")}
+              </Button>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1">
+                <PenTool className="h-3 w-3" />
+                {t("ClickMapToDrawLanes")}
+              </span>
+            </div>
+          </div>
+        </Card>
 
-            {/* Undo/Redo Controls */}
-            {editorMode === "lane" && (
-              <div className="flex gap-2">
+        <Card className="flex-1 border border-border/70 bg-background/95 shadow-sm">
+          <CardContent className="flex flex-1 flex-col gap-4 p-4">
+            <div className="flex flex-wrap gap-2">
+              {selectedPoint && onDeletePoint && editorMode === "lane" && (
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="destructive"
                   size="sm"
-                  onClick={onUndoLanes}
-                  disabled={!canUndoLanes}
-                  className="flex-1"
-                  title="Undo (Ctrl+Z)"
+                  onClick={() => openDeleteDialog({ type: "lanePoint" })}
                 >
-                  <Undo2 className="h-3.5 w-3.5 mr-1" />
-                  {t("Undo")}
+                  <Trash2 className="mr-2 h-3.5 w-3.5" />
+                  {t("DeleteSelectedPoint") || "Delete selected point"}
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={onRedoLanes}
-                  disabled={!canRedoLanes}
-                  className="flex-1"
-                  title="Redo (Ctrl+Shift+Z)"
-                >
-                  <Redo2 className="h-3.5 w-3.5 mr-1" />
-                  {t("Redo")}
-                </Button>
-                {selectedPoint && onDeletePoint && (
+              )}
+              {(editingStopId || draftStops.length > 0) &&
+                onDeleteStop &&
+                editorMode === "stop" && (
                   <Button
                     type="button"
                     variant="destructive"
                     size="sm"
-                    onClick={onDeletePoint}
-                    title={
-                      t("DeleteSelectedPoint") ||
-                      "Delete Selected Point (Delete or Ctrl+D)"
-                    }
+                    onClick={() => openDeleteDialog({ type: "stop" })}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="mr-2 h-3.5 w-3.5" />
+                    {t("DeleteSelectedStop") || "Delete selected stop"}
                   </Button>
                 )}
-              </div>
-            )}
-
-            {editorMode === "stop" && (
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={onUndoStops}
-                  disabled={!canUndoStops}
-                  className="flex-1"
-                  title="Undo (Ctrl+Z)"
-                >
-                  <Undo2 className="h-3.5 w-3.5 mr-1" />
-                  {t("Undo")}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={onRedoStops}
-                  disabled={!canRedoStops}
-                  className="flex-1"
-                  title="Redo (Ctrl+Shift+Z)"
-                >
-                  <Redo2 className="h-3.5 w-3.5 mr-1" />
-                  {t("Redo")}
-                </Button>
-                {(editingStopId || draftStops.length > 0) && onDeleteStop && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={onDeleteStop}
-                    title="Delete (Delete or Ctrl+D)"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                )}
-              </div>
-            )}
+            </div>
 
             {/* Save Stop Position Banner */}
             {editingStopId &&
@@ -365,44 +493,55 @@ export function MapEditorSidebar({
             {/* Draft Lanes Section */}
             {editorMode === "lane" && (
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{t("DraftLanes")}</span>
-                  <Badge variant="secondary">{draftLanes.length}</Badge>
-                </div>
+                <SectionHeader
+                  icon={PenTool}
+                  title={t("DraftLanes")}
+                  action={
+                    <Badge variant="secondary">{draftLanes.length}</Badge>
+                  }
+                />
 
                 {draftLanes.length > 0 && (
                   <div className="space-y-2">
                     <ScrollArea className="h-32">
                       <div className="space-y-1 pr-4">
-                        {draftLanes.map((lane, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between rounded border p-2 text-sm"
-                          >
-                            <div className="flex items-center gap-2">
-                              <div
-                                className="h-3 w-3 rounded-full"
-                                style={{
-                                  backgroundColor: lane.color || "#0066CC",
-                                }}
-                              />
-                              <span className="truncate">
-                                {lane.name?.en || `Lane ${index + 1}`}
-                              </span>
-                              <Badge variant="outline" className="text-xs">
-                                {lane.path.length} pts
-                              </Badge>
-                            </div>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-6 w-6"
-                              onClick={() => handleDeleteDraftLane(index)}
+                        {draftLanes.map((lane, index) => {
+                          const laneLabel =
+                            lane.name?.en || `Lane ${index + 1}`;
+                          return (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between rounded border p-2 text-sm"
                             >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        ))}
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className="h-3 w-3 rounded-full"
+                                  style={{
+                                    backgroundColor: lane.color || "#0066CC",
+                                  }}
+                                />
+                                <span className="truncate">{laneLabel}</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {lane.path.length} pts
+                                </Badge>
+                              </div>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6"
+                                onClick={() =>
+                                  openDeleteDialog({
+                                    type: "draftLane",
+                                    index,
+                                    label: laneLabel,
+                                  })
+                                }
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          );
+                        })}
                       </div>
                     </ScrollArea>
 
@@ -439,44 +578,51 @@ export function MapEditorSidebar({
             {/* Draft Stops Section */}
             {editorMode === "stop" && onDraftStopsChange && (
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{t("DraftStops")}</span>
-                  <Badge variant="secondary">{draftStops.length}</Badge>
-                </div>
+                <SectionHeader
+                  icon={MapPin}
+                  title={t("DraftStops")}
+                  action={
+                    <Badge variant="secondary">{draftStops.length}</Badge>
+                  }
+                />
 
                 {draftStops.length > 0 && (
                   <div className="space-y-2">
                     <ScrollArea className="h-32">
                       <div className="space-y-1 pr-4">
-                        {draftStops.map((stop, index) => (
-                          <div
-                            key={stop.id}
-                            className="flex items-center justify-between rounded border p-2 text-sm"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="truncate">
-                                {stop.name?.en ||
-                                  stop.name?.ar ||
-                                  stop.name?.ckb ||
-                                  t("DraftStopLabel", {
-                                    defaultValue: `Stop ${index + 1}`,
-                                  })}
-                              </span>
-                            </div>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-6 w-6"
-                              onClick={() => {
-                                onDraftStopsChange((prev) =>
-                                  prev.filter((s) => s.id !== stop.id)
-                                );
-                              }}
+                        {draftStops.map((stop, index) => {
+                          const stopLabel =
+                            stop.name?.en ||
+                            stop.name?.ar ||
+                            stop.name?.ckb ||
+                            t("DraftStopLabel", {
+                              defaultValue: `Stop ${index + 1}`,
+                            });
+                          return (
+                            <div
+                              key={stop.id}
+                              className="flex items-center justify-between rounded border p-2 text-sm"
                             >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        ))}
+                              <div className="flex items-center gap-2">
+                                <span className="truncate">{stopLabel}</span>
+                              </div>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6"
+                                onClick={() =>
+                                  openDeleteDialog({
+                                    type: "draftStop",
+                                    id: stop.id,
+                                    label: stopLabel,
+                                  })
+                                }
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          );
+                        })}
                       </div>
                     </ScrollArea>
 
@@ -512,13 +658,16 @@ export function MapEditorSidebar({
 
             {/* Existing Lanes Section */}
             {editorMode === "lane" && (
-              <div className="space-y-2 flex-1 flex flex-col overflow-hidden">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    {t("ExistingLanes")}
-                  </span>
-                  <Badge variant="secondary">{data?.lanes?.length ?? 0}</Badge>
-                </div>
+              <div className="flex flex-1 flex-col space-y-2 overflow-hidden">
+                <SectionHeader
+                  icon={Layers3}
+                  title={t("ExistingLanes")}
+                  action={
+                    <Badge variant="secondary">
+                      {data?.lanes?.length ?? 0}
+                    </Badge>
+                  }
+                />
 
                 {data?.lanes && data.lanes.length > 0 && (
                   <ScrollArea className="flex-1">
@@ -639,13 +788,16 @@ export function MapEditorSidebar({
 
             {/* Existing Stops Section */}
             {editorMode === "stop" && (
-              <div className="space-y-2 flex-1 flex flex-col overflow-hidden">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    {t("ExistingStops")}
-                  </span>
-                  <Badge variant="secondary">{data?.stops?.length ?? 0}</Badge>
-                </div>
+              <div className="flex flex-1 flex-col space-y-2 overflow-hidden">
+                <SectionHeader
+                  icon={Compass}
+                  title={t("ExistingStops")}
+                  action={
+                    <Badge variant="secondary">
+                      {data?.stops?.length ?? 0}
+                    </Badge>
+                  }
+                />
 
                 {data?.stops && data.stops.length > 0 && (
                   <ScrollArea className="flex-1">
@@ -829,19 +981,58 @@ export function MapEditorSidebar({
             )}
 
             {/* Stats */}
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t text-xs">
-              <div className="space-y-1">
-                <div className="text-muted-foreground">{t("TotalStops")}</div>
-                <div className="font-semibold">{data?.stops?.length ?? 0}</div>
+            <div className="grid grid-cols-2 gap-3 rounded-lg border px-4 py-3 text-sm">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <Target className="h-3.5 w-3.5" />
+                  {t("TotalStops")}
+                </div>
+                <span className="text-lg font-semibold">
+                  {data?.stops?.length ?? 0}
+                </span>
               </div>
-              <div className="space-y-1">
-                <div className="text-muted-foreground">{t("TotalRoutes")}</div>
-                <div className="font-semibold">{data?.routes?.length ?? 0}</div>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <Route className="h-3.5 w-3.5" />
+                  {t("TotalRoutes")}
+                </div>
+                <span className="text-lg font-semibold">
+                  {data?.routes?.length ?? 0}
+                </span>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {deleteIntent && deleteDialogCopy && (
+        <AlertDialog
+          open={Boolean(deleteIntent)}
+          onOpenChange={(open) => {
+            if (!open) {
+              setDeleteIntent(null);
+            }
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{deleteDialogCopy.title}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {deleteDialogCopy.description}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {t("Actions.Delete")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
 
       <CreateBusLanesMapEditorDialog
         isOpen={isCreateDialogOpen}

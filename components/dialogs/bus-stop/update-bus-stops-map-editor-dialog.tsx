@@ -77,6 +77,8 @@ export const UpdateBusStopsMapEditorDialog: FC<
 
   const { mutateAsync: updateStops, isPending: isUpdating } =
     useUpdateBusStopsMapEditor();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isBusy = isUpdating || isSubmitting;
 
   useEffect(() => {
     if (isOpen && stops.length > 0) {
@@ -119,6 +121,7 @@ export const UpdateBusStopsMapEditorDialog: FC<
   }, [isOpen, stops]);
 
   const handleSubmit = async () => {
+    if (isBusy) return;
     try {
       // Validate all stops have required fields
       for (let i = 0; i < stopForms.length; i++) {
@@ -142,6 +145,7 @@ export const UpdateBusStopsMapEditorDialog: FC<
         }
       }
 
+      setIsSubmitting(true);
       const dataToSubmit: UpdateBusStopsMapEditorData = {
         stops: stopForms.map((form) => ({
           id: form.id,
@@ -170,6 +174,8 @@ export const UpdateBusStopsMapEditorDialog: FC<
     } catch (error) {
       console.error("Error updating stops:", error);
       toast.error(t("Error.UpdateFailed"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -538,8 +544,8 @@ export const UpdateBusStopsMapEditorDialog: FC<
           >
             {t("Cancel")}
           </Button>
-          <Button type="button" onClick={handleSubmit} disabled={isUpdating}>
-            {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="button" onClick={handleSubmit} disabled={isBusy}>
+            {isBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t("UpdateDialog.BulkUpdate", { count: stops.length })}
           </Button>
         </div>

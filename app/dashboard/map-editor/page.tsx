@@ -742,12 +742,17 @@ export default function MapEditorPage() {
   }
 
   return (
-    <main className="flex h-screen flex-col" dir={isRTL ? "rtl" : "ltr"}>
-      <PageHeader
-        title={t("MapEditor")}
-        description={t("DrawAndEditBusLanesOnTheMap")}
-      />
-      <div className="flex flex-1 overflow-hidden">
+    <main
+      className="flex min-h-screen flex-col bg-background"
+      dir={isRTL ? "rtl" : "ltr"}
+    >
+      <div className="px-4 pb-2 pt-4 sm:px-6 lg:px-8">
+        <PageHeader
+          title={t("MapEditor")}
+          description={t("DrawAndEditBusLanesOnTheMap")}
+        />
+      </div>
+      <div className="flex flex-1 flex-col gap-4 overflow-hidden px-4 pb-6 sm:px-6 lg:px-8 lg:flex-row">
         <MapEditorSidebar
           data={mapData}
           originalLanes={lanesData?.items || []}
@@ -791,15 +796,15 @@ export default function MapEditorPage() {
           canRedoStops={stopHistoryIndex < stopHistory.length - 1}
           onUndoStops={handleUndoStops}
           onRedoStops={handleRedoStops}
-          className="w-80 border-r"
+          className="w-full max-w-full rounded-lg border bg-card shadow-sm lg:w-80 lg:max-w-80"
           onSaveDraftStops={handleSaveDraftStops}
         />
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden rounded-lg border bg-card shadow-sm">
           <MapEditorCanvas
             data={mapData}
             isPending={isPending}
             error={error}
-            className="h-full"
+            className="h-full min-h-[460px]"
             initialCenter={initialCenter}
             // selectedIcon={selectedIcon}
             // onIconPlace={handleIconPlace}
@@ -825,14 +830,7 @@ export default function MapEditorPage() {
             onSelectedPointChange={setSelectedPoint}
           />
         </div>
-        {/* Map Icon Selector - COMMENTED OUT FOR NOW */}
-        {/* <div className="flex-shrink-0 relative z-10">
-          <MapIconSelector
-            onIconSelect={setSelectedIcon}
-            selectedIconId={selectedIcon?.id}
-            className="w-64 h-full"
-          />
-        </div> */}
+        {/* Map Icon Selector omitted for streamlined layout */}
       </div>
 
       <CreateBusStopsMapEditorDialog

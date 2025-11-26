@@ -79,6 +79,8 @@ export const UpdateBusLanesMapEditorDialog: FC<
 
   const { mutateAsync: updateLanes, isPending: isUpdating } =
     useUpdateBusLanesMapEditor();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isBusy = isUpdating || isSubmitting;
 
   useEffect(() => {
     if (isOpen && lanes.length > 0) {
@@ -128,6 +130,7 @@ export const UpdateBusLanesMapEditorDialog: FC<
   }, [isOpen, lanes]);
 
   const handleSubmit = async () => {
+    if (isBusy) return;
     try {
       // Validate all lanes have required fields
       for (let i = 0; i < laneForms.length; i++) {
@@ -142,6 +145,7 @@ export const UpdateBusLanesMapEditorDialog: FC<
         }
       }
 
+      setIsSubmitting(true);
       const dataToSubmit: UpdateBusLanesMapEditorData = {
         lanes: laneForms.map((form) => ({
           id: form.id,
@@ -164,6 +168,8 @@ export const UpdateBusLanesMapEditorDialog: FC<
     } catch (error) {
       console.error("Error updating lanes:", error);
       toast.error(t("Error.UpdateFailed"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -433,8 +439,8 @@ export const UpdateBusLanesMapEditorDialog: FC<
             >
               {t("Cancel")}
             </Button>
-            <Button type="button" onClick={handleSubmit} disabled={isUpdating}>
-              {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button type="button" onClick={handleSubmit} disabled={isBusy}>
+              {isBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t("UpdateDialog.BulkUpdate", { count: lanes.length })}
             </Button>
           </div>

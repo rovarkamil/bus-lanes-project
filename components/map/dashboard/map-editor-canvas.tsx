@@ -214,7 +214,7 @@ export function MapEditorCanvas({
         center={center}
         zoom={14}
         scrollWheelZoom
-        className="h-full w-full z-0"
+        className="h-full w-full z-0 "
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 

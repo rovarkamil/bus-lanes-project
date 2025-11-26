@@ -75,6 +75,8 @@ export const CreateBusStopsMapEditorDialog: FC<
 
   const { mutateAsync: createStops, isPending: isCreating } =
     useCreateBusStopsMapEditor();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isBusy = isCreating || isSubmitting;
 
   useEffect(() => {
     if (isOpen && stops.length > 0) {
@@ -101,6 +103,7 @@ export const CreateBusStopsMapEditorDialog: FC<
   }, [isOpen, stops]);
 
   const handleSubmit = async () => {
+    if (isBusy) return;
     try {
       // Validate all stops have required fields
       for (let i = 0; i < stopForms.length; i++) {
@@ -122,6 +125,7 @@ export const CreateBusStopsMapEditorDialog: FC<
         }
       }
 
+      setIsSubmitting(true);
       const dataToSubmit: CreateBusStopsMapEditorData = {
         stops: stopForms.map((form, index) => ({
           ...stops[index],
@@ -150,6 +154,8 @@ export const CreateBusStopsMapEditorDialog: FC<
     } catch (error) {
       console.error("Error creating stops:", error);
       toast.error(t("Error.CreateFailed"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -508,8 +514,8 @@ export const CreateBusStopsMapEditorDialog: FC<
           >
             {t("Cancel")}
           </Button>
-          <Button type="button" onClick={handleSubmit} disabled={isCreating}>
-            {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="button" onClick={handleSubmit} disabled={isBusy}>
+            {isBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t("CreateDialog.BulkCreate", { count: stops.length })}
           </Button>
         </div>
