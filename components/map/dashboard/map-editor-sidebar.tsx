@@ -319,6 +319,17 @@ export function MapEditorSidebar({
         }
       : undefined;
 
+  const hasPointSelection = useMemo(() => {
+    if (!selectedPoint) {
+      return false;
+    }
+    const lane = draftLanes[selectedPoint.laneIndex];
+    if (!lane) {
+      return false;
+    }
+    return Boolean(lane.path?.[selectedPoint.pointIndex]);
+  }, [selectedPoint, draftLanes]);
+
   const SectionHeader = ({
     icon: Icon,
     title,
@@ -415,7 +426,7 @@ export function MapEditorSidebar({
         <Card className="flex-1 border border-border/70 bg-background/95 shadow-sm">
           <CardContent className="flex flex-1 flex-col gap-4 p-4">
             <div className="flex flex-wrap gap-2">
-              {selectedPoint && onDeletePoint && editorMode === "lane" && (
+              {editorMode === "lane" && hasPointSelection && onDeletePoint && (
                 <Button
                   type="button"
                   variant="destructive"
