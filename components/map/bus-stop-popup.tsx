@@ -132,7 +132,7 @@ export const BusStopPopup = memo(
 
     const renderPopupContent = () => (
       <div
-        className="w-[min(90vw,360px)] space-y-4 text-sm text-card-foreground sm:w-[320px]"
+        className="w-[min(90vw,360px)] space-y-4 text-sm text-card-foreground sm:w-[320px] "
         dir={isRTL ? "rtl" : "ltr"}
       >
         <div className="rounded-3xl border border-border/60 bg-card/95 p-4 shadow-xl ring-1 ring-border/30 backdrop-blur">

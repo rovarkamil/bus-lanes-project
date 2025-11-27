@@ -43,7 +43,7 @@ const SidebarHeader: FC<SidebarHeaderProps> = ({
   const isRTL = i18n.language !== "en";
 
   return (
-    <div className="flex min-h-16 max-h-16 items-center justify-between px-4">
+    <div className="flex min-h-16 max-h-16 items-center justify-between px-4 pt-12 md:pt-0">
       {isSidebarOpen && (
         <Button
           variant="ghost"
@@ -336,8 +336,8 @@ const DashboardLayout: FC<{ children: React.ReactNode }> = ({ children }) => {
         )}
       >
         {/* Sticky Header */}
-        <header className="sticky top-0 z-50 border-b border-line bg-background/80 backdrop-blur-lg min-h-16 max-h-16">
-          <div className="flex min-h-16 max-h-16 items-center justify-between px-4 sm:px-6">
+        <header className="sticky md:top-0 z-50 border-b border-line bg-background/80 backdrop-blur-lg min-h-16 max-h-16 top-12">
+          <div className="flex min-h-16 max-h-16 items-center justify-between px-4 sm:px-6 ">
             <div className="flex items-center gap-2 sm:gap-4">
               <Button
                 variant="ghost"
@@ -394,7 +394,7 @@ const DashboardLayout: FC<{ children: React.ReactNode }> = ({ children }) => {
 
         <main className="flex-1 relative overflow-hidden">
           <div className="absolute inset-0 overflow-y-auto">
-            <div className="transition-all p-4">{children}</div>
+            <div className="transition-all p-4 pb-14 md:pb-4">{children}</div>
           </div>
         </main>
       </div>

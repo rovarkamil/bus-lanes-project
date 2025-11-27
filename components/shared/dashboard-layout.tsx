@@ -309,7 +309,7 @@ const SharedDashboardLayout: FC<SharedDashboardLayoutProps> = ({
         )}
       >
         {/* Sticky Header */}
-        <header className="sticky top-0 z-50 border-b border-line bg-background/80 backdrop-blur-lg min-h-16 max-h-16">
+        <header className="sticky md:top-0 z-50 border-b border-line bg-background/80 backdrop-blur-lg min-h-16 max-h-16 top-12">
           <div className="flex min-h-16 max-h-16 items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-2 sm:gap-4">
               <Button

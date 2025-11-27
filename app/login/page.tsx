@@ -243,7 +243,7 @@ const LogInPage = () => {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(37,99,235,0.35),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(14,165,233,0.35),transparent_30%)] blur-3xl" />
       <div className="absolute inset-0 bg-grid-white/[0.02] dark:bg-grid-white/[0.03]" />
 
-      <div className="fixed top-4 right-4 flex items-center gap-3 z-50">
+      <div className="fixed top-12 right-4 flex items-center gap-3 z-50">
         <Button
           asChild
           variant="outline"
@@ -251,7 +251,7 @@ const LogInPage = () => {
           className="rounded-full hover:bg-background/80 backdrop-blur-sm border-primary/20"
         >
           <Link href="/" aria-label="Go to map">
-            <Home className="h-5 w-5" />
+            <Home className="h-3.5 w-3.5 md:h-5 md:w-5" />
           </Link>
         </Button>
         <DropdownMenu>
@@ -261,7 +261,7 @@ const LogInPage = () => {
               size="icon"
               className="rounded-full hover:bg-background/80 backdrop-blur-sm border-primary/20"
             >
-              <Languages className="h-5 w-5" />
+              <Languages className="h-3.5 w-3.5 md:h-5 md:w-5" />
               <span className="sr-only">{t("SelectLanguage")}</span>
             </Button>
           </DropdownMenuTrigger>
@@ -290,8 +290,8 @@ const LogInPage = () => {
           className="rounded-full hover:bg-background/80 backdrop-blur-sm border-primary/20"
           onClick={() => setTheme(theme === "light" ? "dark" : "light")}
         >
-          <Sun className="h-5 w-5 rotate-0 scale-100 transition-transform duration-300 dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-transform duration-300 dark:rotate-0 dark:scale-100" />
+          <Sun className="h-3.5 w-3.5 md:h-5 md:w-5 rotate-0 scale-100 transition-transform duration-300 dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-3.5 w-3.5 md:h-5 md:w-5 rotate-90 scale-0 transition-transform duration-300 dark:rotate-0 dark:scale-100" />
           <span className="sr-only">{t("ToggleTheme")}</span>
         </Button>
       </div>
@@ -307,7 +307,7 @@ const LogInPage = () => {
             <Card className="w-full max-w-[480px] bg-background/80 backdrop-blur-xl border-primary/10 shadow-2xl shadow-primary/10 overflow-hidden">
               <div className="absolute h-1 top-0 left-0 right-0 bg-gradient-to-r from-primary/80 via-primary to-primary/80" />
 
-              <CardHeader className="space-y-4 pt-8">
+              <CardHeader className="space-y-2 pt-4 md:pt-8 md:space-y-4">
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -341,7 +341,7 @@ const LogInPage = () => {
                   }
                   className="space-y-6"
                 >
-                  <TabsList className="grid grid-cols-2 h-12 rounded-2xl bg-muted/60 p-1">
+                  <TabsList className="grid grid-cols-2 h-10 rounded-2xl bg-muted/60 p-1">
                     <TabsTrigger
                       value="login"
                       className="rounded-xl text-sm font-semibold data-[state=active]:bg-background data-[state=active]:text-primary"
