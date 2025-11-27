@@ -199,6 +199,7 @@
   "LoadingImages": "جاري تحميل الصور...",
   "NoImagesAvailable": "لا توجد صور متاحة",
   "ViewServiceDetails": "عرض تفاصيل الخدمة",
+  "ViewStopDetails": "عرض تفاصيل المحطة",
   "FocusOnMap": "إظهار على الخريطة",
   "Common": {
     "Cancel": "إلغاء",

@@ -199,6 +199,7 @@
   "LoadingImages": "Loading images...",
   "NoImagesAvailable": "No images available",
   "ViewServiceDetails": "View service details",
+  "ViewStopDetails": "View stop details",
   "FocusOnMap": "Show on map",
   "Common": {
     "Cancel": "Cancel",

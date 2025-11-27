@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { MapStop, MapLaneSummary, MapRouteSummary } from "@/types/map";
 import { getLocalizedValue } from "@/lib/i18n/get-localized-value";
+import { Sheet, SheetContent, SheetHeader } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BusStopPopupProps {
   stop: MapStop;
@@ -82,6 +84,8 @@ export const BusStopPopup = memo(
     const { t, i18n } = useTranslation("Map");
     const isRTL = i18n.language !== "en";
     const locale = useLocale();
+    const isMobile = useIsMobile();
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
     const stopName = useMemo(
       () => getLocalizedValue(stop.name, locale) ?? stop.id,
       [stop.name, locale, stop.id]
@@ -106,7 +110,27 @@ export const BusStopPopup = memo(
       return config.filter((item) => stop.amenities?.[item.key]);
     }, [stop.amenities, t]);
 
-    return (
+    const SectionHeader = ({
+      icon: Icon,
+      label,
+      count,
+    }: {
+      icon: typeof Layers | typeof RouteIcon | typeof CheckSquare;
+      label: string;
+      count?: number;
+    }) => (
+      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <Icon className="h-3.5 w-3.5" />
+        <span>{label}</span>
+        {typeof count === "number" && (
+          <Badge variant="outline" className="text-[10px]">
+            {count}
+          </Badge>
+        )}
+      </div>
+    );
+
+    const renderPopupContent = () => (
       <div
         className="w-[min(90vw,360px)] space-y-4 text-sm text-card-foreground sm:w-[320px]"
         dir={isRTL ? "rtl" : "ltr"}
@@ -165,12 +189,13 @@ export const BusStopPopup = memo(
 
           <div className="mt-4 space-y-4">
             <div>
-              <div className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                <CheckSquare className="h-3.5 w-3.5" />
-                {t("Amenities")}
-              </div>
+              <SectionHeader
+                icon={CheckSquare}
+                label={t("Amenities")}
+                count={enabledAmenities.length}
+              />
               {enabledAmenities.length ? (
-                <div className="flex flex-wrap gap-2">
+                <div className="mt-2 flex flex-wrap gap-2">
                   {enabledAmenities.map((amenity) => (
                     <Badge key={amenity.key} variant="outline">
                       {amenity.label}
@@ -178,52 +203,58 @@ export const BusStopPopup = memo(
                   ))}
                 </div>
               ) : (
-                <p className="rounded-2xl bg-muted/30 p-3 text-xs text-muted-foreground">
+                <p className="mt-2 rounded-2xl bg-muted/30 p-3 text-xs text-muted-foreground">
                   {t("NoAmenitiesData")}
                 </p>
               )}
             </div>
 
             <div>
-              <div className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                <Layers className="h-3.5 w-3.5" />
-                {t("Lanes")}
-              </div>
-              <RelationPills
-                items={stop.lanes}
-                emptyLabel={t("NoLanesAssigned")}
+              <SectionHeader
                 icon={Layers}
-                colorFn={(lane) =>
-                  lane.color ?? lane.service?.color ?? undefined
-                }
-                getLabel={(lane) =>
-                  getLocalizedValue(lane.name, locale) ?? lane.id
-                }
-                onSelect={(lane) => onLaneSelect?.(lane.id)}
+                label={t("Lanes")}
+                count={stop.lanes?.length}
               />
+              <div className="mt-2">
+                <RelationPills
+                  items={stop.lanes}
+                  emptyLabel={t("NoLanesAssigned")}
+                  icon={Layers}
+                  colorFn={(lane) =>
+                    lane.color ?? lane.service?.color ?? undefined
+                  }
+                  getLabel={(lane) =>
+                    getLocalizedValue(lane.name, locale) ?? lane.id
+                  }
+                  onSelect={(lane) => onLaneSelect?.(lane.id)}
+                />
+              </div>
             </div>
 
             <div>
-              <div className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                <RouteIcon className="h-3.5 w-3.5" />
-                {t("Routes")}
-              </div>
-              <RelationPills
-                items={stop.routes}
-                emptyLabel={t("NoRoutesAssigned")}
+              <SectionHeader
                 icon={RouteIcon}
-                colorFn={(route) =>
-                  route.color ?? route.service?.color ?? undefined
-                }
-                getLabel={(route) => {
-                  const localized =
-                    getLocalizedValue(route.name, locale) ?? route.id;
-                  return route.routeNumber
-                    ? `${route.routeNumber} • ${localized}`
-                    : localized;
-                }}
-                onSelect={(route) => onRouteSelect?.(route.id)}
+                label={t("Routes")}
+                count={stop.routes?.length}
               />
+              <div className="mt-2">
+                <RelationPills
+                  items={stop.routes}
+                  emptyLabel={t("NoRoutesAssigned")}
+                  icon={RouteIcon}
+                  colorFn={(route) =>
+                    route.color ?? route.service?.color ?? undefined
+                  }
+                  getLabel={(route) => {
+                    const localized =
+                      getLocalizedValue(route.name, locale) ?? route.id;
+                    return route.routeNumber
+                      ? `${route.routeNumber} • ${localized}`
+                      : localized;
+                  }}
+                  onSelect={(route) => onRouteSelect?.(route.id)}
+                />
+              </div>
             </div>
           </div>
 
@@ -236,6 +267,34 @@ export const BusStopPopup = memo(
         </div>
       </div>
     );
+
+    if (isMobile) {
+      return (
+        <>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="mb-3 w-full rounded-full"
+            onClick={() => setIsSheetOpen(true)}
+          >
+            {t("ViewStopDetails")}
+          </Button>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <SheetContent
+              side={isRTL ? "right" : "left"}
+              className="w-full overflow-y-auto border-border/60 bg-background"
+            >
+              <SheetHeader>
+                <p className="text-base font-semibold">{stopName}</p>
+              </SheetHeader>
+              <div className="pt-4">{renderPopupContent()}</div>
+            </SheetContent>
+          </Sheet>
+        </>
+      );
+    }
+
+    return renderPopupContent();
   }
 );
 

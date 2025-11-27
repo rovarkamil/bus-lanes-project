@@ -199,6 +199,7 @@
   "LoadingImages": "وێنەکان لە باركردندا...",
   "NoImagesAvailable": "هیچ وێنەیەك بەردەست نییە",
   "ViewServiceDetails": "وردەکاری خزمەتگوزاری ببینە",
+  "ViewStopDetails": "وردەکاری وەستانە ببینە",
   "FocusOnMap": "نیشاندانی لەسەر نەخشە",
   "Common": {
     "Cancel": "هەڵوەشاندن",
