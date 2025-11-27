@@ -85,6 +85,10 @@ interface MapEditorCanvasProps {
   onDraftLanesChange: (lanes: MapEditorLaneDraft[]) => void;
   draftStops?: DraftStop[];
   onAddDraftStop?: (position: CoordinateTuple) => void;
+  onDraftStopPositionChange?: (
+    stopId: string,
+    position: CoordinateTuple
+  ) => void;
   editorMode?: "lane" | "stop";
   selectedLaneId?: string | null;
   onLaneSelect?: (laneId: string | null) => void;
@@ -114,6 +118,7 @@ export function MapEditorCanvas({
   onDraftLanesChange,
   draftStops = [],
   onAddDraftStop,
+  onDraftStopPositionChange,
   editorMode = "lane",
   selectedLaneId: propSelectedLaneId,
   onLaneSelect,
@@ -226,6 +231,7 @@ export function MapEditorCanvas({
           routes={data?.routes ?? []}
           selectedLaneId={effectiveSelectedLaneId}
           onLaneClick={(laneId: string) => {
+            if (editorMode !== "lane") return;
             const nextValue =
               effectiveSelectedLaneId === laneId ? null : laneId;
             if (onLaneSelect) {
@@ -237,6 +243,8 @@ export function MapEditorCanvas({
           editingStopId={editingStopId}
           editingStopNewPosition={editingStopNewPosition}
           onStopPositionUpdate={onStopPositionUpdate}
+          showLaneHandles={editorMode === "lane"}
+          canSelectLanes={editorMode === "lane"}
         />
 
         <LaneDrawingTool
@@ -244,6 +252,7 @@ export function MapEditorCanvas({
           onDraftLanesChange={onDraftLanesChange}
           selectedLaneId={effectiveSelectedLaneId}
           onLaneSelect={(laneId) => {
+            if (editorMode !== "lane") return;
             if (laneId) {
               if (onLaneSelect) {
                 onLaneSelect(laneId);
@@ -291,8 +300,10 @@ export function MapEditorCanvas({
                 dragend: (e) => {
                   const marker = e.target;
                   const newPosition = marker.getLatLng();
-                  // Update stop position
-                  console.log("Stop dragged:", stop.id, newPosition);
+                  onDraftStopPositionChange?.(stop.id, [
+                    newPosition.lat,
+                    newPosition.lng,
+                  ]);
                 },
               }}
             >

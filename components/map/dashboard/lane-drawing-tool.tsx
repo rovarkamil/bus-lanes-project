@@ -176,6 +176,8 @@ export function LaneDrawingTool({
     return null;
   }
 
+  const showLanePoints = editorMode === "lane";
+
   return (
     <>
       {/* Render draft lanes */}
@@ -196,9 +198,13 @@ export function LaneDrawingTool({
                   weight: lane.weight || 5,
                   opacity: isSelected ? 1 : lane.opacity || 0.7,
                 }}
-                eventHandlers={{
-                  click: () => onLaneSelect(laneId),
-                }}
+                eventHandlers={
+                  showLanePoints
+                    ? {
+                        click: () => onLaneSelect(laneId),
+                      }
+                    : undefined
+                }
               >
                 <Tooltip sticky>
                   {lane.name?.en || `Draft Lane ${laneIndex + 1}`}
@@ -207,7 +213,7 @@ export function LaneDrawingTool({
             )}
 
             {/* Render start marker */}
-            {startPoint && (
+            {startPoint && showLanePoints && (
               <Marker
                 key={`${laneId}-start`}
                 position={startPoint}
@@ -238,6 +244,7 @@ export function LaneDrawingTool({
 
             {/* Render end marker (only if different from start) */}
             {endPoint &&
+              showLanePoints &&
               hasMultiplePoints &&
               (startPoint[0] !== endPoint[0] ||
                 startPoint[1] !== endPoint[1]) && (
@@ -274,59 +281,60 @@ export function LaneDrawingTool({
               )}
 
             {/* Render markers for intermediate points (if not start/end) */}
-            {lane.path.map((point, pointIndex) => {
-              const isStartPoint = pointIndex === 0;
-              const isEndPoint = pointIndex === lane.path.length - 1;
-              // Skip start and end points as they have special markers
-              if (isStartPoint || isEndPoint) return null;
+            {showLanePoints &&
+              lane.path.map((point, pointIndex) => {
+                const isStartPoint = pointIndex === 0;
+                const isEndPoint = pointIndex === lane.path.length - 1;
+                // Skip start and end points as they have special markers
+                if (isStartPoint || isEndPoint) return null;
 
-              const isPointSelected =
-                selectedPoint?.laneIndex === laneIndex &&
-                selectedPoint?.pointIndex === pointIndex;
+                const isPointSelected =
+                  selectedPoint?.laneIndex === laneIndex &&
+                  selectedPoint?.pointIndex === pointIndex;
 
-              // Create a highlighted icon for selected point
-              const selectedIcon =
-                isPointSelected && typeof window !== "undefined"
-                  ? L.icon({
-                      iconUrl: "/markers/marker.png",
-                      iconSize: [40, 40],
-                      iconAnchor: [20, 40],
-                      popupAnchor: [0, -40],
-                    })
-                  : defaultIcon;
+                // Create a highlighted icon for selected point
+                const selectedIcon =
+                  isPointSelected && typeof window !== "undefined"
+                    ? L.icon({
+                        iconUrl: "/markers/marker.png",
+                        iconSize: [40, 40],
+                        iconAnchor: [20, 40],
+                        popupAnchor: [0, -40],
+                      })
+                    : defaultIcon;
 
-              return (
-                <Marker
-                  key={`${laneId}-point-${pointIndex}`}
-                  position={point}
-                  icon={selectedIcon || defaultIcon}
-                  draggable={isDrawingMode}
-                  eventHandlers={
-                    {
-                      click: (e) => {
-                        e.originalEvent.stopPropagation();
-                        if (onSelectedPointChange) {
-                          onSelectedPointChange({
-                            laneIndex,
-                            pointIndex,
-                          });
-                        }
-                      },
-                      dragend: (e) => {
-                        const marker = e.target;
-                        const newPosition = marker.getLatLng();
-                        updateLanePoint(laneIndex, pointIndex, newPosition);
-                      },
-                    } as LeafletEventHandlerFnMap
-                  }
-                >
-                  <Tooltip sticky>
-                    Point {pointIndex + 1}
-                    {isPointSelected && " (Selected)"}
-                  </Tooltip>
-                </Marker>
-              );
-            })}
+                return (
+                  <Marker
+                    key={`${laneId}-point-${pointIndex}`}
+                    position={point}
+                    icon={selectedIcon || defaultIcon}
+                    draggable={isDrawingMode}
+                    eventHandlers={
+                      {
+                        click: (e) => {
+                          e.originalEvent.stopPropagation();
+                          if (onSelectedPointChange) {
+                            onSelectedPointChange({
+                              laneIndex,
+                              pointIndex,
+                            });
+                          }
+                        },
+                        dragend: (e) => {
+                          const marker = e.target;
+                          const newPosition = marker.getLatLng();
+                          updateLanePoint(laneIndex, pointIndex, newPosition);
+                        },
+                      } as LeafletEventHandlerFnMap
+                    }
+                  >
+                    <Tooltip sticky>
+                      Point {pointIndex + 1}
+                      {isPointSelected && " (Selected)"}
+                    </Tooltip>
+                  </Marker>
+                );
+              })}
           </React.Fragment>
         );
       })}

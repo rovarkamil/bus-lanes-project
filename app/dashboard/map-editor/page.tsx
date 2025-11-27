@@ -645,6 +645,21 @@ export default function MapEditorPage() {
     saveStopHistory(newStops, false); // Save history immediately for new stop
   };
 
+  const handleDraftStopPositionChange = useCallback(
+    (stopId: string, position: CoordinateTuple) => {
+      setDraftStops((prev) => {
+        const updated = prev.map((stop) =>
+          stop.id === stopId
+            ? { ...stop, latitude: position[0], longitude: position[1] }
+            : stop
+        );
+        saveStopHistory(updated, false);
+        return updated;
+      });
+    },
+    [saveStopHistory]
+  );
+
   const handleSaveDraftStops = useCallback(
     (stops: DraftStopState[]) => {
       if (!stops.length) {
@@ -823,6 +838,7 @@ export default function MapEditorPage() {
             }}
             draftStops={draftStops}
             onAddDraftStop={handleAddDraftStop}
+            onDraftStopPositionChange={handleDraftStopPositionChange}
             editorMode={editorMode}
             selectedLaneId={selectedLaneId}
             onLaneSelect={handleLaneSelect}

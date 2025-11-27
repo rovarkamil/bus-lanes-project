@@ -14,6 +14,8 @@ interface ExistingLayersProps {
   editingStopId?: string | null;
   editingStopNewPosition?: { latitude: number; longitude: number } | null;
   onStopPositionUpdate?: (stopId: string, position: [number, number]) => void;
+  showLaneHandles?: boolean;
+  canSelectLanes?: boolean;
 }
 
 export function ExistingLayers({
@@ -25,6 +27,8 @@ export function ExistingLayers({
   editingStopId,
   editingStopNewPosition,
   onStopPositionUpdate,
+  showLaneHandles = true,
+  canSelectLanes = true,
 }: ExistingLayersProps) {
   return (
     <>
@@ -91,9 +95,13 @@ export function ExistingLayers({
                 weight: selectedLaneId === lane.id ? 8 : (lane.weight ?? 5),
                 opacity: selectedLaneId === lane.id ? 1 : (lane.opacity ?? 0.7),
               }}
-              eventHandlers={{
-                click: () => onLaneClick?.(lane.id),
-              }}
+              eventHandlers={
+                canSelectLanes
+                  ? {
+                      click: () => onLaneClick?.(lane.id),
+                    }
+                  : undefined
+              }
             >
               <Tooltip sticky>
                 {lane.name?.en ?? lane.id}
@@ -102,7 +110,7 @@ export function ExistingLayers({
             </Polyline>
 
             {/* Start marker */}
-            {startIcon && startPoint && (
+            {showLaneHandles && startIcon && startPoint && (
               <Marker position={startPoint} icon={startIcon}>
                 <Tooltip sticky>Start: {lane.name?.en ?? lane.id}</Tooltip>
               </Marker>
@@ -110,6 +118,7 @@ export function ExistingLayers({
 
             {/* End marker (only if different from start) */}
             {endIcon &&
+              showLaneHandles &&
               endPoint &&
               (startPoint[0] !== endPoint[0] ||
                 startPoint[1] !== endPoint[1]) && (

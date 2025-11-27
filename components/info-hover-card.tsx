@@ -9,9 +9,13 @@ import { JsonValue } from "@prisma/client/runtime/library";
 interface InfoHoverCardProps {
   title: string;
   content?: JsonValue | null;
+  locale?: string;
 }
 
-const formatContent = (content: JsonValue | null | undefined): string => {
+const formatContent = (
+  content: JsonValue | null | undefined,
+  locale?: string
+): string => {
   if (content === null || content === undefined) {
     return "No content provided";
   }
@@ -21,6 +25,18 @@ const formatContent = (content: JsonValue | null | undefined): string => {
       // First parse the content if it's a stringified JSON
       const parsed =
         typeof content === "string" ? JSON.parse(content) : content;
+
+      if (
+        locale &&
+        typeof parsed === "object" &&
+        parsed !== null &&
+        locale in parsed
+      ) {
+        const value = (parsed as Record<string, unknown>)[locale];
+        return value
+          ? String(value).replace(/\\n/g, "\n").replace(/\\"/g, '"')
+          : "No content in selected language";
+      }
 
       // Format the object for display
       const formatted = Object.entries(parsed)
@@ -50,7 +66,7 @@ const formatContent = (content: JsonValue | null | undefined): string => {
   return String(content).replace(/\\n/g, "\n").replace(/\\"/g, '"');
 };
 
-export const InfoHoverCard = ({ title, content }: InfoHoverCardProps) => {
+export const InfoHoverCard = ({ title, content, locale }: InfoHoverCardProps) => {
   return (
     <HoverCard>
       <HoverCardTrigger>
@@ -65,7 +81,9 @@ export const InfoHoverCard = ({ title, content }: InfoHoverCardProps) => {
         side="bottom"
       >
         <p className="font-medium">{title}</p>
-        <p className="mt-2 text-sm font-mono">{formatContent(content)}</p>
+        <p className="mt-2 text-sm font-mono">
+          {formatContent(content, locale)}
+        </p>
       </HoverCardContent>
     </HoverCard>
   );

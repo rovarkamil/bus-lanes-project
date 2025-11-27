@@ -17,11 +17,14 @@ This document captures the latest round of improvements for the public map filte
 - Each transport service row shows its icon/color chip and type, while lanes display their stroke color for at-a-glance recognition.
 - Section headers gained icons (`Compass`, `Layers3`, `MapPin`), counts, and one-tap “Show all / Clear all” controls.
 
-### 2.1 Map Style Popover
+### 2.1 Map Style Popover & Detail Sheets
 
 - Introduced a dedicated `MapStylePopover` floating beside the filter button so users can swap basemaps without digging through filters.
 - Added extra presets (Minimal, Contrast, Terrain, Detailed) powered by the new `lib/map/tile-styles.ts` catalog—each label-free and tuned for different contrast levels so the “Minimal” option isn’t the only choice.
 - The selection still persists with the rest of the filter preferences and drives both the public map and the admin map editor so what you preview is what you edit.
+- Transport-service and stop popups now share the same responsive layout. On mobile they expose `ViewServiceDetails` / `ViewStopDetails` buttons that open a sheet, while desktop keeps the floating card. Both flows reuse the same content to avoid parity drift.
+- Stop popups gained the refreshed section headers, badge counts, and media grid found in transport popups. A new translation key (`ViewStopDetails`) was added for all locales.
+- Map editor lane points (start, end, intermediate handles) now render only when the editor is in **Lane** mode. Switching to **Stop** mode hides those handles so placing a stop on a lane no longer floods the map with draggable points.
 
 ### 3. Correct Visibility Logic
 

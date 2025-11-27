@@ -47,6 +47,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { InfoHoverCard } from "@/components/info-hover-card";
 
 interface MapEditorSidebarProps {
   data?: MapDataPayload;
@@ -82,6 +83,8 @@ interface MapEditorSidebarProps {
   onSaveDraftStops?: (stops: MapEditorStopDraftWithId[]) => void;
 }
 
+const truncateName = (label: string) =>
+  label.length > 8 ? `${label.slice(0, 8)}…` : label;
 export function MapEditorSidebar({
   data,
   originalLanes = [],
@@ -113,7 +116,8 @@ export function MapEditorSidebar({
   className,
   onSaveDraftStops,
 }: MapEditorSidebarProps) {
-  const { t } = useTranslation("Map");
+  const { t, i18n } = useTranslation("Map");
+  const locale = i18n.language;
   const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isUpdateLanesDialogOpen, setIsUpdateLanesDialogOpen] = useState(false);
@@ -615,7 +619,14 @@ export function MapEditorSidebar({
                               className="flex items-center justify-between rounded border p-2 text-sm"
                             >
                               <div className="flex items-center gap-2">
-                                <span className="truncate">{stopLabel}</span>
+                                <InfoHoverCard
+                                  title={t("DraftStop")}
+                                  content={stop.name}
+                                  locale={locale}
+                                />
+                                <span className="truncate">
+                                  {truncateName(stopLabel)}
+                                </span>
                               </div>
                               <Button
                                 size="icon"
@@ -740,8 +751,13 @@ export function MapEditorSidebar({
                                     "#0066CC",
                                 }}
                               />
+                              <InfoHoverCard
+                                title={t("BusLane")}
+                                content={lane.name}
+                                locale={locale}
+                              />
                               <span className="truncate">
-                                {lane.name?.en ?? lane.id}
+                                {truncateName(lane.name?.[locale] ?? lane.id)}
                               </span>
                             </div>
                             <Button
@@ -843,11 +859,16 @@ export function MapEditorSidebar({
                           }}
                         >
                           <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <InfoHoverCard
+                              title={t("BusStop")}
+                              content={stop.name}
+                              locale={locale}
+                            />
                             <span className="truncate">
-                              {stop.name?.en ?? stop.id}
+                              {truncateName(stop.name?.en ?? stop.id)}
                               {editingStopId === stop.id && (
                                 <span className="ml-2 text-xs text-primary">
-                                  (Editing Position)
+                                  ({t("EditingPosition")})
                                 </span>
                               )}
                             </span>
