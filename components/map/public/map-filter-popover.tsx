@@ -17,6 +17,13 @@ import { useTranslation } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 import { MapLane, MapTransportService } from "@/types/map";
 import Image from "next/image";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MapFilterPopoverProps {
   services: MapTransportService[];
@@ -29,6 +36,8 @@ interface MapFilterPopoverProps {
   onStopsChange?: (show: boolean) => void;
   onServiceFocus?: (serviceId: string) => void;
   onLaneFocus?: (laneId: string) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const ServiceBadge = ({ service }: { service: MapTransportService }) => {
@@ -67,10 +76,19 @@ export function MapFilterPopover({
   onStopsChange,
   onServiceFocus,
   onLaneFocus,
+  open,
+  onOpenChange,
 }: MapFilterPopoverProps) {
   const { t, i18n } = useTranslation("Map");
   const isRTL = i18n.language !== "en";
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isMobile = useIsMobile();
+  const isOpen = open ?? internalOpen;
+
+  const handleOpenChange = (next: boolean) => {
+    setInternalOpen(next);
+    onOpenChange?.(next);
+  };
 
   const activeFilterCount = useMemo(() => {
     const servicesCount =
@@ -302,28 +320,93 @@ export function MapFilterPopover({
     </div>
   );
 
-  return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          size="icon"
-          className={cn(
-            "fixed bottom-14 right-6 z-[1500] h-14 w-14 rounded-full shadow-lg",
-            isRTL && "right-auto left-6"
-          )}
-          dir={isRTL ? "rtl" : "ltr"}
+  const TriggerButton = (
+    <Button
+      size="icon"
+      className={cn(
+        "fixed bottom-14 right-6 z-[1500] h-14 w-14 rounded-full shadow-lg",
+        isRTL && "right-auto left-6"
+      )}
+      dir={isRTL ? "rtl" : "ltr"}
+      onClick={() => handleOpenChange(true)}
+    >
+      <Filter className="h-5 w-5" />
+      {activeFilterCount > 0 && (
+        <Badge
+          variant="destructive"
+          className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full p-0 text-xs "
         >
-          <Filter className="h-5 w-5" />
+          {activeFilterCount}
+        </Badge>
+      )}
+    </Button>
+  );
+
+  const Content = (
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between border-b bg-background/95 px-4 py-3">
+        <div>
+          <h3 className="text-lg font-semibold">{t("Filters")}</h3>
+          <p className="text-xs text-muted-foreground">
+            {t("ActiveFilters")}: {activeFilterCount}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
           {activeFilterCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full p-0 text-xs "
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 text-xs"
+              onClick={handleClearAll}
             >
-              {activeFilterCount}
-            </Badge>
+              {t("ClearAll")}
+            </Button>
           )}
-        </Button>
-      </PopoverTrigger>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => handleOpenChange(false)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      <ScrollArea className="flex-1">
+        <div className="space-y-6 p-4">
+          {renderServiceSection()}
+          <Separator />
+          {renderLaneSection()}
+          <Separator />
+          {renderStopsSection()}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        {TriggerButton}
+        <Sheet open={isOpen} onOpenChange={handleOpenChange}>
+          <SheetContent
+            side="bottom"
+            className="h-[80vh] w-full border-border/60 bg-card/95 text-card-foreground"
+          >
+            <SheetHeader className="sr-only">
+              <SheetTitle>{t("Filters")}</SheetTitle>
+            </SheetHeader>
+            {Content}
+          </SheetContent>
+        </Sheet>
+      </>
+    );
+  }
+
+  return (
+    <Popover open={isOpen} onOpenChange={handleOpenChange}>
+      <PopoverTrigger asChild>{TriggerButton}</PopoverTrigger>
       <PopoverContent
         className={cn(
           "w-[92vw] max-w-lg max-h-[75vh] border border-border/60 bg-card/95 p-0 text-card-foreground shadow-2xl backdrop-blur z-[2000]",
@@ -333,46 +416,7 @@ export function MapFilterPopover({
         side="top"
         dir={isRTL ? "rtl" : "ltr"}
       >
-        <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b bg-background/95 px-4 py-3">
-            <div>
-              <h3 className="text-lg font-semibold">{t("Filters")}</h3>
-              <p className="text-xs text-muted-foreground">
-                {t("ActiveFilters")}: {activeFilterCount}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              {activeFilterCount > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 text-xs"
-                  onClick={handleClearAll}
-                >
-                  {t("ClearAll")}
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setIsOpen(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          <ScrollArea className="flex-1">
-            <div className="space-y-6 p-4">
-              {renderServiceSection()}
-              <Separator />
-              {renderLaneSection()}
-              <Separator />
-              {renderStopsSection()}
-            </div>
-          </ScrollArea>
-        </div>
+        {Content}
       </PopoverContent>
     </Popover>
   );

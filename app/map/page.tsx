@@ -53,6 +53,8 @@ const MapPage = () => {
   const lanesRef = useRef<string[]>([]);
   const focusTokenRef = useRef(0);
   const [focusPoint, setFocusPoint] = useState<MapFocusPoint | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isStyleOpen, setIsStyleOpen] = useState(false);
 
   const lanes = useMemo(() => payload?.lanes ?? [], [payload]);
 
@@ -324,8 +326,21 @@ const MapPage = () => {
             onStopsChange={setShowStops}
             onServiceFocus={handleServiceFocus}
             onLaneFocus={handleLaneFocus}
+            open={isFilterOpen}
+            onOpenChange={(next) => {
+              setIsFilterOpen(next);
+              if (next) setIsStyleOpen(false);
+            }}
           />
-          <MapStylePopover value={mapStyle} onChange={setMapStyle} />
+          <MapStylePopover
+            value={mapStyle}
+            onChange={setMapStyle}
+            open={isStyleOpen}
+            onOpenChange={(next) => {
+              setIsStyleOpen(next);
+              if (next) setIsFilterOpen(false);
+            }}
+          />
         </>
       )}
     </main>

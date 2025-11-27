@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocale } from "@/components/locale-provder";
 import { useTranslation } from "@/i18n/client";
 import {
@@ -26,6 +27,9 @@ import { getLocalizedValue } from "@/lib/i18n/get-localized-value";
 import { useFetchBusSchedules } from "@/hooks/public-hooks/use-bus-schedule";
 import { useFetchBusLanes } from "@/hooks/public-hooks/use-bus-lane";
 import { ImagePreviewer } from "@/components/show-image-previewer";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TransportServicePopupProps {
   service?: MapTransportService | null;
@@ -50,6 +54,9 @@ export function TransportServicePopup({
   >([]);
   const [previewIndex, setPreviewIndex] = useState(0);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   // Fetch schedules for all routes (fetch all and filter client-side since API only supports single routeId)
   const routeIds = routes.map((r) => r.id);
@@ -80,7 +87,7 @@ export function TransportServicePopup({
 
   // Fetch full lane details with images
   const laneIds = lanes.map((l) => l.id);
-  const { data: lanesData } = useFetchBusLanes({
+  const { data: lanesData, isPending: isLaneImagesPending } = useFetchBusLanes({
     page: 1,
     limit: 1000,
   });
@@ -134,22 +141,33 @@ export function TransportServicePopup({
     setIsPreviewOpen(true);
   };
 
+  const handleImageLoaded = (url: string) =>
+    setLoadedImages((prev) => ({ ...prev, [url]: true }));
+
   const SectionHeader = ({
     icon: Icon,
     label,
     count,
+    isLoading,
   }: {
     icon: typeof Layers;
     label: string;
     count?: number;
+    isLoading?: boolean;
   }) => (
     <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
       <Icon className="h-3.5 w-3.5" />
       <span>{label}</span>
-      {typeof count === "number" && (
+      {isLoading ? (
         <Badge variant="outline" className="text-[10px]">
-          {count}
+          {t("LoadingImages")}
         </Badge>
+      ) : (
+        typeof count === "number" && (
+          <Badge variant="outline" className="text-[10px]">
+            {count}
+          </Badge>
+        )
       )}
     </div>
   );
@@ -166,266 +184,311 @@ export function TransportServicePopup({
     </span>
   );
 
-  return (
-    <>
-      <div
-        className="w-[min(90vw,380px)] space-y-4 text-sm text-card-foreground sm:w-[360px]"
-        dir={isRTL ? "rtl" : "ltr"}
-      >
-        <div className="rounded-3xl border border-border/60 bg-card/95 p-4 shadow-2xl ring-1 ring-border/30 backdrop-blur">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <div
-                  className="h-4 w-4 rounded-full border border-border/40"
-                  style={{ backgroundColor: service?.color || "#f97316" }}
-                />
-                <p className="text-lg font-semibold leading-tight">
-                  {serviceName}
-                </p>
-                <Badge variant="secondary" className="text-[10px] uppercase">
-                  {t(`TransportServiceType.${service?.type ?? "UNKNOWN"}`)}
-                </Badge>
-              </div>
-              {serviceDescription && (
-                <p className="text-xs text-muted-foreground">
-                  {serviceDescription}
-                </p>
-              )}
+  const renderPopupContent = () => (
+    <div
+      className="w-[min(90vw,380px)] space-y-4 text-sm text-card-foreground sm:w-[360px]"
+      dir={isRTL ? "rtl" : "ltr"}
+    >
+      <div className="rounded-3xl backdrop-blur">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div
+                className="h-4 w-4 rounded-full border border-border/40"
+                style={{ backgroundColor: service?.color || "#f97316" }}
+              />
+              <p className="text-lg font-semibold leading-tight">
+                {serviceName}
+              </p>
+              <Badge variant="secondary" className="text-[10px] uppercase">
+                {t(`TransportServiceType.${service?.type ?? "UNKNOWN"}`)}
+              </Badge>
             </div>
-            {service?.icon?.fileUrl && (
-              <div className="relative h-14 w-14 overflow-hidden rounded-2xl border border-border/40 bg-background/80 p-2">
-                <Image
-                  src={service.icon.fileUrl}
-                  alt={serviceName}
-                  fill
-                  sizes="56px"
-                  className="object-contain"
-                />
+            {serviceDescription && (
+              <p className="text-xs text-muted-foreground">
+                {serviceDescription}
+              </p>
+            )}
+          </div>
+          {service?.icon?.fileUrl && (
+            <div className="relative h-14 w-14 overflow-hidden rounded-2xl border border-border/40 bg-background/80 p-2">
+              <Image
+                src={service.icon.fileUrl}
+                alt={serviceName}
+                fill
+                sizes="56px"
+                className="object-contain"
+              />
+            </div>
+          )}
+        </div>
+
+        <Separator className="my-4" />
+
+        <div className="mt-4 space-y-4">
+          {/* Lanes */}
+          <div className="space-y-2">
+            <SectionHeader
+              icon={Layers}
+              label={t("Lanes")}
+              count={lanes.length}
+            />
+            {lanes.length === 0 ? (
+              <p className="rounded-2xl bg-muted/40 p-3 text-xs text-muted-foreground">
+                {t("NoLanesAssigned")}
+              </p>
+            ) : (
+              <ScrollArea className="max-h-32">
+                <div className="flex flex-wrap gap-2 pr-1">
+                  {lanes.map((lane) => (
+                    <Pill
+                      key={lane.id}
+                      color={lane.color || lane.service?.color || undefined}
+                      label={getLocalizedValue(lane.name, locale) || lane.id}
+                    />
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
+          </div>
+
+          <Separator />
+
+          {/* Routes */}
+          <div className="space-y-2">
+            <SectionHeader
+              icon={RouteIcon}
+              label={t("Routes")}
+              count={routes.length}
+            />
+            {routes.length === 0 ? (
+              <p className="rounded-2xl bg-muted/40 p-3 text-xs text-muted-foreground">
+                {t("NoRoutesAssigned")}
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {routes.map((route) => (
+                  <div
+                    key={route.id}
+                    className="flex items-center justify-between rounded-2xl border border-border/40 bg-background/60 px-3 py-2 text-xs"
+                  >
+                    <div className="flex flex-1 items-center gap-2">
+                      {route.color && (
+                        <span
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{ backgroundColor: route.color }}
+                        />
+                      )}
+                      <span className="font-medium">
+                        {route.routeNumber
+                          ? `${route.routeNumber} • ${
+                              getLocalizedValue(route.name, locale) || route.id
+                            }`
+                          : getLocalizedValue(route.name, locale) || route.id}
+                      </span>
+                    </div>
+                    <Badge variant="outline" className="text-[10px]">
+                      {t("Schedules")}:{" "}
+                      {schedulesByRoute.get(route.id)?.length ?? 0}
+                    </Badge>
+                  </div>
+                ))}
               </div>
             )}
           </div>
 
-          <Separator className="my-4" />
+          <Separator />
 
-          <div className="grid grid-cols-2 gap-3 text-xs uppercase text-muted-foreground">
-            <div className="rounded-2xl border border-border/50 bg-background/40 p-3">
-              <p className="text-[11px] font-semibold">{t("Lanes")}</p>
-              <p className="text-xl font-semibold text-foreground">
-                {lanes.length}
+          {/* Stops */}
+          <div className="space-y-2">
+            <SectionHeader
+              icon={MapPin}
+              label={t("Stops")}
+              count={stops.length}
+            />
+            {stops.length === 0 ? (
+              <p className="rounded-2xl bg-muted/40 p-3 text-xs text-muted-foreground">
+                {t("NoStopsAssigned")}
               </p>
-            </div>
-            <div className="rounded-2xl border border-border/50 bg-background/40 p-3">
-              <p className="text-[11px] font-semibold">{t("Routes")}</p>
-              <p className="text-xl font-semibold text-foreground">
-                {routes.length}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-4 space-y-4">
-            {/* Lanes */}
-            <div className="space-y-2">
-              <SectionHeader
-                icon={Layers}
-                label={t("Lanes")}
-                count={lanes.length}
-              />
-              {lanes.length === 0 ? (
-                <p className="rounded-2xl bg-muted/40 p-3 text-xs text-muted-foreground">
-                  {t("NoLanesAssigned")}
-                </p>
-              ) : (
-                <ScrollArea className="max-h-32">
-                  <div className="flex flex-wrap gap-2 pr-1">
-                    {lanes.map((lane) => (
-                      <Pill
-                        key={lane.id}
-                        color={lane.color || lane.service?.color || undefined}
-                        label={getLocalizedValue(lane.name, locale) || lane.id}
-                      />
-                    ))}
-                  </div>
-                </ScrollArea>
-              )}
-            </div>
-
-            <Separator />
-
-            {/* Routes */}
-            <div className="space-y-2">
-              <SectionHeader
-                icon={RouteIcon}
-                label={t("Routes")}
-                count={routes.length}
-              />
-              {routes.length === 0 ? (
-                <p className="rounded-2xl bg-muted/40 p-3 text-xs text-muted-foreground">
-                  {t("NoRoutesAssigned")}
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {routes.map((route) => (
+            ) : (
+              <ScrollArea className="max-h-32">
+                <div className="space-y-1 pr-1">
+                  {stops.slice(0, 8).map((stop) => (
                     <div
-                      key={route.id}
-                      className="flex items-center justify-between rounded-2xl border border-border/40 bg-background/60 px-3 py-2 text-xs"
+                      key={stop.id}
+                      className="rounded-xl border border-border/40 bg-background/60 px-3 py-2 text-xs"
                     >
-                      <div className="flex flex-1 items-center gap-2">
-                        {route.color && (
-                          <span
-                            className="h-2.5 w-2.5 rounded-full"
-                            style={{ backgroundColor: route.color }}
-                          />
-                        )}
-                        <span className="font-medium">
-                          {route.routeNumber
-                            ? `${route.routeNumber} • ${
-                                getLocalizedValue(route.name, locale) ||
-                                route.id
-                              }`
-                            : getLocalizedValue(route.name, locale) || route.id}
-                        </span>
-                      </div>
-                      <Badge variant="outline" className="text-[10px]">
-                        {t("Schedules")}:{" "}
-                        {schedulesByRoute.get(route.id)?.length ?? 0}
-                      </Badge>
+                      {getLocalizedValue(stop.name, locale) || stop.id}
                     </div>
                   ))}
+                  {stops.length > 8 && (
+                    <p className="py-1 text-center text-[11px] text-muted-foreground">
+                      +{stops.length - 8} {t("MoreStops") || "more stops"}
+                    </p>
+                  )}
                 </div>
-              )}
-            </div>
+              </ScrollArea>
+            )}
+          </div>
 
-            <Separator />
-
-            {/* Stops */}
-            <div className="space-y-2">
-              <SectionHeader
-                icon={MapPin}
-                label={t("Stops")}
-                count={stops.length}
-              />
-              {stops.length === 0 ? (
-                <p className="rounded-2xl bg-muted/40 p-3 text-xs text-muted-foreground">
-                  {t("NoStopsAssigned")}
-                </p>
-              ) : (
+          {/* Schedules */}
+          {schedules.length > 0 && (
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <SectionHeader
+                  icon={Clock}
+                  label={t("Schedules")}
+                  count={schedules.length}
+                />
                 <ScrollArea className="max-h-32">
-                  <div className="space-y-1 pr-1">
-                    {stops.slice(0, 8).map((stop) => (
-                      <div
-                        key={stop.id}
-                        className="rounded-xl border border-border/40 bg-background/60 px-3 py-2 text-xs"
-                      >
-                        {getLocalizedValue(stop.name, locale) || stop.id}
-                      </div>
-                    ))}
-                    {stops.length > 8 && (
-                      <p className="py-1 text-center text-[11px] text-muted-foreground">
-                        +{stops.length - 8} {t("MoreStops") || "more stops"}
-                      </p>
+                  <div className="space-y-2 pr-1">
+                    {Array.from(schedulesByRoute.entries()).map(
+                      ([routeId, routeSchedules]) => {
+                        const route = routes.find((r) => r.id === routeId);
+                        return (
+                          <div
+                            key={routeId}
+                            className="rounded-2xl border border-border/40 bg-background/60 p-3 text-xs"
+                          >
+                            <p className="font-semibold">
+                              {route?.routeNumber ||
+                                getLocalizedValue(route?.name, locale) ||
+                                routeId}
+                            </p>
+                            <div className="mt-1 space-y-0.5 text-muted-foreground">
+                              {routeSchedules.slice(0, 3).map((schedule) => (
+                                <div key={schedule.id}>
+                                  {schedule.departureTime} ·{" "}
+                                  {t(`DayOfWeek.${schedule.dayOfWeek}`)}
+                                </div>
+                              ))}
+                              {routeSchedules.length > 3 && (
+                                <p>
+                                  +{routeSchedules.length - 3}{" "}
+                                  {t("More") || "more"}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      }
                     )}
                   </div>
                 </ScrollArea>
-              )}
-            </div>
+              </div>
+            </>
+          )}
 
-            {/* Schedules */}
-            {schedules.length > 0 && (
-              <>
-                <Separator />
-                <div className="space-y-2">
-                  <SectionHeader
-                    icon={Clock}
-                    label={t("Schedules")}
-                    count={schedules.length}
-                  />
-                  <ScrollArea className="max-h-32">
-                    <div className="space-y-2 pr-1">
-                      {Array.from(schedulesByRoute.entries()).map(
-                        ([routeId, routeSchedules]) => {
-                          const route = routes.find((r) => r.id === routeId);
-                          return (
-                            <div
-                              key={routeId}
-                              className="rounded-2xl border border-border/40 bg-background/60 p-3 text-xs"
-                            >
-                              <p className="font-semibold">
-                                {route?.routeNumber ||
-                                  getLocalizedValue(route?.name, locale) ||
-                                  routeId}
-                              </p>
-                              <div className="mt-1 space-y-0.5 text-muted-foreground">
-                                {routeSchedules.slice(0, 3).map((schedule) => (
-                                  <div key={schedule.id}>
-                                    {schedule.departureTime} ·{" "}
-                                    {t(`DayOfWeek.${schedule.dayOfWeek}`)}
-                                  </div>
-                                ))}
-                                {routeSchedules.length > 3 && (
-                                  <p>
-                                    +{routeSchedules.length - 3}{" "}
-                                    {t("More") || "more"}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        }
-                      )}
-                    </div>
-                  </ScrollArea>
+          {/* Images */}
+          <>
+            <Separator />
+            <div className="space-y-2">
+              <SectionHeader
+                icon={ImageIcon}
+                label={t("Images") || "Images"}
+                count={allImages.length > 0 ? allImages.length : undefined}
+                isLoading={isLaneImagesPending}
+              />
+              {isLaneImagesPending ? (
+                <div className="flex h-32 items-center justify-center rounded-2xl border border-border/50 bg-muted/40 text-xs text-muted-foreground">
+                  {t("LoadingImages")}
                 </div>
-              </>
-            )}
-
-            {/* Images */}
-            {allImages.length > 0 && (
-              <>
-                <Separator />
-                <div className="space-y-2">
-                  <SectionHeader
-                    icon={ImageIcon}
-                    label={t("Images") || "Images"}
-                    count={allImages.length}
-                  />
-                  <ScrollArea className="h-32 rounded-2xl border border-border/50 bg-background/60">
-                    <div className="grid grid-cols-2 gap-2 p-2">
-                      {allImages.slice(0, 4).map((image, index) => (
+              ) : allImages.length > 0 ? (
+                <ScrollArea className="h-32 rounded-2xl border border-border/50 bg-background/60">
+                  <div className="grid grid-cols-2 gap-2 p-2">
+                    {allImages.slice(0, 4).map((image, index) => {
+                      const isLoaded = loadedImages[image.url];
+                      return (
                         <button
                           key={image.url}
                           onClick={() => handleImageClick(allImages, index)}
                           className="relative h-24 w-full overflow-hidden rounded-xl border border-border/40 bg-muted/40 transition hover:opacity-80"
+                          aria-busy={!isLoaded}
                         >
+                          <span
+                            className={`absolute inset-0 flex items-center justify-center bg-muted/60 transition-opacity ${
+                              isLoaded
+                                ? "opacity-0"
+                                : "opacity-100 animate-pulse"
+                            }`}
+                            aria-hidden={isLoaded}
+                          >
+                            <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                          </span>
                           <Image
                             src={image.url}
                             alt={image.alt || serviceName}
                             fill
                             sizes="150px"
-                            className="object-cover"
+                            className="object-cover transition-opacity"
+                            onLoadingComplete={() =>
+                              handleImageLoaded(image.url)
+                            }
                           />
                         </button>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </div>
-              </>
-            )}
-
-            {lanes.length === 0 &&
-              routes.length === 0 &&
-              stops.length === 0 &&
-              schedules.length === 0 &&
-              allImages.length === 0 && (
-                <div className="flex items-center gap-2 rounded-2xl border border-border/50 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-                  <Info className="h-4 w-4" />
-                  {t("TapARouteOrLanePillToFilterTheMap")}
-                </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              ) : (
+                <p className="rounded-2xl bg-muted/40 p-3 text-xs text-muted-foreground">
+                  {t("NoImagesAvailable")}
+                </p>
               )}
-          </div>
+            </div>
+          </>
+
+          {lanes.length === 0 &&
+            routes.length === 0 &&
+            stops.length === 0 &&
+            schedules.length === 0 &&
+            allImages.length === 0 && (
+              <div className="flex items-center gap-2 rounded-2xl border border-border/50 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                <Info className="h-4 w-4" />
+                {t("TapARouteOrLanePillToFilterTheMap")}
+              </div>
+            )}
         </div>
       </div>
+    </div>
+  );
 
+  if (isMobile) {
+    return (
+      <>
+        <Button
+          variant="secondary"
+          size="sm"
+          className="mb-3 w-full rounded-full"
+          onClick={() => setIsSheetOpen(true)}
+        >
+          {t("ViewServiceDetails")}
+        </Button>
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <SheetContent
+            side={isRTL ? "right" : "left"}
+            className="w-full overflow-y-auto border-border/60 bg-background"
+          >
+            <SheetHeader>
+              <p className="text-base font-semibold">{serviceName}</p>
+            </SheetHeader>
+            <div className="pt-4">{renderPopupContent()}</div>
+          </SheetContent>
+        </Sheet>
+        <ImagePreviewer
+          isOpen={isPreviewOpen}
+          onClose={() => setIsPreviewOpen(false)}
+          images={previewImages}
+          initialImageIndex={previewIndex}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      {renderPopupContent()}
       <ImagePreviewer
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}

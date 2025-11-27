@@ -196,6 +196,9 @@
   "MoreStops": "وەستانەی زیاتر",
   "More": "زیاتر",
   "Images": "وێنەکان",
+  "LoadingImages": "وێنەکان لە باركردندا...",
+  "NoImagesAvailable": "هیچ وێنەیەك بەردەست نییە",
+  "ViewServiceDetails": "وردەکاری خزمەتگوزاری ببینە",
   "FocusOnMap": "نیشاندانی لەسەر نەخشە",
   "Common": {
     "Cancel": "هەڵوەشاندن",

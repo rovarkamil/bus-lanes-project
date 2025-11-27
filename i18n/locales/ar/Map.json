@@ -196,6 +196,9 @@
   "MoreStops": "محطات إضافية",
   "More": "المزيد",
   "Images": "الصور",
+  "LoadingImages": "جاري تحميل الصور...",
+  "NoImagesAvailable": "لا توجد صور متاحة",
+  "ViewServiceDetails": "عرض تفاصيل الخدمة",
   "FocusOnMap": "إظهار على الخريطة",
   "Common": {
     "Cancel": "إلغاء",
