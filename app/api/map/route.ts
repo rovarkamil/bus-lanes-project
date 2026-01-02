@@ -316,9 +316,17 @@ export async function GET() {
             images: true,
             icon: {
               include: { file: true },
+              where: {
+                deletedAt: null,
+                isActive: true,
+              },
             },
             zone: {
               include: { name: true },
+              where: {
+                deletedAt: null,
+                isActive: true,
+              },
             },
             lanes: {
               include: {
@@ -330,6 +338,10 @@ export async function GET() {
                     icon: {
                       include: { file: true },
                     },
+                  },
+                  where: {
+                    deletedAt: null,
+                    isActive: true,
                   },
                 },
               },
@@ -344,7 +356,15 @@ export async function GET() {
                       include: { file: true },
                     },
                   },
+                  where: {
+                    deletedAt: null,
+                    isActive: true,
+                  },
                 },
+              },
+              where: {
+                deletedAt: null,
+                isActive: true,
               },
             },
           },
