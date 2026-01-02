@@ -302,6 +302,10 @@ export async function GET() {
             description: true,
             icon: {
               include: { file: true },
+              where: {
+                deletedAt: null,
+                isActive: true,
+              },
             },
           },
           orderBy: { createdAt: "asc" },
@@ -313,7 +317,11 @@ export async function GET() {
           include: {
             name: true,
             description: true,
-            images: true,
+            images: {
+              where: {
+                deletedAt: null,
+              },
+            },
             icon: {
               include: { file: true },
               where: {
@@ -329,6 +337,10 @@ export async function GET() {
               },
             },
             lanes: {
+              where: {
+                deletedAt: null,
+                isActive: true,
+              },
               include: {
                 name: true,
                 description: true,
@@ -337,6 +349,10 @@ export async function GET() {
                     name: true,
                     icon: {
                       include: { file: true },
+                      where: {
+                        deletedAt: null,
+                        isActive: true,
+                      },
                     },
                   },
                   where: {
@@ -354,6 +370,10 @@ export async function GET() {
                     name: true,
                     icon: {
                       include: { file: true },
+                      where: {
+                        deletedAt: null,
+                        isActive: true,
+                      },
                     },
                   },
                   where: {
@@ -379,10 +399,18 @@ export async function GET() {
             name: true,
             description: true,
             service: {
+              where: {
+                deletedAt: null,
+                isActive: true,
+              },
               include: {
                 name: true,
                 icon: {
                   include: { file: true },
+                  where: {
+                    deletedAt: null,
+                    isActive: true,
+                  },
                 },
               },
             },
@@ -402,6 +430,10 @@ export async function GET() {
                 name: true,
                 icon: {
                   include: { file: true },
+                  where: {
+                    deletedAt: null,
+                    isActive: true,
+                  },
                 },
               },
               where: {
