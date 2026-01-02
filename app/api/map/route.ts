@@ -404,16 +404,27 @@ export async function GET() {
                   include: { file: true },
                 },
               },
+              where: {
+                deletedAt: null,
+                isActive: true,
+              },
             },
             lanes: {
               include: {
                 name: true,
                 description: true,
               },
+              where: {
+                deletedAt: null,
+                isActive: true,
+              },
             },
             stops: {
               include: {
                 name: true,
+              },
+              where: {
+                deletedAt: null,
               },
             },
           },
